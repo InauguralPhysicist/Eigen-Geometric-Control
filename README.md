@@ -230,8 +230,8 @@ System reaches eigenstate when:
 ## Installation
 
 ```bash
-git clone https://github.com/[username]/Eigen.git
-cd Eigen
+git clone https://github.com/InauguralPhysicist/Eigen-Geometric-Control.git
+cd Eigen-Geometric-Control
 pip install -r requirements.txt
 ```
 
@@ -260,7 +260,7 @@ If you use this code in your research:
   author = {McReynolds, Jon},
   title = {Eigen: Geometric Robot Control},
   year = {2025},
-  url = {https://github.com/[username]/Eigen}
+  url = {https://github.com/InauguralPhysicist/Eigen-Geometric-Control}
 }
 ```
 
@@ -283,8 +283,11 @@ Open an issue to discuss before submitting PRs.
 
 ## Contact
 
-Jon McReynolds
-[@InauguralPhysicist](https://twitter.com/InauguralPhysicist)
+**Jon McReynolds**
+
+- Email: mcreynolds.jon@gmail.com
+- X/Twitter: [@InauguralPhys](https://twitter.com/InauguralPhys)
+- Medium: [InauguralPhysicist.medium.com](https://InauguralPhysicist.medium.com)
 
 -----
 
