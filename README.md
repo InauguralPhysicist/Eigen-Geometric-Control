@@ -50,33 +50,88 @@ State → Gradient → Update
 
 ```
 Eigen/
-├── src/              # Core implementation
-├── data/             # Raw simulation data
-├── figures/          # Visualizations
+├── src/              # Core framework modules
+│   ├── eigen_core.py
+│   ├── eigen_arm_control.py
+│   └── eigen_xor_rotation.py
+├── scripts/          # Complete reproduction script
+├── outputs/          # Generated data and figures
 ├── examples/         # Usage demos
 └── docs/             # Technical documentation
 ```
 
+## Complete Reproduction
+
+Generate all results from scratch:
+
+```bash
+python scripts/generate_all_results.py
+```
+
+This creates:
+
+- `outputs/xor_rotation_trace.csv` (32 ticks, discrete rotation)
+- `outputs/eigen_arm_trace.csv` (140 ticks, arm control)
+- `outputs/figS1_gradient_log.png` (exponential decay)
+- `outputs/figS2_θ₁.png` and `figS2_θ₂.png` (joint convergence)
+- `outputs/figS3_energy_decomp.png` (term breakdown)
+- `outputs/figS4_xor_hamming.png` (constant flips)
+- `outputs/figS5_phase_space_arm.png` (spiral attractor)
+
+Total runtime: ~2 seconds.
+
 ## Quick Start
 
 ```python
-from src.eigen_arm_control import EigenArm, run_simulation
+from src import run_arm_simulation
 
-# Create 2-DOF arm
-arm = EigenArm(
-    theta_init=[-1.4, 1.2],
-    target=[1.2, 0.3],
-    obstacle_center=[0.6, 0.1],
-    obstacle_radius=0.25
+# Run standard configuration
+results = run_arm_simulation(
+    theta_init=(-1.4, 1.2),
+    target=(1.2, 0.3),
+    obstacle_center=(0.6, 0.1),
+    obstacle_radius=0.25,
+    n_ticks=140,
+    eta=0.12
 )
 
-# Run geometric flow
-results = run_simulation(arm, n_ticks=140, eta=0.12)
-
 # System converges autonomously
-print(f"Final error: {results['ds2_total'][-1]:.4f}")
-print(f"Gradient norm: {results['grad_norm'][-1]:.2e}")
+print(f"Initial ds²: {results['ds2_total'].iloc[0]:.4f}")
+print(f"Final ds²: {results['ds2_total'].iloc[-1]:.4f}")
+print(f"Gradient: {results['grad_norm'].iloc[0]:.2e} → {results['grad_norm'].iloc[-1]:.2e}")
+print(f"Min obstacle distance: {results['d_obs'].min():.4f}m")
 ```
+
+## Modular Usage
+
+For custom implementations:
+
+```python
+from src import forward_kinematics, compute_ds2, compute_gradient
+
+# Custom arm configuration
+theta1, theta2 = -1.0, 1.5
+target = (1.0, 0.5)
+obstacle_center = (0.5, 0.2)
+obstacle_radius = 0.3
+
+# Compute state
+x, y = forward_kinematics(theta1, theta2)
+ds2, components = compute_ds2(theta1, theta2, target, obstacle_center, obstacle_radius)
+grad, grad_norm = compute_gradient(theta1, theta2, target, obstacle_center, obstacle_radius)
+
+# Gradient descent update
+eta = 0.15
+theta1_new = theta1 - eta * grad[0]
+theta2_new = theta2 - eta * grad[1]
+
+# Access individual terms
+print(f"Target term: {components['target_term']:.4f}")
+print(f"Obstacle term: {components['obs_term']:.4f}")
+print(f"Regularization: {components['reg_term']:.4f}")
+```
+
+See `examples/` for more demos.
 
 ## Key Results
 
@@ -108,10 +163,15 @@ Transitions from space-like (exploring) → light-like (boundary) → time-like 
 
 ## Code Structure
 
-- `eigen_core.py`: Framework implementation (<100 lines)
-- `eigen_arm_control.py`: Robot arm demo (~100 lines)
-- `eigen_xor_rotation.py`: Discrete dynamics validation
-- Data and figures included for reproducibility
+**Core framework:**
+- `src/eigen_core.py`: Geometric functions (FK, Jacobian, ds², gradient)
+- `src/eigen_arm_control.py`: Arm simulation runner
+- `src/eigen_xor_rotation.py`: Discrete rotation demo
+
+**Reproduction:**
+- `scripts/generate_all_results.py`: Complete single-file reproducer
+
+**Total: <200 lines of core implementation**
 
 ## Applications
 
