@@ -1,0 +1,35 @@
+# Fast convergence configuration
+#
+# Increased step size for faster convergence (fewer ticks needed).
+# Use for rapid prototyping or when computational efficiency is critical.
+
+# Initial joint angles (radians)
+theta_init:
+  - -1.4
+  - 1.2
+
+# Target position (meters)
+target:
+  - 1.2
+  - 0.3
+
+# Obstacle parameters
+obstacle_center:
+  - 0.6
+  - 0.1
+obstacle_radius: 0.25
+
+# Arm geometry (meters)
+L1: 0.9
+L2: 0.9
+
+# Control parameters - increased eta for faster convergence
+eta: 0.15          # Increased step size (vs 0.12 default)
+n_ticks: 100       # Fewer ticks needed
+
+# Objective function weights
+Go: 4.0            # Obstacle repulsion strength
+lam: 0.02          # Regularization weight
+
+# Change detection threshold
+eps_change: 0.001

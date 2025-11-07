@@ -1,0 +1,35 @@
+# Default configuration for Eigen arm control simulation
+#
+# This configuration reproduces the standard validation results
+# shown in the paper and README figures.
+
+# Initial joint angles (radians)
+theta_init:
+  - -1.4
+  - 1.2
+
+# Target position (meters)
+target:
+  - 1.2
+  - 0.3
+
+# Obstacle parameters
+obstacle_center:
+  - 0.6
+  - 0.1
+obstacle_radius: 0.25
+
+# Arm geometry (meters)
+L1: 0.9
+L2: 0.9
+
+# Control parameters
+eta: 0.12          # Step size / learning rate
+n_ticks: 140       # Simulation length
+
+# Objective function weights
+Go: 4.0            # Obstacle repulsion strength
+lam: 0.02          # Regularization weight
+
+# Change detection threshold
+eps_change: 0.001
