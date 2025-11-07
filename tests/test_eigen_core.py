@@ -379,5 +379,43 @@ class TestPhysicalConstraints:
         assert np.allclose(grad1, grad2, rtol=0.01)
 
 
+class TestIntegration:
+    """Integration tests combining multiple functions"""
+
+    def test_convergence_reduces_ds2(self):
+        """Test that gradient descent reduces ds²"""
+        from src.eigen_arm_control import run_arm_simulation
+
+        results = run_arm_simulation(n_ticks=50, eta=0.12)
+
+        # ds² should decrease monotonically
+        ds2_values = results['ds2_total'].values
+        assert ds2_values[-1] < ds2_values[0]
+
+        # Gradient should decrease
+        grad_values = results['grad_norm'].values
+        assert grad_values[-1] < grad_values[0]
+
+        # Should avoid obstacle
+        assert results['d_obs'].min() > 0.25
+
+    def test_xor_rotation_period_2(self):
+        """Test XOR demo maintains period-2 oscillation"""
+        from src.eigen_xor_rotation import run_xor_simulation
+
+        results = run_xor_simulation(n_ticks=10)
+
+        # C and S should be constant
+        assert len(results['C'].unique()) == 1
+        assert len(results['S'].unique()) == 1
+
+        # ds² should be constant
+        assert len(results['ds2_CS'].unique()) == 1
+
+        # Should alternate between two states
+        states = results['state_before_hex'].values
+        assert len(np.unique(states)) == 2
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--cov=src/eigen_core", "--cov-report=term-missing"])
