@@ -10,12 +10,15 @@ Demonstrates geometric control on planar 2-joint arm with:
 
 import numpy as np
 import pandas as pd
+from typing import Optional
 from .eigen_core import (
     forward_kinematics, compute_ds2, compute_gradient, compute_change_stability
 )
+from .config import ArmConfig
 
 
-def run_arm_simulation(theta_init=(-1.4, 1.2),
+def run_arm_simulation(config: Optional[ArmConfig] = None,
+                       theta_init=(-1.4, 1.2),
                        target=(1.2, 0.3),
                        obstacle_center=(0.6, 0.1),
                        obstacle_radius=0.25,
@@ -28,8 +31,9 @@ def run_arm_simulation(theta_init=(-1.4, 1.2),
                        L2=0.9):
     """
     Run complete arm control simulation
-    
+
     Args:
+        config: Optional ArmConfig instance. If provided, overrides other parameters.
         theta_init: Initial joint angles (θ₁, θ₂) in radians
         target: Goal position (x, y) in meters
         obstacle_center: Obstacle position (x, y)
@@ -40,10 +44,31 @@ def run_arm_simulation(theta_init=(-1.4, 1.2),
         lam: Regularization weight
         eps_change: Threshold for change detection
         L1, L2: Link lengths
-    
+
     Returns:
         DataFrame with complete trajectory data
+
+    Examples:
+        >>> # Using ArmConfig
+        >>> config = ArmConfig.from_yaml('configs/default.yaml')
+        >>> results = run_arm_simulation(config=config)
+
+        >>> # Using individual parameters (backward compatible)
+        >>> results = run_arm_simulation(eta=0.15, n_ticks=100)
     """
+    # If config provided, use its values
+    if config is not None:
+        theta_init = config.theta_init
+        target = config.target
+        obstacle_center = config.obstacle_center
+        obstacle_radius = config.obstacle_radius
+        n_ticks = config.n_ticks
+        eta = config.eta
+        Go = config.Go
+        lam = config.lam
+        eps_change = config.eps_change
+        L1 = config.L1
+        L2 = config.L2
     theta1, theta2 = theta_init
     target = np.array(target)
     obstacle_center = np.array(obstacle_center)
@@ -100,10 +125,17 @@ def run_arm_simulation(theta_init=(-1.4, 1.2),
 
 
 if __name__ == "__main__":
-    # Example usage
-    results = run_arm_simulation()
-    
+    # Example 1: Using ArmConfig from YAML
+    print("=== Using ArmConfig from YAML ===")
+    config = ArmConfig.from_yaml('configs/default.yaml')
+    results = run_arm_simulation(config=config)
+
     print(f"Initial ds²: {results['ds2_total'].iloc[0]:.4f}")
     print(f"Final ds²: {results['ds2_total'].iloc[-1]:.4f}")
     print(f"Gradient: {results['grad_norm'].iloc[0]:.2e} → {results['grad_norm'].iloc[-1]:.2e}")
     print(f"Min obstacle distance: {results['d_obs'].min():.4f}m")
+
+    # Example 2: Using individual parameters (backward compatible)
+    print("\n=== Using individual parameters ===")
+    results2 = run_arm_simulation(eta=0.15, n_ticks=100)
+    print(f"Final ds²: {results2['ds2_total'].iloc[-1]:.4f}")

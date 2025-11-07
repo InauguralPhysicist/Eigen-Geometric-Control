@@ -64,10 +64,14 @@ Eigen/
 ├── src/              # Core framework modules
 │   ├── eigen_core.py
 │   ├── eigen_arm_control.py
-│   └── eigen_xor_rotation.py
+│   ├── eigen_xor_rotation.py
+│   └── config.py
+├── tests/            # Comprehensive test suite (42 tests)
+├── configs/          # YAML configuration presets
 ├── scripts/          # Complete reproduction script
 ├── outputs/          # Generated data and figures
 ├── examples/         # Usage demos
+├── .github/          # CI/CD workflows
 └── docs/             # Technical documentation
 ```
 
@@ -143,6 +147,63 @@ print(f"Regularization: {components['reg_term']:.4f}")
 ```
 
 See `examples/` for more demos.
+
+## Configuration Management
+
+Use YAML configuration files for reproducible experiments:
+
+```python
+from src.config import ArmConfig
+from src import run_arm_simulation
+
+# Load configuration from YAML
+config = ArmConfig.from_yaml('configs/default.yaml')
+results = run_arm_simulation(config=config)
+
+# Or use fast convergence preset
+config = ArmConfig.from_yaml('configs/fast_convergence.yaml')
+results = run_arm_simulation(config=config)
+```
+
+Available configurations:
+- `configs/default.yaml` - Standard parameters (eta=0.12, n_ticks=140)
+- `configs/fast_convergence.yaml` - Faster convergence (eta=0.15, n_ticks=100)
+
+Create custom configurations:
+
+```python
+# Create and save custom config
+config = ArmConfig(
+    theta_init=(-1.0, 1.0),
+    eta=0.15,
+    n_ticks=100
+)
+config.to_yaml('configs/custom.yaml')
+```
+
+## Testing
+
+Run the complete test suite to validate all functionality:
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run with coverage report
+pytest tests/ --cov=src --cov-report=term-missing
+
+# Run specific test class
+pytest tests/test_eigen_core.py::TestForwardKinematics -v
+```
+
+Test suite includes:
+- **Unit tests** - Core functions (forward kinematics, Jacobian, ds², gradient)
+- **Error handling tests** - Input validation and edge cases
+- **Numerical accuracy tests** - Gradient verification, convergence behavior
+- **Physical constraints tests** - Workspace limits, continuous gradients
+- **Integration tests** - Full simulation workflows
+
+All 42 tests validate correctness and ensure code quality.
 
 ## Validation Results
 
@@ -283,6 +344,16 @@ pip install -r requirements.txt
 numpy>=1.20.0
 matplotlib>=3.3.0
 pandas>=1.2.0
+scipy>=1.6.0
+pyyaml>=5.4.0
+pytest>=7.0.0
+pytest-cov>=4.0.0
+```
+
+Run tests to verify installation:
+
+```bash
+pytest tests/ -v
 ```
 
 ## Usage Examples
