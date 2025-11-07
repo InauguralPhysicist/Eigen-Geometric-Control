@@ -148,7 +148,9 @@ See `examples/` for more demos.
 
 ### Robot Arm Control
 
-![Trajectory](figures/fig2_arm_trajectory.png)
+<!-- Main trajectory figure: see figures/supplementary/figS5_phase_space_arm.png for phase portrait -->
+
+**Demonstrated performance:**
 
 - Smooth path from start to target
 - Natural obstacle avoidance via metric geometry
@@ -156,7 +158,7 @@ See `examples/` for more demos.
 
 ### Convergence Analysis
 
-![Convergence](figures/figS1_gradient_log.png)
+![Convergence](figures/supplementary/figS1_gradient_log.png)
 
 - Exponential gradient decay (10⁶× decrease)
 - Monotonic error reduction
