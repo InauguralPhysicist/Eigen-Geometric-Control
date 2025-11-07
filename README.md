@@ -144,25 +144,54 @@ print(f"Regularization: {components['reg_term']:.4f}")
 
 See `examples/` for more demos.
 
-## Key Results
+## Validation Results
 
-### Robot Arm Control
+All results generated from real data using `scripts/generate_all_results.py`.
 
-<!-- Main trajectory figure: see figures/supplementary/figS5_phase_space_arm.png for phase portrait -->
+### Convergence Demonstration
 
-**Demonstrated performance:**
+**Exponential gradient collapse:**
 
-- Smooth path from start to target
-- Natural obstacle avoidance via metric geometry
-- No explicit path planning required
+![Gradient Decay](figures/supplementary/figS1_gradient_log.png)
 
-### Convergence Analysis
+*Gradient magnitude decreases by 10⁶× over 140 ticks, demonstrating exponential convergence to eigenstate (local minimum where ∇ds² = 0)*
 
-![Convergence](figures/supplementary/figS1_gradient_log.png)
+**Joint space convergence:**
 
-- Exponential gradient decay (10⁶× decrease)
-- Monotonic error reduction
-- Stable eigenstate reached
+<table>
+<tr>
+<td width="50%">
+
+![Joint 1](figures/supplementary/figS2_θ₁.png)
+*Shoulder angle (θ₁) converges smoothly*
+
+</td>
+<td width="50%">
+
+![Joint 2](figures/supplementary/figS2_θ₂.png)
+*Elbow angle (θ₂) converges smoothly*
+
+</td>
+</tr>
+</table>
+
+### Energy Decomposition
+
+![Energy Terms](figures/supplementary/figS3_energy_decomp.png)
+
+*All three objective components (target distance, obstacle repulsion, regularization) decrease together, with target term dominating final convergence*
+
+### Phase Space Trajectory
+
+![Phase Space](figures/supplementary/figS5_phase_space_arm.png)
+
+*Spiral convergence in joint space (θ₁ vs θ₂) from start (green) to eigenstate (red). Path demonstrates smooth, monotonic approach to minimum.*
+
+### XOR Rotation Validation
+
+![XOR Hamming](figures/supplementary/figS4_xor_hamming.png)
+
+*Discrete rotation maintains constant Hamming distance of 33 bits across all ticks - perfect period-2 oscillation with C=33, S=31, ds²=-128 (space-like regime)*
 
 ### Stability Metrics
 
@@ -170,9 +199,9 @@ The system self-measures convergence through geometric invariants:
 
 - **C**: Change count (components in motion)
 - **S**: Stability count (components at rest)
-- **ds²**: Metric invariant (S² - C²)
+- **ds²**: Metric invariant S² - C²
 
-Transitions from space-like (exploring) → light-like (boundary) → time-like (settled).
+Transitions: space-like (exploring) → light-like (boundary) → time-like (settled)
 
 ## Code Structure
 
