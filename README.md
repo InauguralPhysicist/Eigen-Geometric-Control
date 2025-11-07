@@ -15,6 +15,17 @@ Where ds² combines:
 - Obstacle repulsion
 - Configuration regularization
 
+## 📜 License
+
+**Dual Licensed for Maximum Flexibility:**
+
+- **🎓 MIT License** – FREE for research, education, and personal use
+- **💼 Commercial License** – REQUIRED for business/commercial use
+
+**Using this in a company or product?** Contact: mcreynolds.jon@gmail.com
+
+See [LICENSE](LICENSE) and [LICENSE-COMMERCIAL](LICENSE-COMMERCIAL) for details.
+
 ## Why This Works
 
 Traditional approach:
@@ -268,7 +279,29 @@ Paper in preparation.
 
 ## License
 
-MIT License - see LICENSE file for details.
+**Eigen Geometric Control is dual-licensed:**
+
+### For Research, Education, Personal Use
+**MIT License** (FREE) - See [LICENSE](LICENSE)
+- Use in academic research and publications
+- Educational and teaching purposes
+- Personal projects and experimentation
+- Open-source derivative works
+
+### For Commercial Use
+**Commercial License Required** - See [LICENSE-COMMERCIAL](LICENSE-COMMERCIAL)
+
+Commercial use includes:
+- Use in proprietary products or services
+- Integration into commercial software
+- Use within for-profit organizations
+- Providing paid services using this code
+
+**Contact for commercial licensing:**
+- Email: mcreynolds.jon@gmail.com
+- X/Twitter: @InauguralPhys
+
+Licenses are negotiated individually and may include perpetual licenses, annual subscriptions, or custom arrangements.
 
 ## Contributing
 
