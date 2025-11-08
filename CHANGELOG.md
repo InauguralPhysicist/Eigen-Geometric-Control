@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2025-11-08
 
+### Fixed
+- Added missing `pandas>=1.2.0` dependency to package configuration
+- Fixed mypy configuration for Python 3.9+ compatibility
+- Fixed package metadata for twine validation (constrained setuptools to <68)
+- Removed deprecated license classifiers to prevent build warnings
+
 ### Added
 - **Core Geometric Control Framework**
   - Minimal control framework where motion emerges from gradient descent
