@@ -8,27 +8,29 @@ Demonstrates geometric control on planar 2-joint arm with:
 - Smooth convergence
 """
 
+from typing import Optional
+
 import numpy as np
 import pandas as pd
-from typing import Optional
-from .eigen_core import (
-    forward_kinematics, compute_ds2, compute_gradient, compute_change_stability
-)
+
 from .config import ArmConfig
+from .eigen_core import compute_change_stability, compute_ds2, compute_gradient, forward_kinematics
 
 
-def run_arm_simulation(config: Optional[ArmConfig] = None,
-                       theta_init=(-1.4, 1.2),
-                       target=(1.2, 0.3),
-                       obstacle_center=(0.6, 0.1),
-                       obstacle_radius=0.25,
-                       n_ticks=140,
-                       eta=0.12,
-                       Go=4.0,
-                       lam=0.02,
-                       eps_change=1e-3,
-                       L1=0.9,
-                       L2=0.9):
+def run_arm_simulation(
+    config: Optional[ArmConfig] = None,
+    theta_init=(-1.4, 1.2),
+    target=(1.2, 0.3),
+    obstacle_center=(0.6, 0.1),
+    obstacle_radius=0.25,
+    n_ticks=140,
+    eta=0.12,
+    Go=4.0,
+    lam=0.02,
+    eps_change=1e-3,
+    L1=0.9,
+    L2=0.9,
+):
     """
     Run complete arm control simulation
 
@@ -72,62 +74,62 @@ def run_arm_simulation(config: Optional[ArmConfig] = None,
     theta1, theta2 = theta_init
     target = np.array(target)
     obstacle_center = np.array(obstacle_center)
-    
+
     rows = []
-    
+
     for t in range(n_ticks):
         # Compute current state
         x, y = forward_kinematics(theta1, theta2, L1, L2)
-        
+
         ds2_total, components = compute_ds2(
-            theta1, theta2, target, obstacle_center, obstacle_radius,
-            Go, lam, L1, L2
+            theta1, theta2, target, obstacle_center, obstacle_radius, Go, lam, L1, L2
         )
-        
+
         grad, grad_norm = compute_gradient(
-            theta1, theta2, target, obstacle_center, obstacle_radius,
-            Go, lam, L1, L2
+            theta1, theta2, target, obstacle_center, obstacle_radius, Go, lam, L1, L2
         )
-        
+
         # Update configuration: Q_{t+1} = Q_t - η∇ds²
         delta = -eta * grad
         theta1_new = theta1 + delta[0]
         theta2_new = theta2 + delta[1]
-        
+
         # Compute change/stability metrics
         C, S, ds2_CS = compute_change_stability(delta, eps_change)
-        
+
         # Record state
-        rows.append({
-            'tick': t,
-            'theta1_rad': theta1,
-            'theta2_rad': theta2,
-            'x': x,
-            'y': y,
-            'ds2_total': ds2_total,
-            'target_term': components['target_term'],
-            'obs_term': components['obs_term'],
-            'reg_term': components['reg_term'],
-            'grad_norm': grad_norm,
-            'C': C,
-            'S': S,
-            'ds2_CS': ds2_CS,
-            'd_obs': components['d_obs'],
-            'delta_theta1': delta[0],
-            'delta_theta2': delta[1],
-            'delta_theta_sq': float(np.sum(delta**2))
-        })
-        
+        rows.append(
+            {
+                "tick": t,
+                "theta1_rad": theta1,
+                "theta2_rad": theta2,
+                "x": x,
+                "y": y,
+                "ds2_total": ds2_total,
+                "target_term": components["target_term"],
+                "obs_term": components["obs_term"],
+                "reg_term": components["reg_term"],
+                "grad_norm": grad_norm,
+                "C": C,
+                "S": S,
+                "ds2_CS": ds2_CS,
+                "d_obs": components["d_obs"],
+                "delta_theta1": delta[0],
+                "delta_theta2": delta[1],
+                "delta_theta_sq": float(np.sum(delta**2)),
+            }
+        )
+
         # Update for next iteration
         theta1, theta2 = theta1_new, theta2_new
-    
+
     return pd.DataFrame(rows)
 
 
 if __name__ == "__main__":
     # Example 1: Using ArmConfig from YAML
     print("=== Using ArmConfig from YAML ===")
-    config = ArmConfig.from_yaml('configs/default.yaml')
+    config = ArmConfig.from_yaml("configs/default.yaml")
     results = run_arm_simulation(config=config)
 
     print(f"Initial ds²: {results['ds2_total'].iloc[0]:.4f}")
