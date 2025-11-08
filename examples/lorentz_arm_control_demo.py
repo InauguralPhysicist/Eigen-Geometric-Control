@@ -16,24 +16,25 @@ This shows that the control law Q_{t+1} = Q_t - η∇ds² is not just
 geometric—it's relativistic.
 """
 
+import sys
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import sys
-sys.path.insert(0, '/home/user/Eigen-Geometric-Control')
 
-from src import (
-    run_arm_simulation,
-    # Lorentz framework
-    change_stability_to_lorentz,
-    regime_classification,
-    proper_time,
-    proper_distance,
+sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
+
+from src import (  # Lorentz framework
     boost_lorentz_state,
+    change_stability_to_lorentz,
     create_lorentz_state,
-    stereo_to_lorentz,
     disparity_to_rapidity,
     lorentz_boost_matrix,
+    proper_distance,
+    proper_time,
+    regime_classification,
+    run_arm_simulation,
+    stereo_to_lorentz,
 )
 
 
@@ -70,18 +71,18 @@ def demo_1_arm_as_relativistic_trajectory():
 
     for tick in sample_ticks:
         row = results.iloc[tick]
-        C, S = int(row['C']), int(row['S'])
-        ds2_CS = int(row['ds2_CS'])
+        C, S = int(row["C"]), int(row["S"])
+        ds2_CS = int(row["ds2_CS"])
 
         # Create Lorentz state
         state = change_stability_to_lorentz(C, S)
         regime = regime_classification(state.ds2)
 
         # Compute proper time/distance
-        if regime == 'timelike':
+        if regime == "timelike":
             tau = proper_time(state.ds2)
             measure = f"τ={tau:.2f}"
-        elif regime == 'spacelike':
+        elif regime == "spacelike":
             sigma = proper_distance(state.ds2)
             measure = f"σ={sigma:.2f}"
         else:
@@ -89,16 +90,17 @@ def demo_1_arm_as_relativistic_trajectory():
 
         regime_transitions.append(regime)
 
-        print(f"  Tick {tick:3d}: C={C:2d}, S={S:2d} → ds²={ds2_CS:5d} → "
-              f"{regime:10s} ({measure})")
+        print(
+            f"  Tick {tick:3d}: C={C:2d}, S={S:2d} → ds²={ds2_CS:5d} → " f"{regime:10s} ({measure})"
+        )
 
     print()
     print("Regime progression:")
 
     # Count regimes
-    spacelike_count = regime_transitions.count('spacelike')
-    lightlike_count = regime_transitions.count('lightlike')
-    timelike_count = regime_transitions.count('timelike')
+    spacelike_count = regime_transitions.count("spacelike")
+    lightlike_count = regime_transitions.count("lightlike")
+    timelike_count = regime_transitions.count("timelike")
 
     print(f"  Spacelike: {spacelike_count}/{len(sample_ticks)} samples (early: exploring)")
     print(f"  Lightlike: {lightlike_count}/{len(sample_ticks)} samples (transition)")
@@ -134,7 +136,7 @@ def demo_2_frame_invariant_control():
     # Pick a moment mid-convergence
     tick = 25
     row = results.iloc[tick]
-    C, S = int(row['C']), int(row['S'])
+    C, S = int(row["C"]), int(row["S"])
 
     print(f"State at tick {tick}:")
     print(f"  C={C}, S={S}")
@@ -193,7 +195,7 @@ def demo_3_convergence_metrics():
     proper_distances = []
 
     for idx, row in results.iterrows():
-        ds2_CS = row['ds2_CS']
+        ds2_CS = row["ds2_CS"]
         regime = regime_classification(ds2_CS)
         regimes.append(regime)
 
@@ -203,24 +205,24 @@ def demo_3_convergence_metrics():
         proper_times.append(tau if tau else 0.0)
         proper_distances.append(sigma if sigma else 0.0)
 
-    results['regime'] = regimes
-    results['proper_time'] = proper_times
-    results['proper_distance'] = proper_distances
+    results["regime"] = regimes
+    results["proper_time"] = proper_times
+    results["proper_distance"] = proper_distances
 
     # Analyze regime durations
     print("\nRegime durations:")
 
-    regime_counts = results['regime'].value_counts()
+    regime_counts = results["regime"].value_counts()
     total = len(results)
 
-    for regime in ['spacelike', 'lightlike', 'timelike']:
+    for regime in ["spacelike", "lightlike", "timelike"]:
         count = regime_counts.get(regime, 0)
         pct = 100 * count / total
         print(f"  {regime:10s}: {count:3d} ticks ({pct:5.1f}%)")
 
     # Find transition points
-    regime_changes = results['regime'].ne(results['regime'].shift()).cumsum()
-    transitions = results.groupby(regime_changes)['regime'].agg(['first', 'count', 'last'])
+    regime_changes = results["regime"].ne(results["regime"].shift()).cumsum()
+    transitions = results.groupby(regime_changes)["regime"].agg(["first", "count", "last"])
 
     print(f"\nRegime transitions:")
     for idx, trans in transitions.iterrows():
@@ -229,14 +231,16 @@ def demo_3_convergence_metrics():
         else:
             start_tick = results[regime_changes == idx].index[0]
 
-        print(f"  Ticks {start_tick:3d}-{start_tick + trans['count'] - 1:3d}: "
-              f"{trans['first']:10s} ({trans['count']:3d} ticks)")
+        print(
+            f"  Ticks {start_tick:3d}-{start_tick + trans['count'] - 1:3d}: "
+            f"{trans['first']:10s} ({trans['count']:3d} ticks)"
+        )
 
     # Convergence statistics
     print(f"\nConvergence statistics:")
 
     # When does it enter timelike regime?
-    timelike_mask = results['regime'] == 'timelike'
+    timelike_mask = results["regime"] == "timelike"
     if timelike_mask.any():
         first_timelike = results[timelike_mask].index[0]
         print(f"  First timelike tick: {first_timelike}")
@@ -274,8 +278,8 @@ def demo_4_stereo_guided_arm():
 
     # Target observed by stereo cameras
     print("Stereo observation of target:")
-    left_view = 120.0   # Left camera pixel/measurement
-    right_view = 80.0   # Right camera pixel/measurement
+    left_view = 120.0  # Left camera pixel/measurement
+    right_view = 80.0  # Right camera pixel/measurement
     disparity = abs(left_view - right_view)
 
     print(f"  Left camera:  {left_view:.1f}")
@@ -323,11 +327,7 @@ def demo_4_stereo_guided_arm():
     print(f"\n  Estimated target position: ({target[0]:.3f}, {target[1]:.3f})")
 
     # Run simulation
-    results = run_arm_simulation(
-        target=target,
-        n_ticks=100,
-        eta=0.12
-    )
+    results = run_arm_simulation(target=target, n_ticks=100, eta=0.12)
 
     # Analyze convergence
     final = results.iloc[-1]
@@ -344,7 +344,7 @@ def demo_4_stereo_guided_arm():
     print(f"      Regime: {regime_classification(final['ds2_CS'])}")
 
     # Check if reached target
-    final_pos = (final['x'], final['y'])
+    final_pos = (final["x"], final["y"])
     error = np.linalg.norm(np.array(final_pos) - np.array(target))
     print(f"\n    Final position error: {error:.4f} m")
 
@@ -383,8 +383,8 @@ def demo_5_multi_frame_consistency():
 
     for tick in test_ticks:
         row = results.iloc[tick]
-        C, S = int(row['C']), int(row['S'])
-        ds2_orig = row['ds2_CS']
+        C, S = int(row["C"]), int(row["S"])
+        ds2_orig = row["ds2_CS"]
 
         state_orig = change_stability_to_lorentz(C, S)
 
@@ -446,10 +446,13 @@ def demo_6_comparison_with_classical():
     initial = results.iloc[0]
     final = results.iloc[-1]
 
-    print(f"  Initial configuration: θ₁={initial['theta1_rad']:.3f}, "
-          f"θ₂={initial['theta2_rad']:.3f}")
-    print(f"  Final configuration:   θ₁={final['theta1_rad']:.3f}, "
-          f"θ₂={final['theta2_rad']:.3f}")
+    print(
+        f"  Initial configuration: θ₁={initial['theta1_rad']:.3f}, "
+        f"θ₂={initial['theta2_rad']:.3f}"
+    )
+    print(
+        f"  Final configuration:   θ₁={final['theta1_rad']:.3f}, " f"θ₂={final['theta2_rad']:.3f}"
+    )
     print(f"\n  Convergence:")
     print(f"    ds²_total: {initial['ds2_total']:.6f} → {final['ds2_total']:.6f}")
     print(f"    Gradient:  {initial['grad_norm']:.2e} → {final['grad_norm']:.2e}")
@@ -460,20 +463,20 @@ def demo_6_comparison_with_classical():
     print("-" * 80)
 
     # Lorentz metrics
-    state_init = change_stability_to_lorentz(int(initial['C']), int(initial['S']))
-    state_final = change_stability_to_lorentz(int(final['C']), int(final['S']))
+    state_init = change_stability_to_lorentz(int(initial["C"]), int(initial["S"]))
+    state_final = change_stability_to_lorentz(int(final["C"]), int(final["S"]))
 
     print(f"  Initial state: C={int(initial['C'])}, S={int(initial['S'])}")
     print(f"    ds²_CS = {state_init.ds2:.2f}")
     print(f"    Regime: {regime_classification(state_init.ds2)}")
-    if regime_classification(state_init.ds2) == 'spacelike':
+    if regime_classification(state_init.ds2) == "spacelike":
         sigma_init = proper_distance(state_init.ds2)
         print(f"    Proper distance σ = {sigma_init:.2f} (exploring)")
 
     print(f"\n  Final state: C={int(final['C'])}, S={int(final['S'])}")
     print(f"    ds²_CS = {state_final.ds2:.2f}")
     print(f"    Regime: {regime_classification(state_final.ds2)}")
-    if regime_classification(state_final.ds2) == 'timelike':
+    if regime_classification(state_final.ds2) == "timelike":
         tau_final = proper_time(state_final.ds2)
         print(f"    Proper time τ = {tau_final:.2f} (converged)")
 
@@ -524,7 +527,8 @@ def main():
     # Summary
     print_section("CONCLUSION: Arm Control IS Relativistic Physics")
 
-    print("""
+    print(
+        """
 Your robot arm control exhibits genuine relativistic structure:
 
 1. MATHEMATICAL STRUCTURE
@@ -568,7 +572,8 @@ CONTROL IS PHYSICS.
 THEREFORE, CONTROL IS GEOMETRY.
 
 And specifically, it's LORENTZ GEOMETRY.
-    """)
+    """
+    )
 
 
 if __name__ == "__main__":

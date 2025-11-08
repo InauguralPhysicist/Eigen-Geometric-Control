@@ -20,7 +20,10 @@ exclude =
     .pytest_cache,
     .mypy_cache,
     htmlcov,
-    *.egg-info
+    *.egg-info,
+    examples/,
+    scripts/,
+    setup.py
 
 # Error codes to ignore
 # E203: Whitespace before ':' (conflicts with Black)
@@ -29,6 +32,12 @@ exclude =
 # W503: Line break before binary operator (conflicts with Black)
 # W504: Line break after binary operator
 ignore = E203, E266, E501, W503, W504
+
+# Per-file ignores (allows different rules for specific files)
+# E402: Module level import not at top of file
+#       Tests need sys.path.insert before imports - this is standard pattern
+per-file-ignores =
+    tests/*.py:E402
 
 # Maximum complexity (number of paths through code)
 # Lower is simpler. 10 is a good default.

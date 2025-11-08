@@ -4,9 +4,10 @@ Configuration management for Eigen framework
 Provides dataclass-based and YAML-based configuration for experiments.
 """
 
-from dataclasses import dataclass, asdict
-from typing import Tuple, Optional
+from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Tuple
+
 import yaml
 
 
@@ -40,7 +41,7 @@ class ArmConfig:
     eps_change: float = 1e-3
 
     @classmethod
-    def from_yaml(cls, path: str) -> 'ArmConfig':
+    def from_yaml(cls, path: str) -> "ArmConfig":
         """
         Load configuration from YAML file
 
@@ -64,16 +65,16 @@ class ArmConfig:
         if not path.exists():
             raise FileNotFoundError(f"Config file not found: {path}")
 
-        with open(path, 'r') as f:
+        with open(path, "r") as f:
             data = yaml.safe_load(f)
 
         # Convert lists to tuples for tuple fields
-        if 'theta_init' in data:
-            data['theta_init'] = tuple(data['theta_init'])
-        if 'target' in data:
-            data['target'] = tuple(data['target'])
-        if 'obstacle_center' in data:
-            data['obstacle_center'] = tuple(data['obstacle_center'])
+        if "theta_init" in data:
+            data["theta_init"] = tuple(data["theta_init"])
+        if "target" in data:
+            data["target"] = tuple(data["target"])
+        if "obstacle_center" in data:
+            data["obstacle_center"] = tuple(data["obstacle_center"])
 
         return cls(**data)
 
@@ -94,7 +95,7 @@ class ArmConfig:
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(path, 'w') as f:
+        with open(path, "w") as f:
             yaml.dump(asdict(self), f, default_flow_style=False)
 
     def __repr__(self) -> str:
@@ -117,10 +118,10 @@ if __name__ == "__main__":
     print(config)
 
     # Save to file
-    config.to_yaml('configs/default.yaml')
+    config.to_yaml("configs/default.yaml")
     print("\nSaved to configs/default.yaml")
 
     # Load from file
-    loaded = ArmConfig.from_yaml('configs/default.yaml')
+    loaded = ArmConfig.from_yaml("configs/default.yaml")
     print("\nLoaded configuration:")
     print(loaded)
