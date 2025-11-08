@@ -6,7 +6,7 @@
 # ============================================================================
 # Tells pip how to build your package
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0,<68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 # ============================================================================
@@ -18,7 +18,6 @@ version = "1.0.0"
 description = "Minimal geometric robot control framework using gradient descent"
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = "MIT"}
 authors = [
     {name = "Jonathan McReynolds", email = "mcreynolds.jon@gmail.com"}
 ]
@@ -27,7 +26,6 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -40,6 +38,7 @@ classifiers = [
 dependencies = [
     "numpy>=1.20.0",
     "matplotlib>=3.3.0",
+    "pandas>=1.2.0",
     "scipy>=1.6.0",
     "pyyaml>=5.4.0",
 ]
@@ -164,7 +163,7 @@ directory = "htmlcov"
 # Checks type hints for correctness
 # Run: mypy src/
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false  # Set to true when you have type hints everywhere
