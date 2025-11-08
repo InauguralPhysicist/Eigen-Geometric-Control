@@ -1,0 +1,31 @@
+# MANIFEST.in - Specifies which non-code files to include in your package
+# When you distribute your package, this ensures documentation and licenses are included
+
+# Include documentation
+include README.md
+include CHANGELOG.md
+include CONTRIBUTING.md
+
+# Include licenses
+include LICENSE
+include LICENSE-COMMERCIAL
+
+# Include configuration files
+include pyproject.toml
+include setup.py
+include requirements.txt
+
+# Exclude unnecessary files from distribution
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude __pycache__
+global-exclude .DS_Store
+global-exclude *.so
+global-exclude .coverage
+global-exclude .pytest_cache
+
+# Exclude development and test files
+prune tests
+prune docs
+prune examples
+prune .github

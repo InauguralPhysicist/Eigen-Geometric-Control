@@ -1,0 +1,88 @@
+# .pre-commit-config.yaml - Automatic code quality checks before commits
+# This runs automatically when you commit, catching errors BEFORE they enter the codebase
+#
+# Installation:
+#   pip install pre-commit
+#   pre-commit install
+#
+# Usage:
+#   Runs automatically on `git commit`
+#   Run manually: pre-commit run --all-files
+#
+# Learn more: https://pre-commit.com
+
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace       # Remove trailing whitespace
+      - id: end-of-file-fixer         # Ensure files end with newline
+      - id: check-yaml                # Validate YAML files
+      - id: check-added-large-files   # Prevent large files (>500KB)
+        args: ['--maxkb=500']
+      - id: check-json                # Validate JSON files
+      - id: check-toml                # Validate TOML files
+      - id: check-merge-conflict      # Check for merge conflict markers
+      - id: check-case-conflict       # Check for case conflicts in filenames
+      - id: debug-statements          # Check for debugger imports (pdb, etc.)
+      - id: mixed-line-ending         # Ensure consistent line endings
+        args: ['--fix=lf']
+
+  # Black - Code formatter (runs automatically!)
+  - repo: https://github.com/psf/black
+    rev: 24.1.1
+    hooks:
+      - id: black
+        language_version: python3
+        args: ['--line-length=100']
+
+  # isort - Import sorter
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ['--profile=black', '--line-length=100']
+
+  # flake8 - Linter
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        args: ['--max-line-length=100', '--extend-ignore=E203,E501,W503']
+        additional_dependencies: [flake8-docstrings]
+
+  # mypy - Type checker
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-PyYAML]
+        args: ['--ignore-missing-imports', '--check-untyped-defs']
+
+  # Security check - bandit
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
+    hooks:
+      - id: bandit
+        args: ['-c', 'pyproject.toml']
+        additional_dependencies: ['bandit[toml]']
+
+# Default settings
+default_language_version:
+  python: python3.8
+
+# Speed optimization
+default_stages: [commit]
+
+# Skip these files
+exclude: |
+  (?x)^(
+      \.git/|
+      \.venv/|
+      venv/|
+      build/|
+      dist/|
+      .*\.egg-info/|
+      __pycache__/
+  )$
