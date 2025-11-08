@@ -32,6 +32,8 @@ setup(
     description="Minimal geometric robot control framework using gradient descent",
     long_description=long_description,
     long_description_content_type="text/markdown",
+    # License
+    license="MIT",
     # URLs
     url="https://github.com/InauguralPhysicist/Eigen-Geometric-Control",
     project_urls={
@@ -48,6 +50,7 @@ setup(
     install_requires=[
         "numpy>=1.20.0",
         "matplotlib>=3.3.0",
+        "pandas>=1.2.0",
         "scipy>=1.6.0",
         "pyyaml>=5.4.0",
     ],
@@ -78,9 +81,6 @@ setup(
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "Topic :: Scientific/Engineering :: Mathematics",
         "Topic :: Software Development :: Libraries :: Python Modules",
-        # License
-        "License :: OSI Approved :: MIT License",
-        "License :: Other/Proprietary License",
         # Python versions
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
