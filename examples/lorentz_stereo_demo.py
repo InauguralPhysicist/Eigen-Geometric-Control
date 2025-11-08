@@ -18,22 +18,24 @@ This demonstrates that the same geometric structure underlies
 both vision and control.
 """
 
-import numpy as np
 import sys
-sys.path.insert(0, '/home/user/Eigen-Geometric-Control')
+
+import numpy as np
+
+sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
 
 from src.eigen_lorentz import (
-    create_lorentz_state,
-    boost_lorentz_state,
-    stereo_to_lorentz,
-    lorentz_to_stereo,
-    change_stability_to_lorentz,
-    disparity_to_rapidity,
-    regime_classification,
-    proper_time,
-    proper_distance,
     apply_boost,
+    boost_lorentz_state,
+    change_stability_to_lorentz,
+    create_lorentz_state,
+    disparity_to_rapidity,
     lorentz_boost_matrix,
+    lorentz_to_stereo,
+    proper_distance,
+    proper_time,
+    regime_classification,
+    stereo_to_lorentz,
 )
 
 
@@ -123,16 +125,13 @@ def demo_2_boost_preserves_depth():
         boosted = boost_lorentz_state(state, beta)
 
         # Reconstruct stereo views in boosted frame
-        left_boost, right_boost = lorentz_to_stereo(
-            boosted.timelike, boosted.spacelike
-        )
+        left_boost, right_boost = lorentz_to_stereo(boosted.timelike, boosted.spacelike)
 
         print(f"\n  β = {beta} (velocity = {beta*100:.0f}% of max):")
         print(f"    Left':  {left_boost:.2f}, Right': {right_boost:.2f}")
         print(f"    Disparity': {abs(left_boost - right_boost):.2f}")
         print(f"    ds'² = {boosted.ds2:.2f}")
-        print(f"    Invariant preserved: "
-              f"{np.isclose(ds2_orig, boosted.ds2)}")
+        print(f"    Invariant preserved: " f"{np.isclose(ds2_orig, boosted.ds2)}")
 
     print("\n  KEY INSIGHT:")
     print("  Depth information (ds²) is frame-invariant!")
@@ -261,8 +260,7 @@ def demo_5_disparity_to_rapidity():
         else:
             depth_desc = "Very near"
 
-        print(f"  d={d:2.0f} → θ={theta:5.3f} → β={beta:.2f}  "
-              f"({depth_desc})")
+        print(f"  d={d:2.0f} → θ={theta:5.3f} → β={beta:.2f}  " f"({depth_desc})")
 
     print("\n  Interpretation:")
     print("  - Small disparity (far) → small rapidity → minimal boost")
@@ -350,10 +348,10 @@ def demo_7_numerical_validation():
     # Test 1: Invariance under boost
     print("1. Invariance preservation:")
     state = np.array([10.0, 6.0])
-    ds2_orig = state[0]**2 - state[1]**2
+    ds2_orig = state[0] ** 2 - state[1] ** 2
 
     boosted = apply_boost(state, 0.8)
-    ds2_boost = boosted[0]**2 - boosted[1]**2
+    ds2_boost = boosted[0] ** 2 - boosted[1] ** 2
 
     print(f"   Original: ds² = {ds2_orig:.6f}")
     print(f"   Boosted:  ds² = {ds2_boost:.6f}")
@@ -422,7 +420,8 @@ def main():
     # Final summary
     print_section("CONCLUSION: LORENTZ STRUCTURE UNIFIES EVERYTHING")
 
-    print("""
+    print(
+        """
 The Lorentz boost framework reveals deep unity:
 
 1. MATHEMATICAL STRUCTURE
@@ -463,7 +462,8 @@ The same geometric structure governs:
 - Quantum mechanics (Future work?)
 
 Geometry is universal.
-    """)
+    """
+    )
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@
 
 ---
 
-**License Agreement Number:** [Agreement-YYYY-MM-DD-###]  
+**License Agreement Number:** [Agreement-YYYY-MM-DD-###]
 **Effective Date:** [Date]
 
 ---
@@ -29,8 +29,8 @@
 
 Subject to the terms and conditions of this Agreement, Licensor grants Licensee a:
 
-**[ ] Perpetual License** – One-time fee, unlimited duration  
-**[ ] Annual License** – Renewable yearly subscription  
+**[ ] Perpetual License** – One-time fee, unlimited duration
+**[ ] Annual License** – Renewable yearly subscription
 **[ ] Project-Specific License** – Limited to specified project
 
 To use the Eigen Geometric Control Framework ("Software") for commercial purposes.
@@ -47,7 +47,7 @@ Licensee may use the Software for:
 - **[ ]** Distribution within commercial applications
 - **[ ]** Other: _______________________
 
-**Number of Developers/Seats:** [Number] (if applicable)  
+**Number of Developers/Seats:** [Number] (if applicable)
 **Deployment Scope:** [e.g., unlimited servers, single product, specific project]
 
 ---
@@ -169,16 +169,16 @@ This Agreement constitutes the entire understanding between the parties and supe
 
 **LICENSOR:**
 
-Signature: ___________________________  
-Name: Jon McReynolds  
+Signature: ___________________________
+Name: Jon McReynolds
 Date: _______________
 
 **LICENSEE:**
 
-Signature: ___________________________  
-Name: _______________  
-Title: _______________  
-Company: _______________  
+Signature: ___________________________
+Name: _______________
+Title: _______________
+Company: _______________
 Date: _______________
 
 ---
@@ -219,4 +219,3 @@ Date: _______________
 - **Mid-size (50-500 employees):** $10,000 - $50,000 perpetual or $2,000-$10,000/year
 - **Enterprise (500+ employees):** $50,000+ perpetual or $10,000+/year
 - **Revenue share:** 2-5% of product revenue (for products built primarily on this framework)
-

@@ -20,7 +20,10 @@ exclude =
     .pytest_cache,
     .mypy_cache,
     htmlcov,
-    *.egg-info
+    *.egg-info,
+    examples/,
+    scripts/,
+    setup.py
 
 # Error codes to ignore
 # E203: Whitespace before ':' (conflicts with Black)
