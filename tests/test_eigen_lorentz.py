@@ -10,26 +10,27 @@ Validates:
 5. Regime classification (spacelike/timelike/lightlike)
 """
 
-import pytest
 import numpy as np
+import pytest
+
 from src.eigen_lorentz import (
-    lorentz_boost_matrix,
-    lorentz_boost_from_rapidity,
-    apply_boost,
-    create_lorentz_state,
-    boost_lorentz_state,
-    stereo_to_lorentz,
-    lorentz_to_stereo,
-    change_stability_to_lorentz,
-    disparity_to_rapidity,
-    verify_lorentz_invariance,
-    regime_classification,
-    proper_time,
-    proper_distance,
-    rapidity_from_beta,
-    beta_from_rapidity,
-    lorentz_factor,
     LorentzState,
+    apply_boost,
+    beta_from_rapidity,
+    boost_lorentz_state,
+    change_stability_to_lorentz,
+    create_lorentz_state,
+    disparity_to_rapidity,
+    lorentz_boost_from_rapidity,
+    lorentz_boost_matrix,
+    lorentz_factor,
+    lorentz_to_stereo,
+    proper_distance,
+    proper_time,
+    rapidity_from_beta,
+    regime_classification,
+    stereo_to_lorentz,
+    verify_lorentz_invariance,
 )
 
 
@@ -163,14 +164,14 @@ class TestInvariancePreservation:
     def test_invariance_multiple_boosts(self):
         """ds² preserved through multiple boosts"""
         state = np.array([7.0, 2.0])
-        ds2_original = state[0]**2 - state[1]**2
+        ds2_original = state[0] ** 2 - state[1] ** 2
 
         # Apply three successive boosts
         state = apply_boost(state, 0.3)
         state = apply_boost(state, 0.4)
         state = apply_boost(state, 0.2)
 
-        ds2_final = state[0]**2 - state[1]**2
+        ds2_final = state[0] ** 2 - state[1] ** 2
 
         assert np.isclose(ds2_original, ds2_final)
 
@@ -270,28 +271,28 @@ class TestChangeStabilityMapping:
 
         assert state.spacelike == float(C)
         assert state.timelike == float(S)
-        assert state.ds2 == float(S*S - C*C)
+        assert state.ds2 == float(S * S - C * C)
 
     def test_cs_regime_classification(self):
         """C > S → spacelike, C < S → timelike"""
         # Spacelike (change dominates)
         state_space = change_stability_to_lorentz(C=10, S=3)
-        assert regime_classification(state_space.ds2) == 'spacelike'
+        assert regime_classification(state_space.ds2) == "spacelike"
 
         # Timelike (stability dominates)
         state_time = change_stability_to_lorentz(C=3, S=10)
-        assert regime_classification(state_time.ds2) == 'timelike'
+        assert regime_classification(state_time.ds2) == "timelike"
 
         # Lightlike (boundary)
         state_light = change_stability_to_lorentz(C=7, S=7)
-        assert regime_classification(state_light.ds2) == 'lightlike'
+        assert regime_classification(state_light.ds2) == "lightlike"
 
     def test_xor_rotation_maps_to_spacelike(self):
         """XOR rotation (C=33, S=31) → spacelike regime"""
         # From eigen_xor_rotation.py: constant C=33, S=31
         state = change_stability_to_lorentz(C=33, S=31)
 
-        assert regime_classification(state.ds2) == 'spacelike'
+        assert regime_classification(state.ds2) == "spacelike"
         assert state.ds2 == -128  # S² - C² = 961 - 1089 = -128
 
 
@@ -315,10 +316,7 @@ class TestDisparityToRapidity:
 
     def test_monotonic_increase(self):
         """Rapidity increases monotonically with disparity"""
-        rapidities = [
-            disparity_to_rapidity(d, 100)
-            for d in [10, 30, 50, 70, 90]
-        ]
+        rapidities = [disparity_to_rapidity(d, 100) for d in [10, 30, 50, 70, 90]]
         assert all(r1 < r2 for r1, r2 in zip(rapidities[:-1], rapidities[1:]))
 
     def test_max_disparity_rejection(self):
@@ -335,29 +333,29 @@ class TestRegimeClassification:
 
     def test_spacelike_regime(self):
         """ds² < 0 → spacelike (exploring, motion)"""
-        assert regime_classification(-10.0) == 'spacelike'
-        assert regime_classification(-0.01) == 'spacelike'
+        assert regime_classification(-10.0) == "spacelike"
+        assert regime_classification(-0.01) == "spacelike"
 
     def test_timelike_regime(self):
         """ds² > 0 → timelike (settled, stable)"""
-        assert regime_classification(10.0) == 'timelike'
-        assert regime_classification(0.01) == 'timelike'
+        assert regime_classification(10.0) == "timelike"
+        assert regime_classification(0.01) == "timelike"
 
     def test_lightlike_boundary(self):
         """ds² ≈ 0 → lightlike (transition)"""
-        assert regime_classification(0.0) == 'lightlike'
-        assert regime_classification(1e-12) == 'lightlike'
+        assert regime_classification(0.0) == "lightlike"
+        assert regime_classification(1e-12) == "lightlike"
 
     def test_convergence_trajectory(self):
         """Robot arm convergence: spacelike → lightlike → timelike"""
         # Early (exploring)
-        assert regime_classification(-50.0) == 'spacelike'
+        assert regime_classification(-50.0) == "spacelike"
 
         # Transition
-        assert regime_classification(0.0) == 'lightlike'
+        assert regime_classification(0.0) == "lightlike"
 
         # Converged (settled)
-        assert regime_classification(50.0) == 'timelike'
+        assert regime_classification(50.0) == "timelike"
 
 
 class TestProperTimeDistance:
@@ -473,22 +471,20 @@ class TestIntegrationWithEigenCore:
 
     def test_arm_convergence_trajectory(self):
         """Simulate arm convergence: C→0, S→max → timelike"""
-        n_components = 64
-
         # Early: high change (exploring)
         C_early, S_early = 40, 24
         state_early = change_stability_to_lorentz(C_early, S_early)
-        assert regime_classification(state_early.ds2) == 'spacelike'
+        assert regime_classification(state_early.ds2) == "spacelike"
 
         # Mid: balanced
         C_mid, S_mid = 32, 32
         state_mid = change_stability_to_lorentz(C_mid, S_mid)
-        assert regime_classification(state_mid.ds2) == 'lightlike'
+        assert regime_classification(state_mid.ds2) == "lightlike"
 
         # Late: low change (converged)
         C_late, S_late = 5, 59
         state_late = change_stability_to_lorentz(C_late, S_late)
-        assert regime_classification(state_late.ds2) == 'timelike'
+        assert regime_classification(state_late.ds2) == "timelike"
 
     def test_xor_stays_spacelike(self):
         """XOR rotation maintains constant spacelike regime"""
@@ -497,12 +493,12 @@ class TestIntegrationWithEigenCore:
 
         state = change_stability_to_lorentz(C, S)
 
-        assert regime_classification(state.ds2) == 'spacelike'
+        assert regime_classification(state.ds2) == "spacelike"
         assert state.ds2 == -128
 
         # After boost, should remain spacelike
         boosted = boost_lorentz_state(state, beta=0.5)
-        assert regime_classification(boosted.ds2) == 'spacelike'
+        assert regime_classification(boosted.ds2) == "spacelike"
         assert boosted.ds2 == -128  # Invariant!
 
 

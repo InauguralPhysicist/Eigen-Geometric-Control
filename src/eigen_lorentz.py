@@ -17,9 +17,10 @@ Mathematical foundation:
     Invariant: ds² = t² - x² (preserved under boosts)
 """
 
-import numpy as np
-from typing import Tuple, Optional
 from dataclasses import dataclass
+from typing import Optional, Tuple
+
+import numpy as np
 
 
 @dataclass
@@ -36,6 +37,7 @@ class LorentzState:
     ds2 : float
         Invariant interval: timelike² - spacelike²
     """
+
     timelike: float
     spacelike: float
     ds2: float
@@ -45,8 +47,7 @@ class LorentzState:
         computed_ds2 = self.timelike**2 - self.spacelike**2
         if not np.isclose(self.ds2, computed_ds2, rtol=1e-10):
             raise ValueError(
-                f"Invariant violation: ds²={self.ds2:.6f} "
-                f"but t²-x²={computed_ds2:.6f}"
+                f"Invariant violation: ds²={self.ds2:.6f} " f"but t²-x²={computed_ds2:.6f}"
             )
 
 
@@ -149,10 +150,7 @@ def lorentz_boost_matrix(beta: float) -> np.ndarray:
     gamma = lorentz_factor(beta)
     beta_gamma = beta * gamma
 
-    return np.array([
-        [gamma, -beta_gamma],
-        [-beta_gamma, gamma]
-    ])
+    return np.array([[gamma, -beta_gamma], [-beta_gamma, gamma]])
 
 
 def lorentz_boost_from_rapidity(theta: float) -> np.ndarray:
@@ -174,10 +172,7 @@ def lorentz_boost_from_rapidity(theta: float) -> np.ndarray:
     cosh_theta = np.cosh(theta)
     sinh_theta = np.sinh(theta)
 
-    return np.array([
-        [cosh_theta, -sinh_theta],
-        [-sinh_theta, cosh_theta]
-    ])
+    return np.array([[cosh_theta, -sinh_theta], [-sinh_theta, cosh_theta]])
 
 
 def apply_boost(state_vector: np.ndarray, beta: float) -> np.ndarray:
@@ -252,9 +247,7 @@ def boost_lorentz_state(state: LorentzState, beta: float) -> LorentzState:
     boosted_vec = apply_boost(vec, beta)
 
     return LorentzState(
-        timelike=boosted_vec[0],
-        spacelike=boosted_vec[1],
-        ds2=state.ds2  # Invariant preserved
+        timelike=boosted_vec[0], spacelike=boosted_vec[1], ds2=state.ds2  # Invariant preserved
     )
 
 
@@ -341,11 +334,7 @@ def change_stability_to_lorentz(C: int, S: int) -> LorentzState:
     state : LorentzState
         Equivalent Lorentz representation
     """
-    return LorentzState(
-        timelike=float(S),
-        spacelike=float(C),
-        ds2=float(S*S - C*C)
-    )
+    return LorentzState(timelike=float(S), spacelike=float(C), ds2=float(S * S - C * C))
 
 
 def disparity_to_rapidity(disparity: float, max_disparity: float) -> float:
@@ -380,8 +369,7 @@ def disparity_to_rapidity(disparity: float, max_disparity: float) -> float:
     """
     if disparity < 0 or disparity >= max_disparity:
         raise ValueError(
-            f"Disparity must be in [0, max_disparity), "
-            f"got {disparity} with max {max_disparity}"
+            f"Disparity must be in [0, max_disparity), " f"got {disparity} with max {max_disparity}"
         )
 
     beta = disparity / max_disparity
@@ -392,8 +380,7 @@ def disparity_to_rapidity(disparity: float, max_disparity: float) -> float:
     return rapidity_from_beta(beta)
 
 
-def verify_lorentz_invariance(state: np.ndarray, beta: float,
-                              rtol: float = 1e-10) -> bool:
+def verify_lorentz_invariance(state: np.ndarray, beta: float, rtol: float = 1e-10) -> bool:
     """
     Verify that Lorentz boost preserves ds² invariant
 
@@ -417,10 +404,10 @@ def verify_lorentz_invariance(state: np.ndarray, beta: float,
     >>> verify_lorentz_invariance(state, beta=0.8)
     True
     """
-    ds2_original = state[0]**2 - state[1]**2
+    ds2_original = state[0] ** 2 - state[1] ** 2
 
     boosted = apply_boost(state, beta)
-    ds2_boosted = boosted[0]**2 - boosted[1]**2
+    ds2_boosted = boosted[0] ** 2 - boosted[1] ** 2
 
     return np.isclose(ds2_original, ds2_boosted, rtol=rtol)
 
@@ -448,11 +435,11 @@ def regime_classification(ds2: float, eps: float = 1e-10) -> str:
     - Timelike (ds² > 0): Stability dominates, settled, at rest
     """
     if ds2 < -eps:
-        return 'spacelike'
+        return "spacelike"
     elif ds2 > eps:
-        return 'timelike'
+        return "timelike"
     else:
-        return 'lightlike'
+        return "lightlike"
 
 
 def proper_time(ds2: float) -> Optional[float]:
