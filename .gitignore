@@ -8,6 +8,13 @@ env/
 venv/
 ENV/
 
+# Package build artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
 # Testing
 .coverage
 .coverage.*
