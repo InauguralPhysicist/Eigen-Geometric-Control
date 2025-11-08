@@ -1,13 +1,23 @@
-name: CI - Run Tests
+name: CI - Quality & Tests
 
+# Run on pushes to main and all pull requests
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
 
+# Cancel in-progress runs for the same workflow
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
+  # ============================================================================
+  # Code Quality Checks
+  # ============================================================================
+  quality:
+    name: Code Quality
     runs-on: ubuntu-latest
 
     steps:
@@ -18,19 +28,120 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
+        cache: 'pip'  # Cache pip packages for faster builds
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black isort flake8 mypy bandit[toml]
+        pip install -r requirements.txt
+
+    - name: Check code formatting with Black
+      run: black --check --diff src/ tests/
+
+    - name: Check import sorting with isort
+      run: isort --check-only --diff src/ tests/
+
+    - name: Lint with flake8
+      run: flake8 src/ tests/
+
+    - name: Type check with mypy
+      run: mypy src/
+      continue-on-error: true  # Don't fail build on type errors (for now)
+
+    - name: Security check with bandit
+      run: bandit -r src/ -c pyproject.toml
+
+  # ============================================================================
+  # Tests - Multiple Python Versions
+  # ============================================================================
+  test:
+    name: Tests (Python ${{ matrix.python-version }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false  # Run all combinations even if one fails
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        exclude:
+          # Reduce matrix size - skip some combinations
+          - os: macos-latest
+            python-version: '3.9'
+          - os: windows-latest
+            python-version: '3.9'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest pytest-cov  # If not in requirements.txt
+        pip install pytest pytest-cov
 
     - name: Run tests with coverage
       run: |
-        pytest tests/ --cov=src --cov-report=xml --cov-report=term-missing
+        pytest tests/ --cov=src --cov-report=xml --cov-report=term-missing -v
 
     - name: Upload coverage to Codecov
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'
       uses: codecov/codecov-action@v4
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}  # Optional: Add Codecov token in repo secrets for coverage reports
+        token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false  # Don't fail if Codecov is down
+
+  # ============================================================================
+  # Package Build Test
+  # ============================================================================
+  build:
+    name: Test Package Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+
+    - name: Build package
+      run: python -m build
+
+    - name: Check package with twine
+      run: twine check dist/*
+
+    - name: Test package installation
+      run: |
+        pip install dist/*.whl
+        python -c "import src; print('Package imported successfully!')"
+
+  # ============================================================================
+  # All Checks Passed
+  # ============================================================================
+  all-checks-passed:
+    name: All Checks Passed
+    needs: [quality, test, build]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Success
+      run: echo "All quality checks and tests passed!"

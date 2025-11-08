@@ -1,0 +1,44 @@
+# .flake8 - Configuration for flake8 linter
+# Flake8 checks your code for common errors and style issues
+# Run: flake8 src/ tests/
+
+[flake8]
+# Maximum line length (matching Black's default)
+max-line-length = 100
+
+# Files and directories to exclude from checking
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    env,
+    .eggs,
+    *.egg,
+    build,
+    dist,
+    .pytest_cache,
+    .mypy_cache,
+    htmlcov,
+    *.egg-info
+
+# Error codes to ignore
+# E203: Whitespace before ':' (conflicts with Black)
+# E266: Too many leading '#' for block comment
+# E501: Line too long (handled by Black)
+# W503: Line break before binary operator (conflicts with Black)
+# W504: Line break after binary operator
+ignore = E203, E266, E501, W503, W504
+
+# Maximum complexity (number of paths through code)
+# Lower is simpler. 10 is a good default.
+max-complexity = 10
+
+# Show source code for each error
+show-source = True
+
+# Show statistics about error types
+statistics = True
+
+# Count errors and warnings
+count = True
