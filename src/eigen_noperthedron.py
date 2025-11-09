@@ -27,8 +27,6 @@ from typing import List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
-from scipy.spatial import ConvexHull
 
 
 @dataclass
@@ -756,21 +754,21 @@ def print_analysis(stats: dict, has_passage: bool):
     print("RESULTS")
     print("=" * 70)
     print(f"Configurations tested: {stats['n_attempts']}")
-    print(f"\nMetric Statistics:")
+    print("\nMetric Statistics:")
     print(f"  ds² range: [{stats['ds2_min']:.2f}, {stats['ds2_max']:.2f}]")
     print(f"  ds² mean:  {stats['ds2_mean']:.2f} ± {stats['ds2_std']:.2f}")
-    print(f"\nRegime Classification:")
+    print("\nRegime Classification:")
     print(f"  Time-like  (ds² > 0): {stats['frac_timelike']:.1%} - passage possible, convergent")
     print(f"  Space-like (ds² < 0): {stats['frac_spacelike']:.1%} - no passage, non-convergent")
     print(f"  Light-like (ds² ≈ 0): {stats['frac_lightlike']:.1%} - boundary")
-    print(f"\nChange/Stability:")
+    print("\nChange/Stability:")
     print(f"  Mean C (collision):  {stats['C_mean']:.2f}")
     print(f"  Mean S (clearance):  {stats['S_mean']:.2f}")
-    print(f"\nMinimum Distance:")
+    print("\nMinimum Distance:")
     print(f"  Overall minimum: {stats['min_dist_min']:.4f}")
     print(f"  Mean minimum:    {stats['min_dist_mean']:.4f}")
 
-    print(f"\n" + "=" * 70)
+    print("\n" + "=" * 70)
     if has_passage:
         print("⚠️  RUPERT-POSITIVE: Passage exists")
         print("    ds² > 0 found → time-like path → convergence possible")
