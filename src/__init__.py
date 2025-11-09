@@ -36,6 +36,16 @@ from .eigen_lorentz import (
     stereo_to_lorentz,
     verify_lorentz_invariance,
 )
+from .eigen_noperthedron import (
+    analyze_results,
+    check_rupert_property,
+    compute_passage_ds2_discrete,
+    generate_noperthedron_vertices,
+    hamming_distance,
+    run_single_passage_test,
+    spatial_overlap,
+    vertices_to_bitstring,
+)
 from .eigen_xor_rotation import run_xor_simulation
 
 __all__ = [
@@ -48,6 +58,15 @@ __all__ = [
     # Simulation runners
     "run_arm_simulation",
     "run_xor_simulation",
+    # Noperthedron analysis
+    "generate_noperthedron_vertices",
+    "check_rupert_property",
+    "run_single_passage_test",
+    "analyze_results",
+    "vertices_to_bitstring",
+    "spatial_overlap",
+    "hamming_distance",
+    "compute_passage_ds2_discrete",
     # Lorentz transformation framework
     "lorentz_boost_matrix",
     "lorentz_boost_from_rapidity",
