@@ -33,6 +33,7 @@ from dataclasses import dataclass
 @dataclass
 class PassageAttempt:
     """Result of attempting passage of Noperthedron through itself"""
+
     orientation1: Tuple[float, float]  # (theta1, phi1)
     orientation2: Tuple[float, float]  # (theta2, phi2)
     direction: float  # alpha
@@ -101,22 +102,14 @@ def rotation_z(angle: float) -> np.ndarray:
     """
     c = np.cos(angle)
     s = np.sin(angle)
-    return np.array([
-        [c, -s, 0],
-        [s,  c, 0],
-        [0,  0, 1]
-    ])
+    return np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
 
 
 def rotation_y(angle: float) -> np.ndarray:
     """Rotation matrix around y-axis"""
     c = np.cos(angle)
     s = np.sin(angle)
-    return np.array([
-        [ c, 0, s],
-        [ 0, 1, 0],
-        [-s, 0, c]
-    ])
+    return np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
 
 
 def rotation_from_spherical(theta: float, phi: float) -> np.ndarray:
@@ -196,8 +189,7 @@ def compute_min_distance(vertices1: np.ndarray, vertices2: np.ndarray) -> float:
     return min_dist
 
 
-def estimate_overlap(vertices1: np.ndarray, vertices2: np.ndarray,
-                     threshold: float = 0.1) -> float:
+def estimate_overlap(vertices1: np.ndarray, vertices2: np.ndarray, threshold: float = 0.1) -> float:
     """
     Estimate overlap between two point clouds.
 
@@ -212,9 +204,9 @@ def estimate_overlap(vertices1: np.ndarray, vertices2: np.ndarray,
     return overlap_count / len(vertices1)
 
 
-def compute_passage_ds2(vertices1: np.ndarray,
-                        vertices2: np.ndarray,
-                        threshold: float = 0.15) -> Tuple[float, float, float]:
+def compute_passage_ds2(
+    vertices1: np.ndarray, vertices2: np.ndarray, threshold: float = 0.15
+) -> Tuple[float, float, float]:
     """
     Compute ds² metric for passage attempt.
 
@@ -313,7 +305,7 @@ def vertices_to_bitstring(vertices: np.ndarray, n_bits: int = 256) -> np.ndarray
     bounds_range = bounds_max - bounds_min
 
     # Calculate 3D grid dimensions (approximate cube root of n_bits)
-    grid_size = int(round(n_bits ** (1/3)))
+    grid_size = int(round(n_bits ** (1 / 3)))
 
     # Create bit representation using 3D spatial grid
     bitstring = np.zeros(n_words, dtype=np.uint64)
@@ -363,7 +355,7 @@ def hamming_distance(bits1: np.ndarray, bits2: np.ndarray) -> int:
     """
     assert bits1.shape == bits2.shape
     xor_result = bits1 ^ bits2
-    distance = sum(bin(int(word)).count('1') for word in xor_result)
+    distance = sum(bin(int(word)).count("1") for word in xor_result)
     return distance
 
 
@@ -396,13 +388,13 @@ def spatial_overlap(bits1: np.ndarray, bits2: np.ndarray) -> int:
     """
     assert bits1.shape == bits2.shape
     and_result = bits1 & bits2
-    overlap = sum(bin(int(word)).count('1') for word in and_result)
+    overlap = sum(bin(int(word)).count("1") for word in and_result)
     return overlap
 
 
-def compute_passage_ds2_discrete(vertices1: np.ndarray,
-                                 vertices2: np.ndarray,
-                                 n_bits: int = 256) -> Tuple[int, int, int]:
+def compute_passage_ds2_discrete(
+    vertices1: np.ndarray, vertices2: np.ndarray, n_bits: int = 256
+) -> Tuple[int, int, int]:
     """
     Compute ds² metric using rigorous discrete (occupancy-based) approach.
 
@@ -448,7 +440,7 @@ def compute_passage_ds2_discrete(vertices1: np.ndarray,
     C = spatial_overlap(bits1, bits2)
 
     # Count total occupied cells for scaling
-    total_occupied = sum(bin(int(word)).count('1') for word in (bits1 | bits2))
+    total_occupied = sum(bin(int(word)).count("1") for word in (bits1 | bits2))
 
     # S = separation (non-overlapping cells)
     S = total_occupied - C if total_occupied > 0 else n_bits - C
@@ -464,12 +456,16 @@ def compute_passage_ds2_discrete(vertices1: np.ndarray,
 # ==============================================================================
 
 
-def test_single_configuration(vertices: np.ndarray,
-                              theta1: float, phi1: float,
-                              theta2: float, phi2: float,
-                              alpha: float = 0.0,
-                              metric_type: str = "continuous",
-                              n_bits: int = 256) -> PassageAttempt:
+def test_single_configuration(
+    vertices: np.ndarray,
+    theta1: float,
+    phi1: float,
+    theta2: float,
+    phi2: float,
+    alpha: float = 0.0,
+    metric_type: str = "continuous",
+    n_bits: int = 256,
+) -> PassageAttempt:
     """
     Test passage for a single configuration of two Noperthedron copies.
 
@@ -532,15 +528,17 @@ def test_single_configuration(vertices: np.ndarray,
         C=C,
         S=S,
         ds2=ds2,
-        metric_type=metric_type
+        metric_type=metric_type,
     )
 
 
-def test_rupert_property(vertices: np.ndarray,
-                        n_samples: int = 1000,
-                        random_seed: Optional[int] = 42,
-                        metric_type: str = "continuous",
-                        n_bits: int = 256) -> Tuple[List[PassageAttempt], bool]:
+def test_rupert_property(
+    vertices: np.ndarray,
+    n_samples: int = 1000,
+    random_seed: Optional[int] = 42,
+    metric_type: str = "continuous",
+    n_bits: int = 256,
+) -> Tuple[List[PassageAttempt], bool]:
     """
     Test Rupert property by sampling configuration space.
 
@@ -586,19 +584,18 @@ def test_rupert_property(vertices: np.ndarray,
     for i in range(n_samples):
         # Sample random orientations
         theta1 = np.random.uniform(0, np.pi)
-        phi1 = np.random.uniform(0, 2*np.pi)
+        phi1 = np.random.uniform(0, 2 * np.pi)
         theta2 = np.random.uniform(0, np.pi)
-        phi2 = np.random.uniform(0, 2*np.pi)
-        alpha = np.random.uniform(0, 2*np.pi)
+        phi2 = np.random.uniform(0, 2 * np.pi)
+        alpha = np.random.uniform(0, 2 * np.pi)
 
         attempt = test_single_configuration(
-            vertices, theta1, phi1, theta2, phi2, alpha,
-            metric_type=metric_type, n_bits=n_bits
+            vertices, theta1, phi1, theta2, phi2, alpha, metric_type=metric_type, n_bits=n_bits
         )
         attempts.append(attempt)
 
         # Print progress (avoid division by zero for small samples)
-        if n_samples >= 10 and (i+1) % (n_samples // 10) == 0:
+        if n_samples >= 10 and (i + 1) % (n_samples // 10) == 0:
             print(f"  Progress: {i+1}/{n_samples}")
 
     # Check if any passage exists (ds² > 0 indicates time-like/convergent)
@@ -615,70 +612,79 @@ def analyze_results(attempts: List[PassageAttempt]) -> dict:
     min_dists = [a.min_distance for a in attempts]
 
     return {
-        'n_attempts': len(attempts),
-        'ds2_min': min(ds2_values),
-        'ds2_max': max(ds2_values),
-        'ds2_mean': np.mean(ds2_values),
-        'ds2_std': np.std(ds2_values),
-        'frac_timelike': sum(1 for ds2 in ds2_values if ds2 > 0) / len(ds2_values),
-        'frac_spacelike': sum(1 for ds2 in ds2_values if ds2 < 0) / len(ds2_values),
-        'frac_lightlike': sum(1 for ds2 in ds2_values if abs(ds2) < 1) / len(ds2_values),
-        'C_mean': np.mean(C_values),
-        'S_mean': np.mean(S_values),
-        'min_dist_min': min(min_dists),
-        'min_dist_mean': np.mean(min_dists),
+        "n_attempts": len(attempts),
+        "ds2_min": min(ds2_values),
+        "ds2_max": max(ds2_values),
+        "ds2_mean": np.mean(ds2_values),
+        "ds2_std": np.std(ds2_values),
+        "frac_timelike": sum(1 for ds2 in ds2_values if ds2 > 0) / len(ds2_values),
+        "frac_spacelike": sum(1 for ds2 in ds2_values if ds2 < 0) / len(ds2_values),
+        "frac_lightlike": sum(1 for ds2 in ds2_values if abs(ds2) < 1) / len(ds2_values),
+        "C_mean": np.mean(C_values),
+        "S_mean": np.mean(S_values),
+        "min_dist_min": min(min_dists),
+        "min_dist_mean": np.mean(min_dists),
     }
 
 
-def visualize_noperthedron(vertices: np.ndarray,
-                          save_path: str = 'noperthedron_structure.png'):
+def visualize_noperthedron(vertices: np.ndarray, save_path: str = "noperthedron_structure.png"):
     """Visualize the Noperthedron structure"""
     fig = plt.figure(figsize=(15, 5))
 
     # 3D scatter plot
-    ax1 = fig.add_subplot(131, projection='3d')
-    ax1.scatter(vertices[:, 0], vertices[:, 1], vertices[:, 2],
-               c='blue', s=30, alpha=0.6, edgecolors='black', linewidth=0.5)
-    ax1.set_xlabel('x')
-    ax1.set_ylabel('y')
-    ax1.set_zlabel('z')
-    ax1.set_title('Noperthedron: 90 Vertices\n15-fold Symmetry')
+    ax1 = fig.add_subplot(131, projection="3d")
+    ax1.scatter(
+        vertices[:, 0],
+        vertices[:, 1],
+        vertices[:, 2],
+        c="blue",
+        s=30,
+        alpha=0.6,
+        edgecolors="black",
+        linewidth=0.5,
+    )
+    ax1.set_xlabel("x")
+    ax1.set_ylabel("y")
+    ax1.set_zlabel("z")
+    ax1.set_title("Noperthedron: 90 Vertices\n15-fold Symmetry")
     ax1.grid(True, alpha=0.3)
 
     # Radial distribution
     ax2 = fig.add_subplot(132)
     radii = np.linalg.norm(vertices, axis=1)
-    ax2.hist(radii, bins=30, color='blue', alpha=0.7, edgecolor='black')
-    ax2.set_xlabel('Distance from origin')
-    ax2.set_ylabel('Count')
-    ax2.set_title('Radial Distribution')
+    ax2.hist(radii, bins=30, color="blue", alpha=0.7, edgecolor="black")
+    ax2.set_xlabel("Distance from origin")
+    ax2.set_ylabel("Count")
+    ax2.set_title("Radial Distribution")
     ax2.grid(True, alpha=0.3)
-    ax2.axvline(1.0, color='red', linestyle='--', label='Unit sphere')
+    ax2.axvline(1.0, color="red", linestyle="--", label="Unit sphere")
     ax2.legend()
 
     # Projection onto xy-plane showing 15-fold symmetry
     ax3 = fig.add_subplot(133)
-    ax3.scatter(vertices[:, 0], vertices[:, 1], c='blue', s=30, alpha=0.6,
-               edgecolors='black', linewidth=0.5)
-    ax3.set_xlabel('x')
-    ax3.set_ylabel('y')
-    ax3.set_title('xy-plane Projection\n(15-fold rotational symmetry)')
+    ax3.scatter(
+        vertices[:, 0], vertices[:, 1], c="blue", s=30, alpha=0.6, edgecolors="black", linewidth=0.5
+    )
+    ax3.set_xlabel("x")
+    ax3.set_ylabel("y")
+    ax3.set_title("xy-plane Projection\n(15-fold rotational symmetry)")
     ax3.grid(True, alpha=0.3)
-    ax3.set_aspect('equal')
+    ax3.set_aspect("equal")
 
     # Draw unit circle
-    theta = np.linspace(0, 2*np.pi, 100)
-    ax3.plot(np.cos(theta), np.sin(theta), 'r--', alpha=0.3, label='Unit circle')
+    theta = np.linspace(0, 2 * np.pi, 100)
+    ax3.plot(np.cos(theta), np.sin(theta), "r--", alpha=0.3, label="Unit circle")
     ax3.legend()
 
     plt.tight_layout()
-    plt.savefig(save_path, dpi=200, bbox_inches='tight')
+    plt.savefig(save_path, dpi=200, bbox_inches="tight")
     print(f"Saved: {save_path}")
     plt.close()
 
 
-def visualize_metric_distribution(attempts: List[PassageAttempt],
-                                  save_path: str = 'noperthedron_metrics.png'):
+def visualize_metric_distribution(
+    attempts: List[PassageAttempt], save_path: str = "noperthedron_metrics.png"
+):
     """Visualize distribution of ds² and related metrics"""
     ds2_values = [a.ds2 for a in attempts]
     C_values = [a.C for a in attempts]
@@ -688,16 +694,18 @@ def visualize_metric_distribution(attempts: List[PassageAttempt],
 
     # ds² histogram
     ax = axes[0, 0]
-    ax.hist(ds2_values, bins=50, color='purple', alpha=0.7, edgecolor='black')
-    ax.axvline(0, color='red', linestyle='--', linewidth=2, label='ds² = 0 (light-like)')
+    ax.hist(ds2_values, bins=50, color="purple", alpha=0.7, edgecolor="black")
+    ax.axvline(0, color="red", linestyle="--", linewidth=2, label="ds² = 0 (light-like)")
     ymax = ax.get_ylim()[1]
-    ax.fill_betweenx([0, ymax], 0, max(ds2_values),
-                    alpha=0.2, color='blue', label='Time-like (ds² > 0)')
-    ax.fill_betweenx([0, ymax], min(ds2_values), 0,
-                    alpha=0.2, color='yellow', label='Space-like (ds² < 0)')
-    ax.set_xlabel('ds² = S² - C²')
-    ax.set_ylabel('Count')
-    ax.set_title('Metric Distribution: ds² = S² - C²')
+    ax.fill_betweenx(
+        [0, ymax], 0, max(ds2_values), alpha=0.2, color="blue", label="Time-like (ds² > 0)"
+    )
+    ax.fill_betweenx(
+        [0, ymax], min(ds2_values), 0, alpha=0.2, color="yellow", label="Space-like (ds² < 0)"
+    )
+    ax.set_xlabel("ds² = S² - C²")
+    ax.set_ylabel("Count")
+    ax.set_title("Metric Distribution: ds² = S² - C²")
     ax.legend()
     ax.grid(True, alpha=0.3)
 
@@ -705,38 +713,38 @@ def visualize_metric_distribution(attempts: List[PassageAttempt],
     ax = axes[0, 1]
     sorted_ds2 = np.sort(ds2_values)
     cumulative = np.arange(1, len(sorted_ds2) + 1) / len(sorted_ds2)
-    ax.plot(sorted_ds2, cumulative, linewidth=2, color='purple')
-    ax.axvline(0, color='red', linestyle='--', linewidth=2, label='ds² = 0')
-    ax.set_xlabel('ds²')
-    ax.set_ylabel('Cumulative Probability')
-    ax.set_title('CDF: P(ds² < threshold)')
+    ax.plot(sorted_ds2, cumulative, linewidth=2, color="purple")
+    ax.axvline(0, color="red", linestyle="--", linewidth=2, label="ds² = 0")
+    ax.set_xlabel("ds²")
+    ax.set_ylabel("Cumulative Probability")
+    ax.set_title("CDF: P(ds² < threshold)")
     ax.grid(True, alpha=0.3)
     ax.legend()
 
     # C vs S scatter
     ax = axes[1, 0]
-    colors = ['blue' if ds2 > 0 else 'orange' for ds2 in ds2_values]
+    colors = ["blue" if ds2 > 0 else "orange" for ds2 in ds2_values]
     ax.scatter(C_values, S_values, c=colors, alpha=0.5, s=20)
-    ax.plot([0, 100], [0, 100], 'k--', alpha=0.3, label='C = S (ds² = 0)')
-    ax.set_xlabel('C (Change/Collision)')
-    ax.set_ylabel('S (Stability/Clearance)')
-    ax.set_title('Change vs Stability\nBlue: ds²>0, Orange: ds²<0')
+    ax.plot([0, 100], [0, 100], "k--", alpha=0.3, label="C = S (ds² = 0)")
+    ax.set_xlabel("C (Change/Collision)")
+    ax.set_ylabel("S (Stability/Clearance)")
+    ax.set_title("Change vs Stability\nBlue: ds²>0, Orange: ds²<0")
     ax.grid(True, alpha=0.3)
     ax.legend()
-    ax.set_aspect('equal')
+    ax.set_aspect("equal")
 
     # C and S distributions
     ax = axes[1, 1]
-    ax.hist(C_values, bins=30, alpha=0.5, color='red', label='C (Change)', edgecolor='black')
-    ax.hist(S_values, bins=30, alpha=0.5, color='green', label='S (Stability)', edgecolor='black')
-    ax.set_xlabel('Value')
-    ax.set_ylabel('Count')
-    ax.set_title('C and S Distributions')
+    ax.hist(C_values, bins=30, alpha=0.5, color="red", label="C (Change)", edgecolor="black")
+    ax.hist(S_values, bins=30, alpha=0.5, color="green", label="S (Stability)", edgecolor="black")
+    ax.set_xlabel("Value")
+    ax.set_ylabel("Count")
+    ax.set_title("C and S Distributions")
     ax.legend()
     ax.grid(True, alpha=0.3)
 
     plt.tight_layout()
-    plt.savefig(save_path, dpi=200, bbox_inches='tight')
+    plt.savefig(save_path, dpi=200, bbox_inches="tight")
     print(f"Saved: {save_path}")
     plt.close()
 
@@ -811,7 +819,8 @@ def main():
     print("\n" + "=" * 70)
     print("INTERPRETATION")
     print("=" * 70)
-    print("""
+    print(
+        """
 The connection between Rupert's property and convergence:
 
 1. RUPERT-POSITIVE shapes (CAN pass through self):
@@ -832,18 +841,21 @@ This is a THOUGHT EXPERIMENT exploring deep connections between:
 - Geometric constraints (passage through self)
 - Metric signatures (ds² sign)
 - System convergence (eigenstate reachability)
-    """)
+    """
+    )
 
     print("\n" + "=" * 70)
     print("REFERENCE")
     print("=" * 70)
-    print("""
+    print(
+        """
 Steininger, Jakob and Yurkevich, Vsevolod (2025).
 "The Noperthedron." arXiv preprint.
 
 Note: This implementation is exploratory. The exact mapping between
 passage geometry and the ds² metric requires further theoretical work.
-    """)
+    """
+    )
     print("=" * 70)
 
 

@@ -93,7 +93,7 @@ class TestRotations:
 
     def test_rotation_orthogonal(self):
         """Rotation matrices should be orthogonal (R^T R = I)"""
-        angles = [0, np.pi/6, np.pi/4, np.pi/3, np.pi/2, np.pi]
+        angles = [0, np.pi / 6, np.pi / 4, np.pi / 3, np.pi / 2, np.pi]
         for angle in angles:
             Rz = rotation_z(angle)
             Ry = rotation_y(angle)
@@ -102,7 +102,7 @@ class TestRotations:
 
     def test_rotation_determinant(self):
         """Rotation matrices should have determinant = 1"""
-        angles = [0, np.pi/6, np.pi/4, np.pi/3, np.pi/2, np.pi]
+        angles = [0, np.pi / 6, np.pi / 4, np.pi / 3, np.pi / 2, np.pi]
         for angle in angles:
             Rz = rotation_z(angle)
             Ry = rotation_y(angle)
@@ -111,7 +111,7 @@ class TestRotations:
 
     def test_rotation_from_spherical(self):
         """Spherical rotation should produce orthogonal matrix"""
-        R = rotation_from_spherical(np.pi/4, np.pi/3)
+        R = rotation_from_spherical(np.pi / 4, np.pi / 3)
         assert np.allclose(R.T @ R, np.eye(3), atol=1e-10)
         assert np.isclose(np.linalg.det(R), 1.0, atol=1e-10)
 
@@ -244,26 +244,22 @@ class TestPassageAttempt:
         """Should return PassageAttempt with correct fields"""
         vertices = generate_noperthedron_vertices()
         attempt = test_single_configuration(
-            vertices,
-            theta1=0.0, phi1=0.0,
-            theta2=np.pi/4, phi2=np.pi/4
+            vertices, theta1=0.0, phi1=0.0, theta2=np.pi / 4, phi2=np.pi / 4
         )
 
         assert isinstance(attempt, PassageAttempt)
-        assert hasattr(attempt, 'orientation1')
-        assert hasattr(attempt, 'orientation2')
-        assert hasattr(attempt, 'min_distance')
-        assert hasattr(attempt, 'C')
-        assert hasattr(attempt, 'S')
-        assert hasattr(attempt, 'ds2')
+        assert hasattr(attempt, "orientation1")
+        assert hasattr(attempt, "orientation2")
+        assert hasattr(attempt, "min_distance")
+        assert hasattr(attempt, "C")
+        assert hasattr(attempt, "S")
+        assert hasattr(attempt, "ds2")
 
     def test_test_single_configuration_ds2_formula(self):
         """ds² should equal S² - C²"""
         vertices = generate_noperthedron_vertices()
         attempt = test_single_configuration(
-            vertices,
-            theta1=0.0, phi1=0.0,
-            theta2=np.pi/2, phi2=0.0
+            vertices, theta1=0.0, phi1=0.0, theta2=np.pi / 2, phi2=0.0
         )
 
         expected_ds2 = attempt.S**2 - attempt.C**2
@@ -273,16 +269,10 @@ class TestPassageAttempt:
         """Different orientations should give different results"""
         vertices = generate_noperthedron_vertices()
 
-        attempt1 = test_single_configuration(
-            vertices,
-            theta1=0.0, phi1=0.0,
-            theta2=0.0, phi2=0.0
-        )
+        attempt1 = test_single_configuration(vertices, theta1=0.0, phi1=0.0, theta2=0.0, phi2=0.0)
 
         attempt2 = test_single_configuration(
-            vertices,
-            theta1=np.pi/2, phi1=np.pi/2,
-            theta2=np.pi/4, phi2=np.pi/4
+            vertices, theta1=np.pi / 2, phi1=np.pi / 2, theta2=np.pi / 4, phi2=np.pi / 4
         )
 
         # Should get different ds² values for different orientations
@@ -339,9 +329,18 @@ class TestAnalysis:
         stats = analyze_results(attempts)
 
         expected_keys = [
-            'n_attempts', 'ds2_min', 'ds2_max', 'ds2_mean', 'ds2_std',
-            'frac_timelike', 'frac_spacelike', 'frac_lightlike',
-            'C_mean', 'S_mean', 'min_dist_min', 'min_dist_mean'
+            "n_attempts",
+            "ds2_min",
+            "ds2_max",
+            "ds2_mean",
+            "ds2_std",
+            "frac_timelike",
+            "frac_spacelike",
+            "frac_lightlike",
+            "C_mean",
+            "S_mean",
+            "min_dist_min",
+            "min_dist_mean",
         ]
 
         for key in expected_keys:
@@ -353,7 +352,7 @@ class TestAnalysis:
         attempts, _ = test_rupert_property(vertices, n_samples=15)
         stats = analyze_results(attempts)
 
-        assert stats['n_attempts'] == 15
+        assert stats["n_attempts"] == 15
 
     def test_analyze_results_fractions_sum_to_one(self):
         """Timelike + spacelike + lightlike should ≈ 1.0"""
@@ -361,7 +360,7 @@ class TestAnalysis:
         attempts, _ = test_rupert_property(vertices, n_samples=20)
         stats = analyze_results(attempts)
 
-        total = stats['frac_timelike'] + stats['frac_spacelike'] + stats['frac_lightlike']
+        total = stats["frac_timelike"] + stats["frac_spacelike"] + stats["frac_lightlike"]
         assert np.isclose(total, 1.0, atol=0.01)
 
     def test_analyze_results_min_max_consistent(self):
@@ -370,7 +369,7 @@ class TestAnalysis:
         attempts, _ = test_rupert_property(vertices, n_samples=20)
         stats = analyze_results(attempts)
 
-        assert stats['ds2_min'] <= stats['ds2_mean'] <= stats['ds2_max']
+        assert stats["ds2_min"] <= stats["ds2_mean"] <= stats["ds2_max"]
 
     def test_analyze_results_predominantly_spacelike(self):
         """Noperthedron should be predominantly space-like (ds² < 0)"""
@@ -381,8 +380,9 @@ class TestAnalysis:
 
         # Should have significant fraction of space-like configs
         # Note: With our simplified metric, we might not get 100%
-        assert stats['frac_spacelike'] > 0.5, \
-            f"Expected >50% space-like, got {stats['frac_spacelike']:.1%}"
+        assert (
+            stats["frac_spacelike"] > 0.5
+        ), f"Expected >50% space-like, got {stats['frac_spacelike']:.1%}"
 
 
 class TestIntegration:
@@ -400,8 +400,8 @@ class TestIntegration:
 
         # Analyze
         stats = analyze_results(attempts)
-        assert stats['n_attempts'] == 10
-        assert 'ds2_mean' in stats
+        assert stats["n_attempts"] == 10
+        assert "ds2_mean" in stats
 
     def test_deterministic_with_seed(self):
         """Full workflow should be deterministic with fixed seed"""
@@ -418,9 +418,9 @@ class TestIntegration:
         s2 = analyze_results(a2)
 
         # Should get same statistics
-        assert np.isclose(s1['ds2_mean'], s2['ds2_mean'])
-        assert np.isclose(s1['C_mean'], s2['C_mean'])
-        assert np.isclose(s1['S_mean'], s2['S_mean'])
+        assert np.isclose(s1["ds2_mean"], s2["ds2_mean"])
+        assert np.isclose(s1["C_mean"], s2["C_mean"])
+        assert np.isclose(s1["S_mean"], s2["S_mean"])
 
 
 if __name__ == "__main__":
