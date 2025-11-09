@@ -41,6 +41,10 @@ from .eigen_noperthedron import (
     generate_noperthedron_vertices,
     test_rupert_property,
     analyze_results,
+    vertices_to_bitstring,
+    spatial_overlap,
+    hamming_distance,
+    compute_passage_ds2_discrete,
 )
 
 __all__ = [
@@ -57,6 +61,10 @@ __all__ = [
     "generate_noperthedron_vertices",
     "test_rupert_property",
     "analyze_results",
+    "vertices_to_bitstring",
+    "spatial_overlap",
+    "hamming_distance",
+    "compute_passage_ds2_discrete",
     # Lorentz transformation framework
     "lorentz_boost_matrix",
     "lorentz_boost_from_rapidity",
