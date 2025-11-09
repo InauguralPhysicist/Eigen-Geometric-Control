@@ -23,7 +23,7 @@ from matplotlib.gridspec import GridSpec
 # Import both frameworks
 from src import (
     generate_noperthedron_vertices,
-    test_rupert_property,
+    check_rupert_property,
     analyze_results,
     run_arm_simulation,
     compute_change_stability,
@@ -78,7 +78,7 @@ def run_noperthedron_experiment(n_samples=500):
     vertices = generate_noperthedron_vertices()
 
     print(f"Testing {n_samples} passage attempts...")
-    attempts, has_passage = test_rupert_property(vertices, n_samples=n_samples)
+    attempts, has_passage = check_rupert_property(vertices, n_samples=n_samples)
 
     stats = analyze_results(attempts)
 

@@ -12,6 +12,7 @@ import pytest
 from src.eigen_noperthedron import (
     PassageAttempt,
     analyze_results,
+    check_rupert_property,
     compute_min_distance,
     compute_passage_ds2,
     estimate_overlap,
@@ -20,8 +21,7 @@ from src.eigen_noperthedron import (
     rotation_from_spherical,
     rotation_y,
     rotation_z,
-    test_rupert_property,
-    test_single_configuration,
+    run_single_passage_test,
 )
 
 
@@ -243,7 +243,7 @@ class TestPassageAttempt:
     def test_test_single_configuration_structure(self):
         """Should return PassageAttempt with correct fields"""
         vertices = generate_noperthedron_vertices()
-        attempt = test_single_configuration(
+        attempt = run_single_passage_test(
             vertices, theta1=0.0, phi1=0.0, theta2=np.pi / 4, phi2=np.pi / 4
         )
 
@@ -258,7 +258,7 @@ class TestPassageAttempt:
     def test_test_single_configuration_ds2_formula(self):
         """ds² should equal S² - C²"""
         vertices = generate_noperthedron_vertices()
-        attempt = test_single_configuration(
+        attempt = run_single_passage_test(
             vertices, theta1=0.0, phi1=0.0, theta2=np.pi / 2, phi2=0.0
         )
 
@@ -269,9 +269,9 @@ class TestPassageAttempt:
         """Different orientations should give different results"""
         vertices = generate_noperthedron_vertices()
 
-        attempt1 = test_single_configuration(vertices, theta1=0.0, phi1=0.0, theta2=0.0, phi2=0.0)
+        attempt1 = run_single_passage_test(vertices, theta1=0.0, phi1=0.0, theta2=0.0, phi2=0.0)
 
-        attempt2 = test_single_configuration(
+        attempt2 = run_single_passage_test(
             vertices, theta1=np.pi / 2, phi1=np.pi / 2, theta2=np.pi / 4, phi2=np.pi / 4
         )
 
@@ -283,36 +283,36 @@ class TestPassageAttempt:
 class TestRupertPropertyTesting:
     """Test Rupert property testing with sampling"""
 
-    def test_test_rupert_property_count(self):
+    def test_check_rupert_property_count(self):
         """Should test exactly n_samples configurations"""
         vertices = generate_noperthedron_vertices()
-        attempts, has_passage = test_rupert_property(vertices, n_samples=10)
+        attempts, has_passage = check_rupert_property(vertices, n_samples=10)
 
         assert len(attempts) == 10
 
-    def test_test_rupert_property_reproducible(self):
+    def test_check_rupert_property_reproducible(self):
         """With same seed, should get same results"""
         vertices = generate_noperthedron_vertices()
 
-        attempts1, _ = test_rupert_property(vertices, n_samples=5, random_seed=42)
-        attempts2, _ = test_rupert_property(vertices, n_samples=5, random_seed=42)
+        attempts1, _ = check_rupert_property(vertices, n_samples=5, random_seed=42)
+        attempts2, _ = check_rupert_property(vertices, n_samples=5, random_seed=42)
 
         # Check first attempt matches
         assert attempts1[0].ds2 == attempts2[0].ds2
         assert attempts1[0].C == attempts2[0].C
         assert attempts1[0].S == attempts2[0].S
 
-    def test_test_rupert_property_boolean_result(self):
+    def test_check_rupert_property_boolean_result(self):
         """Should return boolean for has_passage"""
         vertices = generate_noperthedron_vertices()
-        _, has_passage = test_rupert_property(vertices, n_samples=5)
+        _, has_passage = check_rupert_property(vertices, n_samples=5)
 
         assert isinstance(has_passage, (bool, np.bool_))
 
-    def test_test_rupert_property_passage_detection(self):
+    def test_check_rupert_property_passage_detection(self):
         """If any ds² > 0, should report passage"""
         vertices = generate_noperthedron_vertices()
-        attempts, has_passage = test_rupert_property(vertices, n_samples=20)
+        attempts, has_passage = check_rupert_property(vertices, n_samples=20)
 
         # Check consistency
         any_positive = any(a.ds2 > 0 for a in attempts)
@@ -325,7 +325,7 @@ class TestAnalysis:
     def test_analyze_results_structure(self):
         """Should return dictionary with expected keys"""
         vertices = generate_noperthedron_vertices()
-        attempts, _ = test_rupert_property(vertices, n_samples=10)
+        attempts, _ = check_rupert_property(vertices, n_samples=10)
         stats = analyze_results(attempts)
 
         expected_keys = [
@@ -349,7 +349,7 @@ class TestAnalysis:
     def test_analyze_results_count(self):
         """n_attempts should match number of attempts"""
         vertices = generate_noperthedron_vertices()
-        attempts, _ = test_rupert_property(vertices, n_samples=15)
+        attempts, _ = check_rupert_property(vertices, n_samples=15)
         stats = analyze_results(attempts)
 
         assert stats["n_attempts"] == 15
@@ -357,7 +357,7 @@ class TestAnalysis:
     def test_analyze_results_fractions_sum_to_one(self):
         """Timelike + spacelike + lightlike should ≈ 1.0"""
         vertices = generate_noperthedron_vertices()
-        attempts, _ = test_rupert_property(vertices, n_samples=20)
+        attempts, _ = check_rupert_property(vertices, n_samples=20)
         stats = analyze_results(attempts)
 
         total = stats["frac_timelike"] + stats["frac_spacelike"] + stats["frac_lightlike"]
@@ -366,7 +366,7 @@ class TestAnalysis:
     def test_analyze_results_min_max_consistent(self):
         """min ≤ mean ≤ max for ds²"""
         vertices = generate_noperthedron_vertices()
-        attempts, _ = test_rupert_property(vertices, n_samples=20)
+        attempts, _ = check_rupert_property(vertices, n_samples=20)
         stats = analyze_results(attempts)
 
         assert stats["ds2_min"] <= stats["ds2_mean"] <= stats["ds2_max"]
@@ -375,7 +375,7 @@ class TestAnalysis:
         """Noperthedron should be predominantly space-like (ds² < 0)"""
         vertices = generate_noperthedron_vertices()
         # Use larger sample for statistical reliability
-        attempts, _ = test_rupert_property(vertices, n_samples=50, random_seed=42)
+        attempts, _ = check_rupert_property(vertices, n_samples=50, random_seed=42)
         stats = analyze_results(attempts)
 
         # Should have significant fraction of space-like configs
@@ -395,7 +395,7 @@ class TestIntegration:
         assert len(vertices) == 90
 
         # Test a few configurations
-        attempts, has_passage = test_rupert_property(vertices, n_samples=10)
+        attempts, has_passage = check_rupert_property(vertices, n_samples=10)
         assert len(attempts) == 10
 
         # Analyze
@@ -409,12 +409,12 @@ class TestIntegration:
 
         # Run 1
         v1 = generate_noperthedron_vertices()
-        a1, _ = test_rupert_property(v1, n_samples=5, random_seed=seed)
+        a1, _ = check_rupert_property(v1, n_samples=5, random_seed=seed)
         s1 = analyze_results(a1)
 
         # Run 2
         v2 = generate_noperthedron_vertices()
-        a2, _ = test_rupert_property(v2, n_samples=5, random_seed=seed)
+        a2, _ = check_rupert_property(v2, n_samples=5, random_seed=seed)
         s2 = analyze_results(a2)
 
         # Should get same statistics

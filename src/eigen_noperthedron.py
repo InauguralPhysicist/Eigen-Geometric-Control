@@ -455,7 +455,7 @@ def compute_passage_ds2_discrete(
 # ==============================================================================
 
 
-def test_single_configuration(
+def run_single_passage_test(
     vertices: np.ndarray,
     theta1: float,
     phi1: float,
@@ -531,7 +531,7 @@ def test_single_configuration(
     )
 
 
-def test_rupert_property(
+def check_rupert_property(
     vertices: np.ndarray,
     n_samples: int = 1000,
     random_seed: Optional[int] = 42,
@@ -588,7 +588,7 @@ def test_rupert_property(
         phi2 = np.random.uniform(0, 2 * np.pi)
         alpha = np.random.uniform(0, 2 * np.pi)
 
-        attempt = test_single_configuration(
+        attempt = run_single_passage_test(
             vertices, theta1, phi1, theta2, phi2, alpha, metric_type=metric_type, n_bits=n_bits
         )
         attempts.append(attempt)

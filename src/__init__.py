@@ -38,11 +38,12 @@ from .eigen_lorentz import (
 )
 from .eigen_noperthedron import (
     analyze_results,
+    check_rupert_property,
     compute_passage_ds2_discrete,
     generate_noperthedron_vertices,
     hamming_distance,
+    run_single_passage_test,
     spatial_overlap,
-    test_rupert_property,
     vertices_to_bitstring,
 )
 from .eigen_xor_rotation import run_xor_simulation
@@ -59,7 +60,8 @@ __all__ = [
     "run_xor_simulation",
     # Noperthedron analysis
     "generate_noperthedron_vertices",
-    "test_rupert_property",
+    "check_rupert_property",
+    "run_single_passage_test",
     "analyze_results",
     "vertices_to_bitstring",
     "spatial_overlap",
