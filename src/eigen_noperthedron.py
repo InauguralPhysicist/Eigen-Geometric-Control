@@ -803,7 +803,7 @@ def main():
 
     # Test Rupert property
     print("\nTesting Rupert property...")
-    attempts, has_passage = test_rupert_property(vertices, n_samples=1000)
+    attempts, has_passage = check_rupert_property(vertices, n_samples=1000)
 
     # Analyze
     stats = analyze_results(attempts)

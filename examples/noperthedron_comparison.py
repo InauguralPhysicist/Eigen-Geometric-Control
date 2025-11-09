@@ -16,17 +16,17 @@ Where:
 - ds² = 0 (light-like): boundary condition
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.gridspec import GridSpec
 
 # Import both frameworks
 from src import (
-    generate_noperthedron_vertices,
-    check_rupert_property,
     analyze_results,
-    run_arm_simulation,
+    check_rupert_property,
     compute_change_stability,
+    generate_noperthedron_vertices,
+    run_arm_simulation,
 )
 from src.config import ArmConfig
 
