@@ -37,6 +37,11 @@ from .eigen_lorentz import (
     verify_lorentz_invariance,
 )
 from .eigen_xor_rotation import run_xor_simulation
+from .eigen_noperthedron import (
+    generate_noperthedron_vertices,
+    test_rupert_property,
+    analyze_results,
+)
 
 __all__ = [
     # Core geometric functions
@@ -48,6 +53,10 @@ __all__ = [
     # Simulation runners
     "run_arm_simulation",
     "run_xor_simulation",
+    # Noperthedron analysis
+    "generate_noperthedron_vertices",
+    "test_rupert_property",
+    "analyze_results",
     # Lorentz transformation framework
     "lorentz_boost_matrix",
     "lorentz_boost_from_rapidity",
