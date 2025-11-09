@@ -22,12 +22,13 @@ Steininger, Jakob and Yurkevich, Vsevolod (2025). "The Noperthedron."
 arXiv preprint.
 """
 
-import numpy as np
-from typing import List, Tuple, Optional
+from dataclasses import dataclass
+from typing import List, Optional, Tuple
+
 import matplotlib.pyplot as plt
+import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.spatial import ConvexHull
-from dataclasses import dataclass
 
 
 @dataclass

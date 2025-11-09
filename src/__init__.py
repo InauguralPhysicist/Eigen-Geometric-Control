@@ -36,16 +36,16 @@ from .eigen_lorentz import (
     stereo_to_lorentz,
     verify_lorentz_invariance,
 )
-from .eigen_xor_rotation import run_xor_simulation
 from .eigen_noperthedron import (
-    generate_noperthedron_vertices,
-    test_rupert_property,
     analyze_results,
-    vertices_to_bitstring,
-    spatial_overlap,
-    hamming_distance,
     compute_passage_ds2_discrete,
+    generate_noperthedron_vertices,
+    hamming_distance,
+    spatial_overlap,
+    test_rupert_property,
+    vertices_to_bitstring,
 )
+from .eigen_xor_rotation import run_xor_simulation
 
 __all__ = [
     # Core geometric functions
