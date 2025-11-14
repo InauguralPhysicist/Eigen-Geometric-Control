@@ -1,4 +1,5 @@
 import pytest
+
 """
 Integration tests for complete Eigen simulation pipeline
 
