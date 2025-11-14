@@ -95,6 +95,15 @@ from .eigen_adaptive import (
     estimate_oscillation_threshold,
     renormalize_lorentz_state,
 )
+from .eigen_geodesic import (
+    Obstacle,
+    christoffel_symbols,
+    compute_geodesic_path,
+    geodesic_acceleration,
+    geodesic_control_step,
+    metric_gradient,
+    metric_tensor,
+)
 from .eigen_xor_rotation import run_xor_simulation
 
 __all__ = [
@@ -175,6 +184,14 @@ __all__ = [
     "detect_system_parameters",
     "adaptive_control_step",
     "renormalize_lorentz_state",
+    # Geodesic path planning (differential geometry)
+    "Obstacle",
+    "metric_tensor",
+    "metric_gradient",
+    "christoffel_symbols",
+    "geodesic_acceleration",
+    "compute_geodesic_path",
+    "geodesic_control_step",
 ]
 
 __version__ = "1.0.0"
