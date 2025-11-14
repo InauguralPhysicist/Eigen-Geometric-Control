@@ -159,7 +159,7 @@ def demo_3_xor_oscillation_detection():
     for i, state in enumerate(history):
         if i > 0:
             # Check similarity with previous state
-            sim = standard_cosine_similarity(state, history[i-1])
+            sim = standard_cosine_similarity(state, history[i - 1])
             print(f"  Step {i}: {state[:4]}... → sim with prev = {sim:.4f}")
         else:
             print(f"  Step {i}: {state[:4]}...")
@@ -393,7 +393,8 @@ def main():
     # Summary
     print_section("SUMMARY: The Hidden Variable That Breaks Loops")
 
-    print("""
+    print(
+        """
 The lightlike observer is the HIDDEN VARIABLE that:
 
 1. HIDDEN PROPERTY
@@ -437,7 +438,8 @@ OBSERVATION IS GEOMETRY.
 THE OBSERVER IS GEOMETRIC.
 
 And specifically, the observer is LIGHTLIKE.
-    """)
+    """
+    )
 
 
 if __name__ == "__main__":

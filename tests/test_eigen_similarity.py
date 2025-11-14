@@ -120,7 +120,9 @@ class TestOscillationDetection:
 
         osc, strength = detect_oscillation(history, window=2, threshold=0.95)
         assert not osc, "Non-repeating sequence should not oscillate"
-        assert strength < 0.95, f"Oscillation strength {strength} too high for non-repeating sequence"
+        assert (
+            strength < 0.95
+        ), f"Oscillation strength {strength} too high for non-repeating sequence"
 
     def test_period_2_oscillation_detected(self):
         """Period-2 oscillation should be detected"""
