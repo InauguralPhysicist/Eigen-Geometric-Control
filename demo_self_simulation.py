@@ -128,8 +128,9 @@ def main():
     params = updated_params
 
     for iteration in range(3, 13):
-        trajectory.append(np.array([1.0 if iteration % 2 == 0 else 0.0,
-                                   0.0 if iteration % 2 == 0 else 1.0]))
+        trajectory.append(
+            np.array([1.0 if iteration % 2 == 0 else 0.0, 0.0 if iteration % 2 == 0 else 1.0])
+        )
         current_state = trajectory[-1]
 
         params, meta_info = self_tuning_control_step(
@@ -142,10 +143,14 @@ def main():
         )
 
         if iteration <= 5:  # Show first few
-            print(f"  Iteration {iteration}: performance={meta_info['performance_score']:.3f}, adjusted={meta_info['adjustment_made']}")
+            print(
+                f"  Iteration {iteration}: performance={meta_info['performance_score']:.3f}, adjusted={meta_info['adjustment_made']}"
+            )
 
     print("  ...")
-    print(f"  Iteration 12: performance={meta_info['performance_score']:.3f}, adjusted={meta_info['adjustment_made']}")
+    print(
+        f"  Iteration 12: performance={meta_info['performance_score']:.3f}, adjusted={meta_info['adjustment_made']}"
+    )
     print()
     print("✓ All 12 iterations completed without infinite loops!")
     print()

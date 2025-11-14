@@ -34,9 +34,9 @@ class TestCollectiveLightlikeObserver:
         collective_osc, agent_osc, collective_sim = collective_lightlike_observer(states, history)
 
         # Should not detect oscillation
-        assert collective_osc is False
+        assert not collective_osc
         assert len(agent_osc) == 1
-        assert agent_osc[0] is False
+        assert not agent_osc[0]
 
     def test_single_agent_oscillating(self):
         """Single agent oscillating - detected by observer."""
@@ -54,8 +54,8 @@ class TestCollectiveLightlikeObserver:
         collective_osc, agent_osc, collective_sim = collective_lightlike_observer(states, history)
 
         # Should detect oscillation
-        assert collective_osc is True
-        assert agent_osc[0] is True
+        assert collective_osc
+        assert agent_osc[0]
 
     def test_two_agents_independent(self):
         """Two agents with independent goals - no conflict."""
@@ -226,7 +226,7 @@ class TestSimulateMultiAgent:
 
         # Both agents should converge
         assert len(trajectories) == 2
-        assert converged is True
+        assert converged
 
         # Check final positions
         final_0 = trajectories[0][-1]
@@ -271,7 +271,7 @@ class TestSimulateMultiAgent:
         all_conv, distances = check_convergence(states, targets, tolerance=0.1)
 
         # Both within tolerance
-        assert all_conv is True
+        assert all_conv
         assert len(distances) == 2
         assert all(d < 0.1 for d in distances)
 
