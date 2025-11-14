@@ -69,6 +69,14 @@ from .eigen_multi_agent import (
     paradox_mediated_damping,
     simulate_multi_agent,
 )
+from .eigen_weak_measurement import (
+    accumulate_weak_measurements,
+    apply_weak_measurement,
+    coherence_metric,
+    stereo_weak_measurement,
+    weak_measurement_operator,
+    weak_stereo_control_step,
+)
 from .eigen_xor_rotation import run_xor_simulation
 
 __all__ = [
@@ -125,6 +133,13 @@ __all__ = [
     "multi_agent_step",
     "check_convergence",
     "simulate_multi_agent",
+    # Weak measurement (stereo vision)
+    "weak_measurement_operator",
+    "apply_weak_measurement",
+    "accumulate_weak_measurements",
+    "stereo_weak_measurement",
+    "weak_stereo_control_step",
+    "coherence_metric",
 ]
 
 __version__ = "1.0.0"
