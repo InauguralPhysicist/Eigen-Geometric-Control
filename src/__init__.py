@@ -57,6 +57,11 @@ from .eigen_similarity import (
     regime_from_similarity,
     standard_cosine_similarity,
 )
+from .eigen_meta_control import (
+    meta_update_parameters,
+    observe_parameter_performance,
+    self_tuning_control_step,
+)
 from .eigen_xor_rotation import run_xor_simulation
 
 __all__ = [
@@ -103,6 +108,10 @@ __all__ = [
     "compare_self_similarity",
     "regime_from_similarity",
     "adaptive_control_parameters",
+    # Meta-control (self-simulation)
+    "observe_parameter_performance",
+    "meta_update_parameters",
+    "self_tuning_control_step",
 ]
 
 __version__ = "1.0.0"
