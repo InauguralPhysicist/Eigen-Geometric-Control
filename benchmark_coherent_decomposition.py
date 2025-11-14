@@ -10,8 +10,8 @@ Comparison:
 - Coherent Filtering: Decompose and suppress incoherent noise
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 from src.eigen_decomposition import (
     coherent_control_step,

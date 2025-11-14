@@ -11,11 +11,11 @@ import numpy as np
 import pytest
 
 from src.eigen_qec import (
-    encode_state_redundant,
     apply_measurement_errors,
     compute_parity_checks,
-    detect_error_location,
     correct_measurement_errors,
+    detect_error_location,
+    encode_state_redundant,
     qec_control_step,
     simulate_sensor_array,
 )
@@ -427,11 +427,11 @@ class TestQECBenefits:
 def test_module_imports():
     """Verify all functions are importable."""
     from src.eigen_qec import (
-        encode_state_redundant,
         apply_measurement_errors,
         compute_parity_checks,
-        detect_error_location,
         correct_measurement_errors,
+        detect_error_location,
+        encode_state_redundant,
         qec_control_step,
         simulate_sensor_array,
     )

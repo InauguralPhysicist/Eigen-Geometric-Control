@@ -6,21 +6,23 @@ The XOR rotation has a period-2 oscillation that runs indefinitely.
 This tests if the lightlike observer can actually break it.
 """
 
-import numpy as np
 import sys
+
+import numpy as np
 
 sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
 
+import pandas as pd
+
 from src import (
-    run_xor_simulation,
-    detect_oscillation,
-    lightlike_damping_factor,
-    forward_kinematics,
+    compute_change_stability,
     compute_ds2,
     compute_gradient,
-    compute_change_stability,
+    detect_oscillation,
+    forward_kinematics,
+    lightlike_damping_factor,
+    run_xor_simulation,
 )
-import pandas as pd
 
 
 def run_xor_with_lightlike_damping(

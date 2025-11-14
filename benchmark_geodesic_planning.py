@@ -14,8 +14,8 @@ Test scenarios:
 - Corridor navigation (obstacles on sides)
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 from src.eigen_geodesic import (
     Obstacle,

@@ -11,10 +11,10 @@ import numpy as np
 import pytest
 
 from src.eigen_lorentz import (
+    apply_boost,
     estimate_target_velocity,
     inverse_boost,
     moving_target_control_step,
-    apply_boost,
 )
 
 

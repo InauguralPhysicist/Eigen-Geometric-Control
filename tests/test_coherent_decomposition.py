@@ -11,11 +11,11 @@ import numpy as np
 import pytest
 
 from src.eigen_decomposition import (
-    compute_autocorrelation,
     coherence_score,
+    coherent_control_step,
+    compute_autocorrelation,
     decompose_signal,
     filtered_observation,
-    coherent_control_step,
 )
 
 
@@ -349,11 +349,11 @@ class TestDecompositionBenefits:
 def test_module_imports():
     """Verify all functions are importable."""
     from src.eigen_decomposition import (
-        compute_autocorrelation,
         coherence_score,
+        coherent_control_step,
+        compute_autocorrelation,
         decompose_signal,
         filtered_observation,
-        coherent_control_step,
     )
 
     assert callable(compute_autocorrelation)
