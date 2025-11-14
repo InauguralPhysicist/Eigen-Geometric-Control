@@ -27,9 +27,12 @@ from .eigen_lorentz import (
     change_stability_to_lorentz,
     create_lorentz_state,
     disparity_to_rapidity,
+    estimate_target_velocity,
+    inverse_boost,
     lorentz_boost_from_rapidity,
     lorentz_boost_matrix,
     lorentz_to_stereo,
+    moving_target_control_step,
     proper_distance,
     proper_time,
     regime_classification,
@@ -69,6 +72,14 @@ from .eigen_multi_agent import (
     paradox_mediated_damping,
     simulate_multi_agent,
 )
+from .eigen_weak_measurement import (
+    accumulate_weak_measurements,
+    apply_weak_measurement,
+    coherence_metric,
+    stereo_weak_measurement,
+    weak_measurement_operator,
+    weak_stereo_control_step,
+)
 from .eigen_xor_rotation import run_xor_simulation
 
 __all__ = [
@@ -94,6 +105,7 @@ __all__ = [
     "lorentz_boost_matrix",
     "lorentz_boost_from_rapidity",
     "apply_boost",
+    "inverse_boost",
     "LorentzState",
     "create_lorentz_state",
     "boost_lorentz_state",
@@ -105,6 +117,9 @@ __all__ = [
     "proper_time",
     "proper_distance",
     "verify_lorentz_invariance",
+    # Moving target tracking
+    "estimate_target_velocity",
+    "moving_target_control_step",
     # Lorentz-invariant similarity (lightlike observer)
     "lorentz_similarity",
     "standard_cosine_similarity",
@@ -125,6 +140,13 @@ __all__ = [
     "multi_agent_step",
     "check_convergence",
     "simulate_multi_agent",
+    # Weak measurement (stereo vision)
+    "weak_measurement_operator",
+    "apply_weak_measurement",
+    "accumulate_weak_measurements",
+    "stereo_weak_measurement",
+    "weak_stereo_control_step",
+    "coherence_metric",
 ]
 
 __version__ = "1.0.0"
