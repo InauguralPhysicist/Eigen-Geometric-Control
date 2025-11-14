@@ -8,7 +8,8 @@ This tests if the lightlike observer can actually break it.
 
 import numpy as np
 import sys
-sys.path.insert(0, '/home/user/Eigen-Geometric-Control')
+
+sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
 
 from src import (
     run_xor_simulation,
@@ -17,7 +18,7 @@ from src import (
     forward_kinematics,
     compute_ds2,
     compute_gradient,
-    compute_change_stability
+    compute_change_stability,
 )
 import pandas as pd
 
@@ -32,7 +33,7 @@ def run_xor_with_lightlike_damping(
     eps_change=1e-3,
     L1=0.9,
     L2=0.9,
-    window=3
+    window=3,
 ):
     """Run XOR simulation WITH lightlike observer damping"""
     theta1, theta2 = theta_init
@@ -78,23 +79,25 @@ def run_xor_with_lightlike_damping(
         C, S, ds2_CS = compute_change_stability(delta, eps_change)
 
         # Record state
-        rows.append({
-            'tick': t,
-            'theta1_rad': theta1,
-            'theta2_rad': theta2,
-            'x': x,
-            'y': y,
-            'ds2_total': ds2_total,
-            'grad_norm': grad_norm,
-            'C': C,
-            'S': S,
-            'ds2_CS': ds2_CS,
-            'delta_theta1': delta[0],
-            'delta_theta2': delta[1],
-            'oscillating': oscillating,
-            'osc_strength': osc_strength,
-            'damping': damping,
-        })
+        rows.append(
+            {
+                "tick": t,
+                "theta1_rad": theta1,
+                "theta2_rad": theta2,
+                "x": x,
+                "y": y,
+                "ds2_total": ds2_total,
+                "grad_norm": grad_norm,
+                "C": C,
+                "S": S,
+                "ds2_CS": ds2_CS,
+                "delta_theta1": delta[0],
+                "delta_theta2": delta[1],
+                "oscillating": oscillating,
+                "osc_strength": osc_strength,
+                "damping": damping,
+            }
+        )
 
         # Update for next iteration
         theta1, theta2 = theta1_new, theta2_new
@@ -111,15 +114,16 @@ def detect_period_2_loop(df, tolerance=0.01):
     recent = df.tail(10)
 
     # Check if states alternate between two configurations
-    theta1_vals = recent['theta1_rad'].values
-    theta2_vals = recent['theta2_rad'].values
+    theta1_vals = recent["theta1_rad"].values
+    theta2_vals = recent["theta2_rad"].values
 
     # Check for A-B-A-B pattern
     period_2 = True
     for i in range(len(theta1_vals) - 2):
         # State should match state 2 ticks ago
-        dist = np.sqrt((theta1_vals[i] - theta1_vals[i+2])**2 +
-                       (theta2_vals[i] - theta2_vals[i+2])**2)
+        dist = np.sqrt(
+            (theta1_vals[i] - theta1_vals[i + 2]) ** 2 + (theta2_vals[i] - theta2_vals[i + 2]) ** 2
+        )
         if dist > tolerance:
             period_2 = False
             break
@@ -163,10 +167,12 @@ def main():
     print("BASELINE (v1.0.0):")
     print(f"  Initial ds²: {df_baseline['ds2_total'].iloc[0]:.4f}")
     print(f"  Final ds²:   {df_baseline['ds2_total'].iloc[-1]:.4f}")
-    print(f"  ds² change:  {df_baseline['ds2_total'].iloc[-1] - df_baseline['ds2_total'].iloc[0]:.4f}")
+    print(
+        f"  ds² change:  {df_baseline['ds2_total'].iloc[-1] - df_baseline['ds2_total'].iloc[0]:.4f}"
+    )
 
     # Check for oscillation
-    ds2_variance = df_baseline['ds2_total'].tail(10).std()
+    ds2_variance = df_baseline["ds2_total"].tail(10).std()
     is_period_2 = detect_period_2_loop(df_baseline)
 
     print(f"  ds² variance (last 10): {ds2_variance:.4f}")
@@ -183,18 +189,20 @@ def main():
     print("WITH LIGHTLIKE OBSERVER:")
     print(f"  Initial ds²: {df_lightlike['ds2_total'].iloc[0]:.4f}")
     print(f"  Final ds²:   {df_lightlike['ds2_total'].iloc[-1]:.4f}")
-    print(f"  ds² change:  {df_lightlike['ds2_total'].iloc[-1] - df_lightlike['ds2_total'].iloc[0]:.4f}")
+    print(
+        f"  ds² change:  {df_lightlike['ds2_total'].iloc[-1] - df_lightlike['ds2_total'].iloc[0]:.4f}"
+    )
 
-    ds2_variance_light = df_lightlike['ds2_total'].tail(10).std()
+    ds2_variance_light = df_lightlike["ds2_total"].tail(10).std()
     is_period_2_light = detect_period_2_loop(df_lightlike)
 
     print(f"  ds² variance (last 10): {ds2_variance_light:.4f}")
     print(f"  Period-2 detected: {is_period_2_light}")
 
     # Check observer activations
-    damping_used = (df_lightlike['damping'] > 0).sum()
-    max_damping = df_lightlike['damping'].max()
-    mean_osc_strength = df_lightlike['osc_strength'].mean()
+    damping_used = (df_lightlike["damping"] > 0).sum()
+    max_damping = df_lightlike["damping"].max()
+    mean_osc_strength = df_lightlike["osc_strength"].mean()
 
     print(f"  Observer activations: {damping_used} / {len(df_lightlike)} ticks")
     print(f"  Max damping: {max_damping:.4f}")
@@ -232,11 +240,19 @@ def main():
     print("Trajectory comparison (last 10 ticks):")
     print()
     print("BASELINE:")
-    print(df_baseline[['tick', 'theta1_rad', 'theta2_rad', 'ds2_total']].tail(10).to_string(index=False))
+    print(
+        df_baseline[["tick", "theta1_rad", "theta2_rad", "ds2_total"]]
+        .tail(10)
+        .to_string(index=False)
+    )
     print()
     print("WITH LIGHTLIKE:")
-    print(df_lightlike[['tick', 'theta1_rad', 'theta2_rad', 'ds2_total', 'damping']].tail(10).to_string(index=False))
+    print(
+        df_lightlike[["tick", "theta1_rad", "theta2_rad", "ds2_total", "damping"]]
+        .tail(10)
+        .to_string(index=False)
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

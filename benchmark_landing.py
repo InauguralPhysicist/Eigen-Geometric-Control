@@ -23,7 +23,8 @@ This is a killer application for lightlike observer:
 
 import numpy as np
 import sys
-sys.path.insert(0, '/home/user/Eigen-Geometric-Control')
+
+sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
 
 from src import (
     detect_oscillation,
@@ -31,7 +32,7 @@ from src import (
     forward_kinematics,
     compute_ds2,
     compute_gradient,
-    compute_change_stability
+    compute_change_stability,
 )
 import pandas as pd
 
@@ -77,19 +78,21 @@ def run_landing_baseline(
         C, S, ds2_CS = compute_change_stability(delta, 1e-3)
 
         # Record state
-        rows.append({
-            'tick': t,
-            'theta1_rad': theta1,
-            'theta2_rad': theta2,
-            'x': x,
-            'y': y,
-            'target_x': target[0],
-            'target_y': target[1],
-            'distance_to_target': np.sqrt((x - target[0])**2 + (y - target[1])**2),
-            'ds2_total': ds2_total,
-            'grad_norm': grad_norm,
-            'd_obs': components['d_obs'],
-        })
+        rows.append(
+            {
+                "tick": t,
+                "theta1_rad": theta1,
+                "theta2_rad": theta2,
+                "x": x,
+                "y": y,
+                "target_x": target[0],
+                "target_y": target[1],
+                "distance_to_target": np.sqrt((x - target[0]) ** 2 + (y - target[1]) ** 2),
+                "ds2_total": ds2_total,
+                "grad_norm": grad_norm,
+                "d_obs": components["d_obs"],
+            }
+        )
 
         theta1, theta2 = theta1_new, theta2_new
 
@@ -155,22 +158,24 @@ def run_landing_lightlike(
         C, S, ds2_CS = compute_change_stability(delta, 1e-3)
 
         # Record state
-        rows.append({
-            'tick': t,
-            'theta1_rad': theta1,
-            'theta2_rad': theta2,
-            'x': x,
-            'y': y,
-            'target_x': target[0],
-            'target_y': target[1],
-            'distance_to_target': np.sqrt((x - target[0])**2 + (y - target[1])**2),
-            'ds2_total': ds2_total,
-            'grad_norm': grad_norm,
-            'd_obs': components['d_obs'],
-            'oscillating': oscillating,
-            'osc_strength': osc_strength,
-            'damping': damping,
-        })
+        rows.append(
+            {
+                "tick": t,
+                "theta1_rad": theta1,
+                "theta2_rad": theta2,
+                "x": x,
+                "y": y,
+                "target_x": target[0],
+                "target_y": target[1],
+                "distance_to_target": np.sqrt((x - target[0]) ** 2 + (y - target[1]) ** 2),
+                "ds2_total": ds2_total,
+                "grad_norm": grad_norm,
+                "d_obs": components["d_obs"],
+                "oscillating": oscillating,
+                "osc_strength": osc_strength,
+                "damping": damping,
+            }
+        )
 
         theta1, theta2 = theta1_new, theta2_new
 
@@ -180,7 +185,7 @@ def run_landing_lightlike(
 def analyze_landing(df, scenario_name):
     """Analyze landing performance with focus on final approach"""
     # Overall tracking
-    distances = df['distance_to_target'].values
+    distances = df["distance_to_target"].values
 
     # Final approach (last 20% of trajectory)
     final_approach_start = int(len(df) * 0.8)
@@ -193,10 +198,10 @@ def analyze_landing(df, scenario_name):
     approach_variance = np.std(final_distances) * 1000  # mm
 
     # Count oscillations in final approach (critical phase)
-    grad_norms = df['grad_norm'].values[final_approach_start:]
+    grad_norms = df["grad_norm"].values[final_approach_start:]
     final_oscillations = 0
     for i in range(1, len(grad_norms)):
-        if grad_norms[i] > grad_norms[i-1] * 1.4:
+        if grad_norms[i] > grad_norms[i - 1] * 1.4:
             final_oscillations += 1
 
     # Time to reach landing zone (within 2cm)
@@ -204,27 +209,27 @@ def analyze_landing(df, scenario_name):
     landing_zone_reached = np.argmax(within_zone) if within_zone.any() else len(df)
 
     # Overall oscillations
-    all_grad_norms = df['grad_norm'].values
+    all_grad_norms = df["grad_norm"].values
     total_oscillations = 0
     for i in range(10, len(all_grad_norms)):
-        if all_grad_norms[i] > all_grad_norms[i-1] * 1.4:
+        if all_grad_norms[i] > all_grad_norms[i - 1] * 1.4:
             total_oscillations += 1
 
     metrics = {
-        'scenario': scenario_name,
-        'final_landing_error_mm': final_error,
-        'approach_stability_mm': approach_variance,
-        'final_approach_oscillations': final_oscillations,
-        'total_oscillations': total_oscillations,
-        'time_to_landing_zone': landing_zone_reached,
-        'mean_tracking_error_mm': distances.mean() * 1000,
+        "scenario": scenario_name,
+        "final_landing_error_mm": final_error,
+        "approach_stability_mm": approach_variance,
+        "final_approach_oscillations": final_oscillations,
+        "total_oscillations": total_oscillations,
+        "time_to_landing_zone": landing_zone_reached,
+        "mean_tracking_error_mm": distances.mean() * 1000,
     }
 
-    if 'damping' in df.columns:
+    if "damping" in df.columns:
         # Analyze damping during final approach
-        final_damping = df['damping'].iloc[final_approach_start:]
-        metrics['final_approach_damping_activations'] = (final_damping > 0).sum()
-        metrics['max_damping_final_approach'] = final_damping.max()
+        final_damping = df["damping"].iloc[final_approach_start:]
+        metrics["final_approach_damping_activations"] = (final_damping > 0).sum()
+        metrics["max_damping_final_approach"] = final_damping.max()
 
     return metrics
 
@@ -242,56 +247,55 @@ def main():
 
     # Scenario 1: Ship deck landing (oscillating platform - wave motion)
     print("Scenario 1: Ship deck landing (wave motion)...")
+
     def ship_deck(t):
         # Oscillating landing pad (ship on waves)
-        return [1.3 + 0.03*np.sin(t*0.15), 0.4 + 0.02*np.cos(t*0.2)]
+        return [1.3 + 0.03 * np.sin(t * 0.15), 0.4 + 0.02 * np.cos(t * 0.2)]
 
     def obstacle_port_side(t):
         return [0.8, 0.3]  # Ship superstructure
 
     df_base_1 = run_landing_baseline(
-        landing_trajectory=ship_deck,
-        obstacle_trajectory=obstacle_port_side,
-        n_ticks=180
+        landing_trajectory=ship_deck, obstacle_trajectory=obstacle_port_side, n_ticks=180
     )
     df_light_1 = run_landing_lightlike(
-        landing_trajectory=ship_deck,
-        obstacle_trajectory=obstacle_port_side,
-        n_ticks=180
+        landing_trajectory=ship_deck, obstacle_trajectory=obstacle_port_side, n_ticks=180
     )
 
-    results.append({
-        'baseline': analyze_landing(df_base_1, "Ship Deck - Baseline"),
-        'lightlike': analyze_landing(df_light_1, "Ship Deck - Lightlike"),
-    })
+    results.append(
+        {
+            "baseline": analyze_landing(df_base_1, "Ship Deck - Baseline"),
+            "lightlike": analyze_landing(df_light_1, "Ship Deck - Lightlike"),
+        }
+    )
 
     # Scenario 2: Moving vehicle landing (truck bed, AGV)
     print("Scenario 2: Moving vehicle landing (truck/AGV)...")
+
     def moving_vehicle(t):
         # Linear motion with small vibrations
-        return [1.2 + 0.003*t, 0.35 + 0.005*np.sin(t*0.5)]
+        return [1.2 + 0.003 * t, 0.35 + 0.005 * np.sin(t * 0.5)]
 
     def obstacle_fixed(t):
         return [0.7, 0.2]
 
     df_base_2 = run_landing_baseline(
-        landing_trajectory=moving_vehicle,
-        obstacle_trajectory=obstacle_fixed,
-        n_ticks=180
+        landing_trajectory=moving_vehicle, obstacle_trajectory=obstacle_fixed, n_ticks=180
     )
     df_light_2 = run_landing_lightlike(
-        landing_trajectory=moving_vehicle,
-        obstacle_trajectory=obstacle_fixed,
-        n_ticks=180
+        landing_trajectory=moving_vehicle, obstacle_trajectory=obstacle_fixed, n_ticks=180
     )
 
-    results.append({
-        'baseline': analyze_landing(df_base_2, "Moving Vehicle - Baseline"),
-        'lightlike': analyze_landing(df_light_2, "Moving Vehicle - Lightlike"),
-    })
+    results.append(
+        {
+            "baseline": analyze_landing(df_base_2, "Moving Vehicle - Baseline"),
+            "lightlike": analyze_landing(df_light_2, "Moving Vehicle - Lightlike"),
+        }
+    )
 
     # Scenario 3: Precision landing (stationary but ultra-tight tolerance)
     print("Scenario 3: Precision landing (tight tolerance)...")
+
     def precision_pad(t):
         return [1.35, 0.38]  # Fixed position
 
@@ -299,43 +303,45 @@ def main():
         landing_trajectory=precision_pad,
         obstacle_trajectory=obstacle_fixed,
         n_ticks=180,
-        eta=0.10  # Slower for precision
+        eta=0.10,  # Slower for precision
     )
     df_light_3 = run_landing_lightlike(
-        landing_trajectory=precision_pad,
-        obstacle_trajectory=obstacle_fixed,
-        n_ticks=180,
-        eta=0.10
+        landing_trajectory=precision_pad, obstacle_trajectory=obstacle_fixed, n_ticks=180, eta=0.10
     )
 
-    results.append({
-        'baseline': analyze_landing(df_base_3, "Precision Landing - Baseline"),
-        'lightlike': analyze_landing(df_light_3, "Precision Landing - Lightlike"),
-    })
+    results.append(
+        {
+            "baseline": analyze_landing(df_base_3, "Precision Landing - Baseline"),
+            "lightlike": analyze_landing(df_light_3, "Precision Landing - Lightlike"),
+        }
+    )
 
     # Scenario 4: Emergency descent (rapidly descending platform)
     print("Scenario 4: Emergency descent (fast approach)...")
+
     def descending_platform(t):
         # Platform descending (emergency evacuation scenario)
-        return [1.3, 0.45 - 0.002*t]
+        return [1.3, 0.45 - 0.002 * t]
 
     df_base_4 = run_landing_baseline(
         landing_trajectory=descending_platform,
         obstacle_trajectory=obstacle_fixed,
         n_ticks=180,
-        eta=0.18  # Faster approach
+        eta=0.18,  # Faster approach
     )
     df_light_4 = run_landing_lightlike(
         landing_trajectory=descending_platform,
         obstacle_trajectory=obstacle_fixed,
         n_ticks=180,
-        eta=0.18
+        eta=0.18,
     )
 
-    results.append({
-        'baseline': analyze_landing(df_base_4, "Emergency Descent - Baseline"),
-        'lightlike': analyze_landing(df_light_4, "Emergency Descent - Lightlike"),
-    })
+    results.append(
+        {
+            "baseline": analyze_landing(df_base_4, "Emergency Descent - Baseline"),
+            "lightlike": analyze_landing(df_light_4, "Emergency Descent - Lightlike"),
+        }
+    )
 
     # Scenario 5: Turbulent conditions (noisy target + disturbances)
     print("Scenario 5: Turbulent conditions (wind/noise)...")
@@ -349,20 +355,18 @@ def main():
         return [base_x + noise_x[min(t, 179)], base_y + noise_y[min(t, 179)]]
 
     df_base_5 = run_landing_baseline(
-        landing_trajectory=turbulent_landing,
-        obstacle_trajectory=obstacle_fixed,
-        n_ticks=180
+        landing_trajectory=turbulent_landing, obstacle_trajectory=obstacle_fixed, n_ticks=180
     )
     df_light_5 = run_landing_lightlike(
-        landing_trajectory=turbulent_landing,
-        obstacle_trajectory=obstacle_fixed,
-        n_ticks=180
+        landing_trajectory=turbulent_landing, obstacle_trajectory=obstacle_fixed, n_ticks=180
     )
 
-    results.append({
-        'baseline': analyze_landing(df_base_5, "Turbulent - Baseline"),
-        'lightlike': analyze_landing(df_light_5, "Turbulent - Lightlike"),
-    })
+    results.append(
+        {
+            "baseline": analyze_landing(df_base_5, "Turbulent - Baseline"),
+            "lightlike": analyze_landing(df_light_5, "Turbulent - Lightlike"),
+        }
+    )
 
     # Display results
     print()
@@ -374,53 +378,69 @@ def main():
     print("Final Landing Error (mm) - MOST CRITICAL METRIC:")
     print("-" * 80)
     for r in results:
-        base = r['baseline']
-        light = r['lightlike']
-        improvement = (base['final_landing_error_mm'] - light['final_landing_error_mm']) / base['final_landing_error_mm'] * 100
+        base = r["baseline"]
+        light = r["lightlike"]
+        improvement = (
+            (base["final_landing_error_mm"] - light["final_landing_error_mm"])
+            / base["final_landing_error_mm"]
+            * 100
+        )
         arrow = "✓" if improvement > 0 else "✗"
 
-        scenario = base['scenario'].replace(' - Baseline', '')
-        print(f"{scenario:<30} {base['final_landing_error_mm']:>7.1f}mm → {light['final_landing_error_mm']:>7.1f}mm  "
-              f"{arrow} {abs(improvement):>6.1f}%")
+        scenario = base["scenario"].replace(" - Baseline", "")
+        print(
+            f"{scenario:<30} {base['final_landing_error_mm']:>7.1f}mm → {light['final_landing_error_mm']:>7.1f}mm  "
+            f"{arrow} {abs(improvement):>6.1f}%"
+        )
 
     print()
     print("Final Approach Stability (std dev in mm) - SAFETY CRITICAL:")
     print("-" * 80)
     for r in results:
-        base = r['baseline']
-        light = r['lightlike']
-        improvement = (base['approach_stability_mm'] - light['approach_stability_mm']) / base['approach_stability_mm'] * 100
+        base = r["baseline"]
+        light = r["lightlike"]
+        improvement = (
+            (base["approach_stability_mm"] - light["approach_stability_mm"])
+            / base["approach_stability_mm"]
+            * 100
+        )
         arrow = "✓" if improvement > 0 else "✗"
 
-        scenario = base['scenario'].replace(' - Baseline', '')
-        print(f"{scenario:<30} {base['approach_stability_mm']:>7.1f}mm → {light['approach_stability_mm']:>7.1f}mm  "
-              f"{arrow} {abs(improvement):>6.1f}%")
+        scenario = base["scenario"].replace(" - Baseline", "")
+        print(
+            f"{scenario:<30} {base['approach_stability_mm']:>7.1f}mm → {light['approach_stability_mm']:>7.1f}mm  "
+            f"{arrow} {abs(improvement):>6.1f}%"
+        )
 
     print()
     print("Final Approach Oscillations - CRASH RISK INDICATOR:")
     print("-" * 80)
     for r in results:
-        base = r['baseline']
-        light = r['lightlike']
-        reduction = base['final_approach_oscillations'] - light['final_approach_oscillations']
+        base = r["baseline"]
+        light = r["lightlike"]
+        reduction = base["final_approach_oscillations"] - light["final_approach_oscillations"]
         status = "SAFER" if reduction > 0 else "SAME" if reduction == 0 else "WORSE"
 
-        scenario = base['scenario'].replace(' - Baseline', '')
-        print(f"{scenario:<30} {base['final_approach_oscillations']:>4} → {light['final_approach_oscillations']:>4} events  "
-              f"{status:>6} ({reduction:+d})")
+        scenario = base["scenario"].replace(" - Baseline", "")
+        print(
+            f"{scenario:<30} {base['final_approach_oscillations']:>4} → {light['final_approach_oscillations']:>4} events  "
+            f"{status:>6} ({reduction:+d})"
+        )
 
     print()
     print("Time to Landing Zone (<2cm):")
     print("-" * 80)
     for r in results:
-        base = r['baseline']
-        light = r['lightlike']
-        change = light['time_to_landing_zone'] - base['time_to_landing_zone']
+        base = r["baseline"]
+        light = r["lightlike"]
+        change = light["time_to_landing_zone"] - base["time_to_landing_zone"]
         faster = "faster" if change < 0 else "slower"
 
-        scenario = base['scenario'].replace(' - Baseline', '')
-        print(f"{scenario:<30} {base['time_to_landing_zone']:>4} → {light['time_to_landing_zone']:>4} ticks  "
-              f"({abs(change):>3d} {faster})")
+        scenario = base["scenario"].replace(" - Baseline", "")
+        print(
+            f"{scenario:<30} {base['time_to_landing_zone']:>4} → {light['time_to_landing_zone']:>4} ticks  "
+            f"({abs(change):>3d} {faster})"
+        )
 
     print()
     print("=" * 80)
@@ -430,19 +450,21 @@ def main():
 
     # Calculate critical metrics
     avg_landing_improvement = sum(
-        (r['baseline']['final_landing_error_mm'] - r['lightlike']['final_landing_error_mm']) /
-        r['baseline']['final_landing_error_mm'] * 100
+        (r["baseline"]["final_landing_error_mm"] - r["lightlike"]["final_landing_error_mm"])
+        / r["baseline"]["final_landing_error_mm"]
+        * 100
         for r in results
     ) / len(results)
 
     avg_stability_improvement = sum(
-        (r['baseline']['approach_stability_mm'] - r['lightlike']['approach_stability_mm']) /
-        r['baseline']['approach_stability_mm'] * 100
+        (r["baseline"]["approach_stability_mm"] - r["lightlike"]["approach_stability_mm"])
+        / r["baseline"]["approach_stability_mm"]
+        * 100
         for r in results
     ) / len(results)
 
     total_oscillation_reduction = sum(
-        r['baseline']['final_approach_oscillations'] - r['lightlike']['final_approach_oscillations']
+        r["baseline"]["final_approach_oscillations"] - r["lightlike"]["final_approach_oscillations"]
         for r in results
     )
 
@@ -452,23 +474,33 @@ def main():
     print()
 
     # Best scenario
-    best_idx = max(range(len(results)),
-                   key=lambda i: (results[i]['baseline']['final_landing_error_mm'] -
-                                 results[i]['lightlike']['final_landing_error_mm']))
+    best_idx = max(
+        range(len(results)),
+        key=lambda i: (
+            results[i]["baseline"]["final_landing_error_mm"]
+            - results[i]["lightlike"]["final_landing_error_mm"]
+        ),
+    )
     best = results[best_idx]
-    best_improvement = (best['baseline']['final_landing_error_mm'] -
-                       best['lightlike']['final_landing_error_mm']) / \
-                       best['baseline']['final_landing_error_mm'] * 100
+    best_improvement = (
+        (best["baseline"]["final_landing_error_mm"] - best["lightlike"]["final_landing_error_mm"])
+        / best["baseline"]["final_landing_error_mm"]
+        * 100
+    )
 
     print(f"★ BEST PERFORMANCE: {best['baseline']['scenario'].replace(' - Baseline', '')}")
     print(f"  Landing error improvement: {best_improvement:.1f}%")
-    print(f"  Final approach oscillations reduced: {best['baseline']['final_approach_oscillations'] - best['lightlike']['final_approach_oscillations']} events")
+    print(
+        f"  Final approach oscillations reduced: {best['baseline']['final_approach_oscillations'] - best['lightlike']['final_approach_oscillations']} events"
+    )
     print()
 
     if avg_landing_improvement > 5.0 or total_oscillation_reduction > 5:
         print("★★★ CRITICAL BENEFIT FOR AUTONOMOUS LANDING ★★★")
         print()
-        print(f"The lightlike observer provides {avg_landing_improvement:.1f}% better landing precision")
+        print(
+            f"The lightlike observer provides {avg_landing_improvement:.1f}% better landing precision"
+        )
         print(f"and {avg_stability_improvement:.1f}% more stable final approach.")
         print()
         print("For autonomous landing applications:")
@@ -492,5 +524,5 @@ def main():
     print("=" * 80)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

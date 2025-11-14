@@ -161,9 +161,7 @@ class TestStereoWeakMeasurement:
         left = np.array([1.0, 0.5])
         right = np.array([0.8, 0.5])
 
-        left_m, right_m, _ = stereo_weak_measurement(
-            left, right, measurement_strength=0.05
-        )
+        left_m, right_m, _ = stereo_weak_measurement(left, right, measurement_strength=0.05)
 
         # Should be similar to original
         assert np.linalg.norm(left_m - left) < 0.5
@@ -198,9 +196,7 @@ class TestWeakStereoControlStep:
         right_obs = np.array([0.8, 1.0])
 
         # First step
-        _, _, measurements1 = weak_stereo_control_step(
-            current, target, left_obs, right_obs
-        )
+        _, _, measurements1 = weak_stereo_control_step(current, target, left_obs, right_obs)
 
         # Second step with accumulated measurements
         _, _, measurements2 = weak_stereo_control_step(
@@ -244,9 +240,7 @@ class TestCoherenceMetric:
     def test_jittery_trajectory_low_coherence(self):
         """Jittery motion should have low coherence."""
         # Oscillating trajectory (not smooth)
-        trajectory = [
-            np.array([float(i % 2), float(i % 2)]) for i in range(10)
-        ]
+        trajectory = [np.array([float(i % 2), float(i % 2)]) for i in range(10)]
 
         coherence = coherence_metric(trajectory)
 

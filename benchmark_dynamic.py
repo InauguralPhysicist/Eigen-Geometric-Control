@@ -15,7 +15,8 @@ observer should provide significant benefit.
 
 import numpy as np
 import sys
-sys.path.insert(0, '/home/user/Eigen-Geometric-Control')
+
+sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
 
 from src import (
     detect_oscillation,
@@ -23,7 +24,7 @@ from src import (
     forward_kinematics,
     compute_ds2,
     compute_gradient,
-    compute_change_stability
+    compute_change_stability,
 )
 import pandas as pd
 
@@ -70,20 +71,22 @@ def run_dynamic_baseline(
         C, S, ds2_CS = compute_change_stability(delta, 1e-3)
 
         # Record state
-        rows.append({
-            'tick': t,
-            'theta1_rad': theta1,
-            'theta2_rad': theta2,
-            'x': x,
-            'y': y,
-            'target_x': target[0],
-            'target_y': target[1],
-            'obs_x': obstacle_center[0],
-            'obs_y': obstacle_center[1],
-            'ds2_total': ds2_total,
-            'grad_norm': grad_norm,
-            'd_obs': components['d_obs'],
-        })
+        rows.append(
+            {
+                "tick": t,
+                "theta1_rad": theta1,
+                "theta2_rad": theta2,
+                "x": x,
+                "y": y,
+                "target_x": target[0],
+                "target_y": target[1],
+                "obs_x": obstacle_center[0],
+                "obs_y": obstacle_center[1],
+                "ds2_total": ds2_total,
+                "grad_norm": grad_norm,
+                "d_obs": components["d_obs"],
+            }
+        )
 
         # Update for next iteration
         theta1, theta2 = theta1_new, theta2_new
@@ -151,23 +154,25 @@ def run_dynamic_lightlike(
         C, S, ds2_CS = compute_change_stability(delta, 1e-3)
 
         # Record state
-        rows.append({
-            'tick': t,
-            'theta1_rad': theta1,
-            'theta2_rad': theta2,
-            'x': x,
-            'y': y,
-            'target_x': target[0],
-            'target_y': target[1],
-            'obs_x': obstacle_center[0],
-            'obs_y': obstacle_center[1],
-            'ds2_total': ds2_total,
-            'grad_norm': grad_norm,
-            'd_obs': components['d_obs'],
-            'oscillating': oscillating,
-            'osc_strength': osc_strength,
-            'damping': damping,
-        })
+        rows.append(
+            {
+                "tick": t,
+                "theta1_rad": theta1,
+                "theta2_rad": theta2,
+                "x": x,
+                "y": y,
+                "target_x": target[0],
+                "target_y": target[1],
+                "obs_x": obstacle_center[0],
+                "obs_y": obstacle_center[1],
+                "ds2_total": ds2_total,
+                "grad_norm": grad_norm,
+                "d_obs": components["d_obs"],
+                "oscillating": oscillating,
+                "osc_strength": osc_strength,
+                "damping": damping,
+            }
+        )
 
         # Update for next iteration
         theta1, theta2 = theta1_new, theta2_new
@@ -178,35 +183,33 @@ def run_dynamic_lightlike(
 def analyze_tracking(df, scenario_name):
     """Analyze tracking performance"""
     # Tracking error
-    tracking_error = np.sqrt(
-        (df['x'] - df['target_x'])**2 + (df['y'] - df['target_y'])**2
-    )
+    tracking_error = np.sqrt((df["x"] - df["target_x"]) ** 2 + (df["y"] - df["target_y"]) ** 2)
 
     # Oscillation detection (gradient reversals)
-    grad_norms = df['grad_norm'].values
+    grad_norms = df["grad_norm"].values
     oscillations = 0
     for i in range(10, len(grad_norms) - 1):
-        if grad_norms[i] > grad_norms[i-1] * 1.3:  # Gradient spike
+        if grad_norms[i] > grad_norms[i - 1] * 1.3:  # Gradient spike
             oscillations += 1
 
     # Collision risk (how close to obstacle)
-    min_clearance = df['d_obs'].min()
-    near_collisions = (df['d_obs'] < 0.30).sum()  # Within 5cm of collision
+    min_clearance = df["d_obs"].min()
+    near_collisions = (df["d_obs"] < 0.30).sum()  # Within 5cm of collision
 
     metrics = {
-        'scenario': scenario_name,
-        'mean_tracking_error_mm': tracking_error.mean() * 1000,
-        'max_tracking_error_mm': tracking_error.max() * 1000,
-        'final_tracking_error_mm': tracking_error.iloc[-1] * 1000,
-        'tracking_variance': tracking_error.std() * 1000,
-        'oscillations': oscillations,
-        'min_clearance_m': min_clearance,
-        'near_collisions': near_collisions,
+        "scenario": scenario_name,
+        "mean_tracking_error_mm": tracking_error.mean() * 1000,
+        "max_tracking_error_mm": tracking_error.max() * 1000,
+        "final_tracking_error_mm": tracking_error.iloc[-1] * 1000,
+        "tracking_variance": tracking_error.std() * 1000,
+        "oscillations": oscillations,
+        "min_clearance_m": min_clearance,
+        "near_collisions": near_collisions,
     }
 
-    if 'damping' in df.columns:
-        metrics['lightlike_activations'] = (df['damping'] > 0).sum()
-        metrics['max_damping'] = df['damping'].max()
+    if "damping" in df.columns:
+        metrics["lightlike_activations"] = (df["damping"] > 0).sum()
+        metrics["max_damping"] = df["damping"].max()
 
     return metrics
 
@@ -224,112 +227,109 @@ def main():
 
     # Scenario 1: Moving target (linear motion)
     print("Scenario 1: Linear moving target (tracking task)...")
+
     def target_linear(t):
-        return [1.0 + 0.002*t, 0.3 + 0.001*t]
+        return [1.0 + 0.002 * t, 0.3 + 0.001 * t]
+
     def obstacle_static(t):
         return [0.6, 0.1]
 
     df_base_1 = run_dynamic_baseline(
-        target_trajectory=target_linear,
-        obstacle_trajectory=obstacle_static,
-        n_ticks=150
+        target_trajectory=target_linear, obstacle_trajectory=obstacle_static, n_ticks=150
     )
     df_light_1 = run_dynamic_lightlike(
-        target_trajectory=target_linear,
-        obstacle_trajectory=obstacle_static,
-        n_ticks=150
+        target_trajectory=target_linear, obstacle_trajectory=obstacle_static, n_ticks=150
     )
 
-    results.append({
-        'baseline': analyze_tracking(df_base_1, "Moving Target - Baseline"),
-        'lightlike': analyze_tracking(df_light_1, "Moving Target - Lightlike"),
-    })
+    results.append(
+        {
+            "baseline": analyze_tracking(df_base_1, "Moving Target - Baseline"),
+            "lightlike": analyze_tracking(df_light_1, "Moving Target - Lightlike"),
+        }
+    )
 
     # Scenario 2: Oscillating target (periodic motion)
     print("Scenario 2: Oscillating target (tracking periodic motion)...")
+
     def target_oscillate(t):
-        return [1.2 + 0.1*np.sin(t*0.3), 0.3 + 0.08*np.cos(t*0.3)]
+        return [1.2 + 0.1 * np.sin(t * 0.3), 0.3 + 0.08 * np.cos(t * 0.3)]
 
     df_base_2 = run_dynamic_baseline(
-        target_trajectory=target_oscillate,
-        obstacle_trajectory=obstacle_static,
-        n_ticks=150
+        target_trajectory=target_oscillate, obstacle_trajectory=obstacle_static, n_ticks=150
     )
     df_light_2 = run_dynamic_lightlike(
-        target_trajectory=target_oscillate,
-        obstacle_trajectory=obstacle_static,
-        n_ticks=150
+        target_trajectory=target_oscillate, obstacle_trajectory=obstacle_static, n_ticks=150
     )
 
-    results.append({
-        'baseline': analyze_tracking(df_base_2, "Oscillating Target - Baseline"),
-        'lightlike': analyze_tracking(df_light_2, "Oscillating Target - Lightlike"),
-    })
+    results.append(
+        {
+            "baseline": analyze_tracking(df_base_2, "Oscillating Target - Baseline"),
+            "lightlike": analyze_tracking(df_light_2, "Oscillating Target - Lightlike"),
+        }
+    )
 
     # Scenario 3: Moving obstacle (avoidance)
     print("Scenario 3: Moving obstacle (dynamic avoidance)...")
+
     def target_fixed(t):
         return [1.2, 0.3]
+
     def obstacle_moving(t):
-        return [0.5 + 0.003*t, 0.15 + 0.001*t]
+        return [0.5 + 0.003 * t, 0.15 + 0.001 * t]
 
     df_base_3 = run_dynamic_baseline(
-        target_trajectory=target_fixed,
-        obstacle_trajectory=obstacle_moving,
-        n_ticks=150
+        target_trajectory=target_fixed, obstacle_trajectory=obstacle_moving, n_ticks=150
     )
     df_light_3 = run_dynamic_lightlike(
-        target_trajectory=target_fixed,
-        obstacle_trajectory=obstacle_moving,
-        n_ticks=150
+        target_trajectory=target_fixed, obstacle_trajectory=obstacle_moving, n_ticks=150
     )
 
-    results.append({
-        'baseline': analyze_tracking(df_base_3, "Moving Obstacle - Baseline"),
-        'lightlike': analyze_tracking(df_light_3, "Moving Obstacle - Lightlike"),
-    })
+    results.append(
+        {
+            "baseline": analyze_tracking(df_base_3, "Moving Obstacle - Baseline"),
+            "lightlike": analyze_tracking(df_light_3, "Moving Obstacle - Lightlike"),
+        }
+    )
 
     # Scenario 4: Both moving (complex dynamics)
     print("Scenario 4: Both target and obstacle moving (complex dynamics)...")
     df_base_4 = run_dynamic_baseline(
-        target_trajectory=target_linear,
-        obstacle_trajectory=obstacle_moving,
-        n_ticks=150
+        target_trajectory=target_linear, obstacle_trajectory=obstacle_moving, n_ticks=150
     )
     df_light_4 = run_dynamic_lightlike(
-        target_trajectory=target_linear,
-        obstacle_trajectory=obstacle_moving,
-        n_ticks=150
+        target_trajectory=target_linear, obstacle_trajectory=obstacle_moving, n_ticks=150
     )
 
-    results.append({
-        'baseline': analyze_tracking(df_base_4, "Both Moving - Baseline"),
-        'lightlike': analyze_tracking(df_light_4, "Both Moving - Lightlike"),
-    })
+    results.append(
+        {
+            "baseline": analyze_tracking(df_base_4, "Both Moving - Baseline"),
+            "lightlike": analyze_tracking(df_light_4, "Both Moving - Lightlike"),
+        }
+    )
 
     # Scenario 5: Evasive obstacle (approaches end-effector)
     print("Scenario 5: Evasive obstacle (adversarial scenario)...")
+
     def obstacle_evasive(t):
         # Obstacle tries to block path to target
-        return [0.8 + 0.002*t, 0.2 + 0.002*t]
+        return [0.8 + 0.002 * t, 0.2 + 0.002 * t]
 
     df_base_5 = run_dynamic_baseline(
         target_trajectory=target_fixed,
         obstacle_trajectory=obstacle_evasive,
         n_ticks=150,
-        Go=6.0  # Stronger repulsion
+        Go=6.0,  # Stronger repulsion
     )
     df_light_5 = run_dynamic_lightlike(
-        target_trajectory=target_fixed,
-        obstacle_trajectory=obstacle_evasive,
-        n_ticks=150,
-        Go=6.0
+        target_trajectory=target_fixed, obstacle_trajectory=obstacle_evasive, n_ticks=150, Go=6.0
     )
 
-    results.append({
-        'baseline': analyze_tracking(df_base_5, "Evasive Obstacle - Baseline"),
-        'lightlike': analyze_tracking(df_light_5, "Evasive Obstacle - Lightlike"),
-    })
+    results.append(
+        {
+            "baseline": analyze_tracking(df_base_5, "Evasive Obstacle - Baseline"),
+            "lightlike": analyze_tracking(df_light_5, "Evasive Obstacle - Lightlike"),
+        }
+    )
 
     # Display results
     print()
@@ -341,51 +341,67 @@ def main():
     print("Mean Tracking Error (mm):")
     print("-" * 80)
     for r in results:
-        base = r['baseline']
-        light = r['lightlike']
-        improvement = (base['mean_tracking_error_mm'] - light['mean_tracking_error_mm']) / base['mean_tracking_error_mm'] * 100
+        base = r["baseline"]
+        light = r["lightlike"]
+        improvement = (
+            (base["mean_tracking_error_mm"] - light["mean_tracking_error_mm"])
+            / base["mean_tracking_error_mm"]
+            * 100
+        )
         arrow = "↓" if improvement > 0 else "↑"
 
-        scenario = base['scenario'].replace(' - Baseline', '')
-        print(f"{scenario:<30} {base['mean_tracking_error_mm']:>7.1f}mm → {light['mean_tracking_error_mm']:>7.1f}mm  "
-              f"{arrow} {abs(improvement):>5.1f}%")
+        scenario = base["scenario"].replace(" - Baseline", "")
+        print(
+            f"{scenario:<30} {base['mean_tracking_error_mm']:>7.1f}mm → {light['mean_tracking_error_mm']:>7.1f}mm  "
+            f"{arrow} {abs(improvement):>5.1f}%"
+        )
 
     print()
     print("Tracking Stability (std deviation in mm):")
     print("-" * 80)
     for r in results:
-        base = r['baseline']
-        light = r['lightlike']
-        improvement = (base['tracking_variance'] - light['tracking_variance']) / base['tracking_variance'] * 100
+        base = r["baseline"]
+        light = r["lightlike"]
+        improvement = (
+            (base["tracking_variance"] - light["tracking_variance"])
+            / base["tracking_variance"]
+            * 100
+        )
         arrow = "↓" if improvement > 0 else "↑"
 
-        scenario = base['scenario'].replace(' - Baseline', '')
-        print(f"{scenario:<30} {base['tracking_variance']:>7.1f}mm → {light['tracking_variance']:>7.1f}mm  "
-              f"{arrow} {abs(improvement):>5.1f}%")
+        scenario = base["scenario"].replace(" - Baseline", "")
+        print(
+            f"{scenario:<30} {base['tracking_variance']:>7.1f}mm → {light['tracking_variance']:>7.1f}mm  "
+            f"{arrow} {abs(improvement):>5.1f}%"
+        )
 
     print()
     print("Oscillation Events (gradient reversals):")
     print("-" * 80)
     for r in results:
-        base = r['baseline']
-        light = r['lightlike']
-        reduction = base['oscillations'] - light['oscillations']
+        base = r["baseline"]
+        light = r["lightlike"]
+        reduction = base["oscillations"] - light["oscillations"]
 
-        scenario = base['scenario'].replace(' - Baseline', '')
-        print(f"{scenario:<30} {base['oscillations']:>4} → {light['oscillations']:>4} events  "
-              f"({reduction:+d})")
+        scenario = base["scenario"].replace(" - Baseline", "")
+        print(
+            f"{scenario:<30} {base['oscillations']:>4} → {light['oscillations']:>4} events  "
+            f"({reduction:+d})"
+        )
 
     print()
     print("Collision Safety (near-collision events):")
     print("-" * 80)
     for r in results:
-        base = r['baseline']
-        light = r['lightlike']
-        reduction = base['near_collisions'] - light['near_collisions']
+        base = r["baseline"]
+        light = r["lightlike"]
+        reduction = base["near_collisions"] - light["near_collisions"]
 
-        scenario = base['scenario'].replace(' - Baseline', '')
-        print(f"{scenario:<30} {base['near_collisions']:>4} → {light['near_collisions']:>4} events  "
-              f"({reduction:+d})")
+        scenario = base["scenario"].replace(" - Baseline", "")
+        print(
+            f"{scenario:<30} {base['near_collisions']:>4} → {light['near_collisions']:>4} events  "
+            f"({reduction:+d})"
+        )
 
     print()
     print("=" * 80)
@@ -395,20 +411,21 @@ def main():
 
     # Calculate overall improvements
     total_tracking_improvement = sum(
-        (r['baseline']['mean_tracking_error_mm'] - r['lightlike']['mean_tracking_error_mm']) /
-        r['baseline']['mean_tracking_error_mm'] * 100
+        (r["baseline"]["mean_tracking_error_mm"] - r["lightlike"]["mean_tracking_error_mm"])
+        / r["baseline"]["mean_tracking_error_mm"]
+        * 100
         for r in results
     ) / len(results)
 
     total_stability_improvement = sum(
-        (r['baseline']['tracking_variance'] - r['lightlike']['tracking_variance']) /
-        r['baseline']['tracking_variance'] * 100
+        (r["baseline"]["tracking_variance"] - r["lightlike"]["tracking_variance"])
+        / r["baseline"]["tracking_variance"]
+        * 100
         for r in results
     ) / len(results)
 
     total_oscillation_reduction = sum(
-        r['baseline']['oscillations'] - r['lightlike']['oscillations']
-        for r in results
+        r["baseline"]["oscillations"] - r["lightlike"]["oscillations"] for r in results
     )
 
     print(f"Average tracking accuracy improvement: {total_tracking_improvement:+.1f}%")
@@ -442,23 +459,31 @@ def main():
     print("=" * 80)
 
     # Best scenario analysis
-    best_idx = max(range(len(results)),
-                   key=lambda i: (results[i]['baseline']['mean_tracking_error_mm'] -
-                                 results[i]['lightlike']['mean_tracking_error_mm']))
+    best_idx = max(
+        range(len(results)),
+        key=lambda i: (
+            results[i]["baseline"]["mean_tracking_error_mm"]
+            - results[i]["lightlike"]["mean_tracking_error_mm"]
+        ),
+    )
     best = results[best_idx]
 
     print()
     print(f"BEST PERFORMANCE: {best['baseline']['scenario'].replace(' - Baseline', '')}")
-    improvement = (best['baseline']['mean_tracking_error_mm'] -
-                  best['lightlike']['mean_tracking_error_mm']) / \
-                  best['baseline']['mean_tracking_error_mm'] * 100
+    improvement = (
+        (best["baseline"]["mean_tracking_error_mm"] - best["lightlike"]["mean_tracking_error_mm"])
+        / best["baseline"]["mean_tracking_error_mm"]
+        * 100
+    )
     print(f"  Tracking improvement: {improvement:.1f}%")
-    print(f"  Oscillations reduced: {best['baseline']['oscillations'] - best['lightlike']['oscillations']} events")
+    print(
+        f"  Oscillations reduced: {best['baseline']['oscillations'] - best['lightlike']['oscillations']} events"
+    )
 
-    if 'lightlike_activations' in best['lightlike']:
+    if "lightlike_activations" in best["lightlike"]:
         print(f"  Observer activations: {best['lightlike']['lightlike_activations']}")
         print(f"  Max damping: {best['lightlike']['max_damping']:.3f}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

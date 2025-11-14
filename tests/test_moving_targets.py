@@ -161,9 +161,7 @@ class TestMovingTargetControlStep:
             np.array([0.0, 0.0]),  # Stationary
         ]
 
-        new_robot, velocity, beta = moving_target_control_step(
-            robot, target, history, eta=0.1
-        )
+        new_robot, velocity, beta = moving_target_control_step(robot, target, history, eta=0.1)
 
         # Should move toward target
         dist_before = np.linalg.norm(robot - target)
@@ -188,9 +186,7 @@ class TestMovingTargetControlStep:
             np.array([0.0, 0.0]),  # Moving right
         ]
 
-        new_robot_1, velocity, beta = moving_target_control_step(
-            robot, target, history, eta=0.2
-        )
+        new_robot_1, velocity, beta = moving_target_control_step(robot, target, history, eta=0.2)
 
         # Velocity should be detected as [1.0, 0.0]
         assert np.allclose(velocity, [1.0, 0.0], atol=1e-6)
@@ -299,9 +295,7 @@ class TestLorentzBoostInvariance:
         ]
 
         # This should not violate physics
-        new_robot, velocity, beta = moving_target_control_step(
-            robot, target, history, eta=0.5
-        )
+        new_robot, velocity, beta = moving_target_control_step(robot, target, history, eta=0.5)
 
         # Beta must be < 1 (subluminal) or equal to velocity if <= 0.99
         assert beta < 1.0

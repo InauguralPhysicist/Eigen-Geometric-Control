@@ -72,9 +72,7 @@ class TestApplyMeasurementErrors:
         np.random.seed(42)
         encoded = [np.array([1.0, 2.0]) for _ in range(10)]
 
-        noisy = apply_measurement_errors(
-            encoded, error_rate=0.8, error_magnitude=5.0
-        )
+        noisy = apply_measurement_errors(encoded, error_rate=0.8, error_magnitude=5.0)
 
         # At least some should have large errors
         differences = [np.linalg.norm(noisy[i] - encoded[i]) for i in range(10)]
@@ -85,9 +83,7 @@ class TestApplyMeasurementErrors:
         np.random.seed(42)
         encoded = [np.array([1.0, 2.0]) for _ in range(10)]
 
-        noisy = apply_measurement_errors(
-            encoded, error_rate=0.0, error_magnitude=1.0
-        )
+        noisy = apply_measurement_errors(encoded, error_rate=0.0, error_magnitude=1.0)
 
         # All should be close to original (only small noise)
         for i in range(10):

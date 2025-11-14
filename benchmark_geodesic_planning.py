@@ -248,12 +248,8 @@ def run_benchmark():
     print("=" * 70)
     print()
 
-    avg_success_improvement = np.mean(
-        [r["success_improvement"] for r in all_results.values()]
-    )
-    avg_collision_reduction = np.mean(
-        [r["collision_reduction"] for r in all_results.values()]
-    )
+    avg_success_improvement = np.mean([r["success_improvement"] for r in all_results.values()])
+    avg_collision_reduction = np.mean([r["collision_reduction"] for r in all_results.values()])
 
     print(f"Average Success Improvement:  {avg_success_improvement:+.1f}%")
     print(f"Average Collision Reduction:  {avg_collision_reduction:+.1f}%")
@@ -307,15 +303,11 @@ def plot_results(results: dict):
 
         # Top row: Trajectories
         ax = axes[0, idx]
-        ax.set_title(
-            f"{scenario_name.replace('_', ' ').title()}", fontsize=12, fontweight="bold"
-        )
+        ax.set_title(f"{scenario_name.replace('_', ' ').title()}", fontsize=12, fontweight="bold")
 
         # Plot obstacles
         for obs in obstacles:
-            circle = plt.Circle(
-                obs.position, obs.radius, color="red", alpha=0.3, label="Obstacle"
-            )
+            circle = plt.Circle(obs.position, obs.radius, color="red", alpha=0.3, label="Obstacle")
             ax.add_patch(circle)
 
         # Plot trajectories
@@ -362,9 +354,7 @@ def plot_results(results: dict):
         width = 0.35
 
         ax.bar(x - width / 2, naive_vals, width, label="Naive", color="red", alpha=0.7)
-        ax.bar(
-            x + width / 2, geo_vals, width, label="Geodesic", color="blue", alpha=0.7
-        )
+        ax.bar(x + width / 2, geo_vals, width, label="Geodesic", color="blue", alpha=0.7)
 
         ax.set_ylabel("Value")
         ax.set_xticks(x)
@@ -374,9 +364,7 @@ def plot_results(results: dict):
 
         # Add value labels
         for i, (nv, gv) in enumerate(zip(naive_vals, geo_vals)):
-            ax.text(
-                i - width / 2, nv, f"{nv:.1f}", ha="center", va="bottom", fontsize=8
-            )
+            ax.text(i - width / 2, nv, f"{nv:.1f}", ha="center", va="bottom", fontsize=8)
             ax.text(i + width / 2, gv, f"{gv:.1f}", ha="center", va="bottom", fontsize=8)
 
     plt.tight_layout()

@@ -166,9 +166,7 @@ def stereo_weak_measurement(
     # Apply weak measurement to each eye separately
     left_measured, left_value = apply_weak_measurement(left_state, measurement_strength)
 
-    right_measured, right_value = apply_weak_measurement(
-        right_state, measurement_strength
-    )
+    right_measured, right_value = apply_weak_measurement(right_state, measurement_strength)
 
     # Depth emerges from INTERFERENCE of the two measurements
     # This is the key: timelike (left) XOR spacelike (right)
@@ -249,7 +247,9 @@ def weak_stereo_control_step(
 
     # Strong depth estimate from accumulated weak measurements
     # Recency-weighted: more recent measurements weighted higher
-    weights = [0.5 ** (len(accumulated_measurements) - 1 - i) for i in range(len(accumulated_measurements))]
+    weights = [
+        0.5 ** (len(accumulated_measurements) - 1 - i) for i in range(len(accumulated_measurements))
+    ]
 
     strong_depth = accumulate_weak_measurements(accumulated_measurements, weights)
 
@@ -261,9 +261,7 @@ def weak_stereo_control_step(
 
     # Visual servoing correction (weighted by depth confidence)
     # Closer objects (larger depth value) → stronger correction
-    depth_confidence = 1.0 / (1.0 + strong_depth) if strong_depth < float(
-        "inf"
-    ) else 0.0
+    depth_confidence = 1.0 / (1.0 + strong_depth) if strong_depth < float("inf") else 0.0
 
     # Combine visual information
     if len(left_measured) == len(current_state):
@@ -303,13 +301,9 @@ def coherence_metric(
 
     # Coherence = smoothness of trajectory
     # Compute second derivative (acceleration/jitter)
-    velocities = [
-        state_history[i] - state_history[i - 1] for i in range(1, len(state_history))
-    ]
+    velocities = [state_history[i] - state_history[i - 1] for i in range(1, len(state_history))]
 
-    accelerations = [
-        velocities[i] - velocities[i - 1] for i in range(1, len(velocities))
-    ]
+    accelerations = [velocities[i] - velocities[i - 1] for i in range(1, len(velocities))]
 
     # Low acceleration = high coherence (smooth motion)
     # High acceleration = low coherence (jittery motion)

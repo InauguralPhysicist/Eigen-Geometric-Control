@@ -85,9 +85,7 @@ def compute_autocorrelation(
             continue
 
         # Correlation between x[t] and x[t-lag]
-        corr = np.mean(
-            np.sum(signal_centered[lag:] * signal_centered[: N - lag], axis=1)
-        )
+        corr = np.mean(np.sum(signal_centered[lag:] * signal_centered[: N - lag], axis=1))
 
         autocorr[lag] = corr / var
 
@@ -129,9 +127,7 @@ def coherence_score(
     if len(trajectory) < 2:
         return 0.5
 
-    velocities = [
-        trajectory[i] - trajectory[i - 1] for i in range(1, len(trajectory))
-    ]
+    velocities = [trajectory[i] - trajectory[i - 1] for i in range(1, len(trajectory))]
     signal = np.array(velocities)
 
     # Compute autocorrelation
@@ -356,9 +352,7 @@ def coherent_control_step(
     diagnostics = {
         **decomp_info,
         "filtered_obs": filtered_obs,
-        "noise_reduction": float(
-            np.linalg.norm(observation - filtered_obs)
-        ),
+        "noise_reduction": float(np.linalg.norm(observation - filtered_obs)),
     }
 
     return new_state, diagnostics

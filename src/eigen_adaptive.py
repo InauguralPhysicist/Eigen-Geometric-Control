@@ -67,8 +67,7 @@ def estimate_characteristic_velocity(
 
     # Compute velocities
     velocities = [
-        trajectory_history[i] - trajectory_history[i - 1]
-        for i in range(1, len(trajectory_history))
+        trajectory_history[i] - trajectory_history[i - 1] for i in range(1, len(trajectory_history))
     ]
 
     # Velocity magnitudes
@@ -125,8 +124,7 @@ def estimate_oscillation_threshold(
 
     # Compute velocities
     velocities = [
-        trajectory_history[i] - trajectory_history[i - 1]
-        for i in range(1, len(trajectory_history))
+        trajectory_history[i] - trajectory_history[i - 1] for i in range(1, len(trajectory_history))
     ]
 
     if len(velocities) < 2:
@@ -190,8 +188,7 @@ def estimate_natural_timescale(
 
     # Convert to velocity signal
     velocities = [
-        trajectory_history[i] - trajectory_history[i - 1]
-        for i in range(1, len(trajectory_history))
+        trajectory_history[i] - trajectory_history[i - 1] for i in range(1, len(trajectory_history))
     ]
 
     if len(velocities) < 3:

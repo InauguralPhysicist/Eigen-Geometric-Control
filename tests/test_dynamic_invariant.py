@@ -293,9 +293,7 @@ class TestAdaptiveControlStep:
         target = np.array([0.0, 0.0])
         history = [np.array([10.0 - i * 0.5, 10.0 - i * 0.5]) for i in range(30)]
 
-        new_state, info = adaptive_control_step(
-            current, target, history, eta=0.25, auto_tune=True
-        )
+        new_state, info = adaptive_control_step(current, target, history, eta=0.25, auto_tune=True)
 
         # Should use manual eta
         assert info["eta_used"] == 0.25
@@ -306,9 +304,7 @@ class TestAdaptiveControlStep:
         target = np.array([0.0, 0.0])
         history = [np.array([10.0 - i * 0.5, 10.0 - i * 0.5]) for i in range(30)]
 
-        new_state, info = adaptive_control_step(
-            current, target, history, auto_tune=False
-        )
+        new_state, info = adaptive_control_step(current, target, history, auto_tune=False)
 
         assert info["parameters_detected"] == False
 
@@ -378,18 +374,14 @@ class TestAdaptationBenefits:
         # Test on slow system
         current_slow = np.array([1.0, 1.0])
         target_slow = np.array([0.0, 0.0])
-        history_slow = [
-            np.array([2.0 - i * 0.05, 2.0 - i * 0.05]) for i in range(30)
-        ]
+        history_slow = [np.array([2.0 - i * 0.05, 2.0 - i * 0.05]) for i in range(30)]
 
         _, info_slow = adaptive_control_step(current_slow, target_slow, history_slow)
 
         # Test on fast system
         current_fast = np.array([10.0, 10.0])
         target_fast = np.array([0.0, 0.0])
-        history_fast = [
-            np.array([20.0 - i * 0.5, 20.0 - i * 0.5]) for i in range(30)
-        ]
+        history_fast = [np.array([20.0 - i * 0.5, 20.0 - i * 0.5]) for i in range(30)]
 
         _, info_fast = adaptive_control_step(current_fast, target_fast, history_fast)
 

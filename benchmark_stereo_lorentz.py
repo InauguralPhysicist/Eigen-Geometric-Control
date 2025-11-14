@@ -20,7 +20,8 @@ not just Euclidean position - this is where lightlike observer should work!
 
 import numpy as np
 import sys
-sys.path.insert(0, '/home/user/Eigen-Geometric-Control')
+
+sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
 
 from src import (
     detect_oscillation,
@@ -95,13 +96,11 @@ def run_stereo_lorentz_baseline(
         x, y = forward_kinematics(theta1, theta2, L1, L2)
 
         ds2_total, components = compute_ds2(
-            theta1, theta2, target, obstacle_center,
-            obstacle_radius, Go, lam, L1, L2
+            theta1, theta2, target, obstacle_center, obstacle_radius, Go, lam, L1, L2
         )
 
         grad, grad_norm = compute_gradient(
-            theta1, theta2, target, obstacle_center,
-            obstacle_radius, Go, lam, L1, L2
+            theta1, theta2, target, obstacle_center, obstacle_radius, Go, lam, L1, L2
         )
 
         delta = -eta * grad
@@ -110,22 +109,24 @@ def run_stereo_lorentz_baseline(
 
         C, S, ds2_CS = compute_change_stability(delta, 1e-3)
 
-        distance = np.sqrt((x - target[0])**2 + (y - target[1])**2)
+        distance = np.sqrt((x - target[0]) ** 2 + (y - target[1]) ** 2)
 
-        rows.append({
-            'tick': t,
-            'x': x,
-            'y': y,
-            'distance': distance,
-            'stereo_left': left,
-            'stereo_right': right,
-            't_lorentz': t_lorentz,
-            'x_lorentz': x_lorentz,
-            'ds2_lorentz': ds2_lorentz,
-            'lorentz_regime': regime,
-            'grad_norm': grad_norm,
-            'd_obs': components['d_obs'],
-        })
+        rows.append(
+            {
+                "tick": t,
+                "x": x,
+                "y": y,
+                "distance": distance,
+                "stereo_left": left,
+                "stereo_right": right,
+                "t_lorentz": t_lorentz,
+                "x_lorentz": x_lorentz,
+                "ds2_lorentz": ds2_lorentz,
+                "lorentz_regime": regime,
+                "grad_norm": grad_norm,
+                "d_obs": components["d_obs"],
+            }
+        )
 
         theta1, theta2 = theta1_new, theta2_new
 
@@ -178,13 +179,11 @@ def run_stereo_lorentz_lightlike(
         state_history.append(robot_state)
 
         ds2_total, components = compute_ds2(
-            theta1, theta2, target, obstacle_center,
-            obstacle_radius, Go, lam, L1, L2
+            theta1, theta2, target, obstacle_center, obstacle_radius, Go, lam, L1, L2
         )
 
         grad, grad_norm = compute_gradient(
-            theta1, theta2, target, obstacle_center,
-            obstacle_radius, Go, lam, L1, L2
+            theta1, theta2, target, obstacle_center, obstacle_radius, Go, lam, L1, L2
         )
 
         # LIGHTLIKE OBSERVER IN LORENTZ SPACE
@@ -208,25 +207,27 @@ def run_stereo_lorentz_lightlike(
 
         C, S, ds2_CS = compute_change_stability(delta, 1e-3)
 
-        distance = np.sqrt((x - target[0])**2 + (y - target[1])**2)
+        distance = np.sqrt((x - target[0]) ** 2 + (y - target[1]) ** 2)
 
-        rows.append({
-            'tick': t,
-            'x': x,
-            'y': y,
-            'distance': distance,
-            'stereo_left': left,
-            'stereo_right': right,
-            't_lorentz': t_lorentz,
-            'x_lorentz': x_lorentz,
-            'ds2_lorentz': ds2_lorentz,
-            'lorentz_regime': regime,
-            'grad_norm': grad_norm,
-            'd_obs': components['d_obs'],
-            'oscillating': oscillating,
-            'osc_strength': osc_strength,
-            'damping': damping,
-        })
+        rows.append(
+            {
+                "tick": t,
+                "x": x,
+                "y": y,
+                "distance": distance,
+                "stereo_left": left,
+                "stereo_right": right,
+                "t_lorentz": t_lorentz,
+                "x_lorentz": x_lorentz,
+                "ds2_lorentz": ds2_lorentz,
+                "lorentz_regime": regime,
+                "grad_norm": grad_norm,
+                "d_obs": components["d_obs"],
+                "oscillating": oscillating,
+                "osc_strength": osc_strength,
+                "damping": damping,
+            }
+        )
 
         theta1, theta2 = theta1_new, theta2_new
 
@@ -235,44 +236,44 @@ def run_stereo_lorentz_lightlike(
 
 def analyze_lorentz_control(df, scenario_name):
     """Analyze control with Lorentz stereo integration"""
-    final_error = df['distance'].iloc[-1] * 1000  # mm
-    mean_error = df['distance'].mean() * 1000
-    tracking_variance = np.std(df['distance'].values) * 1000
+    final_error = df["distance"].iloc[-1] * 1000  # mm
+    mean_error = df["distance"].mean() * 1000
+    tracking_variance = np.std(df["distance"].values) * 1000
 
     # Lorentz regime stability
     regime_changes = sum(
-        1 for i in range(1, len(df))
-        if df['lorentz_regime'].iloc[i] != df['lorentz_regime'].iloc[i-1]
+        1
+        for i in range(1, len(df))
+        if df["lorentz_regime"].iloc[i] != df["lorentz_regime"].iloc[i - 1]
     )
 
     # Stereo disparity variance (measure of sensor instability)
-    disparities = np.abs(df['stereo_left'].values - df['stereo_right'].values)
+    disparities = np.abs(df["stereo_left"].values - df["stereo_right"].values)
     disparity_variance = np.std(disparities)
 
     # Control oscillations
-    grad_norms = df['grad_norm'].values
+    grad_norms = df["grad_norm"].values
     oscillations = sum(
-        1 for i in range(10, len(grad_norms))
-        if grad_norms[i] > grad_norms[i-1] * 1.5
+        1 for i in range(10, len(grad_norms)) if grad_norms[i] > grad_norms[i - 1] * 1.5
     )
 
     metrics = {
-        'scenario': scenario_name,
-        'final_error_mm': final_error,
-        'mean_error_mm': mean_error,
-        'tracking_variance_mm': tracking_variance,
-        'regime_changes': regime_changes,
-        'disparity_variance': disparity_variance,
-        'oscillations': oscillations,
+        "scenario": scenario_name,
+        "final_error_mm": final_error,
+        "mean_error_mm": mean_error,
+        "tracking_variance_mm": tracking_variance,
+        "regime_changes": regime_changes,
+        "disparity_variance": disparity_variance,
+        "oscillations": oscillations,
     }
 
-    if 'damping' in df.columns:
-        metrics['damping_activations'] = (df['damping'] > 0).sum()
-        metrics['max_damping'] = df['damping'].max()
+    if "damping" in df.columns:
+        metrics["damping_activations"] = (df["damping"] > 0).sum()
+        metrics["max_damping"] = df["damping"].max()
 
         # Lorentz-space oscillations detected
-        lorentz_osc_detected = (df['oscillating']).sum()
-        metrics['lorentz_oscillations_detected'] = lorentz_osc_detected
+        lorentz_osc_detected = (df["oscillating"]).sum()
+        metrics["lorentz_oscillations_detected"] = lorentz_osc_detected
 
     return metrics
 
@@ -302,21 +303,17 @@ def main():
     for name, noise in noise_levels:
         print(f"Testing {name} (noise={noise})...")
 
-        df_base = run_stereo_lorentz_baseline(
-            stereo_noise=noise,
-            n_ticks=180
-        )
+        df_base = run_stereo_lorentz_baseline(stereo_noise=noise, n_ticks=180)
 
-        df_light = run_stereo_lorentz_lightlike(
-            stereo_noise=noise,
-            n_ticks=180
-        )
+        df_light = run_stereo_lorentz_lightlike(stereo_noise=noise, n_ticks=180)
 
-        results.append({
-            'baseline': analyze_lorentz_control(df_base, f"{name} - Baseline"),
-            'lightlike': analyze_lorentz_control(df_light, f"{name} - Lightlike"),
-            'noise_level': noise,
-        })
+        results.append(
+            {
+                "baseline": analyze_lorentz_control(df_base, f"{name} - Baseline"),
+                "lightlike": analyze_lorentz_control(df_light, f"{name} - Lightlike"),
+                "noise_level": noise,
+            }
+        )
 
     # Display results
     print()
@@ -328,53 +325,67 @@ def main():
     print("Final Tracking Error (mm):")
     print("-" * 80)
     for r in results:
-        base = r['baseline']
-        light = r['lightlike']
-        improvement = (base['final_error_mm'] - light['final_error_mm']) / base['final_error_mm'] * 100
+        base = r["baseline"]
+        light = r["lightlike"]
+        improvement = (
+            (base["final_error_mm"] - light["final_error_mm"]) / base["final_error_mm"] * 100
+        )
         arrow = "✓" if improvement > 0 else "✗"
 
-        scenario = base['scenario'].replace(' - Baseline', '')
-        print(f"{scenario:<30} {base['final_error_mm']:>7.1f}mm → {light['final_error_mm']:>7.1f}mm  "
-              f"{arrow} {abs(improvement):>5.1f}%")
+        scenario = base["scenario"].replace(" - Baseline", "")
+        print(
+            f"{scenario:<30} {base['final_error_mm']:>7.1f}mm → {light['final_error_mm']:>7.1f}mm  "
+            f"{arrow} {abs(improvement):>5.1f}%"
+        )
 
     print()
     print("Tracking Stability (std dev mm):")
     print("-" * 80)
     for r in results:
-        base = r['baseline']
-        light = r['lightlike']
-        improvement = (base['tracking_variance_mm'] - light['tracking_variance_mm']) / base['tracking_variance_mm'] * 100
+        base = r["baseline"]
+        light = r["lightlike"]
+        improvement = (
+            (base["tracking_variance_mm"] - light["tracking_variance_mm"])
+            / base["tracking_variance_mm"]
+            * 100
+        )
         arrow = "↓" if improvement > 0 else "↑"
 
-        scenario = base['scenario'].replace(' - Baseline', '')
-        print(f"{scenario:<30} {base['tracking_variance_mm']:>7.1f}mm → {light['tracking_variance_mm']:>7.1f}mm  "
-              f"{arrow} {abs(improvement):>5.1f}%")
+        scenario = base["scenario"].replace(" - Baseline", "")
+        print(
+            f"{scenario:<30} {base['tracking_variance_mm']:>7.1f}mm → {light['tracking_variance_mm']:>7.1f}mm  "
+            f"{arrow} {abs(improvement):>5.1f}%"
+        )
 
     print()
     print("Lorentz Regime Stability (fewer changes = better):")
     print("-" * 80)
     for r in results:
-        base = r['baseline']
-        light = r['lightlike']
-        reduction = base['regime_changes'] - light['regime_changes']
+        base = r["baseline"]
+        light = r["lightlike"]
+        reduction = base["regime_changes"] - light["regime_changes"]
         status = "BETTER" if reduction > 0 else "SAME" if reduction == 0 else "WORSE"
 
-        scenario = base['scenario'].replace(' - Baseline', '')
-        print(f"{scenario:<30} {base['regime_changes']:>4} → {light['regime_changes']:>4} changes  "
-              f"{status:>6} ({reduction:+d})")
+        scenario = base["scenario"].replace(" - Baseline", "")
+        print(
+            f"{scenario:<30} {base['regime_changes']:>4} → {light['regime_changes']:>4} changes  "
+            f"{status:>6} ({reduction:+d})"
+        )
 
     print()
     print("Control Oscillations:")
     print("-" * 80)
     for r in results:
-        base = r['baseline']
-        light = r['lightlike']
-        reduction = base['oscillations'] - light['oscillations']
+        base = r["baseline"]
+        light = r["lightlike"]
+        reduction = base["oscillations"] - light["oscillations"]
         status = "BETTER" if reduction > 0 else "SAME" if reduction == 0 else "WORSE"
 
-        scenario = base['scenario'].replace(' - Baseline', '')
-        print(f"{scenario:<30} {base['oscillations']:>4} → {light['oscillations']:>4} events  "
-              f"{status:>6} ({reduction:+d})")
+        scenario = base["scenario"].replace(" - Baseline", "")
+        print(
+            f"{scenario:<30} {base['oscillations']:>4} → {light['oscillations']:>4} events  "
+            f"{status:>6} ({reduction:+d})"
+        )
 
     print()
     print("=" * 80)
@@ -384,20 +395,21 @@ def main():
 
     # Calculate improvements
     avg_accuracy = sum(
-        (r['baseline']['final_error_mm'] - r['lightlike']['final_error_mm']) /
-        r['baseline']['final_error_mm'] * 100
+        (r["baseline"]["final_error_mm"] - r["lightlike"]["final_error_mm"])
+        / r["baseline"]["final_error_mm"]
+        * 100
         for r in results
     ) / len(results)
 
     avg_stability = sum(
-        (r['baseline']['tracking_variance_mm'] - r['lightlike']['tracking_variance_mm']) /
-        r['baseline']['tracking_variance_mm'] * 100
+        (r["baseline"]["tracking_variance_mm"] - r["lightlike"]["tracking_variance_mm"])
+        / r["baseline"]["tracking_variance_mm"]
+        * 100
         for r in results
     ) / len(results)
 
     total_osc_reduction = sum(
-        r['baseline']['oscillations'] - r['lightlike']['oscillations']
-        for r in results
+        r["baseline"]["oscillations"] - r["lightlike"]["oscillations"] for r in results
     )
 
     print(f"Average tracking accuracy improvement: {avg_accuracy:+.1f}%")
@@ -407,8 +419,7 @@ def main():
 
     # Check Lorentz-space detection
     lorentz_detections = sum(
-        r['lightlike'].get('lorentz_oscillations_detected', 0)
-        for r in results
+        r["lightlike"].get("lorentz_oscillations_detected", 0) for r in results
     )
     print(f"Lorentz-space oscillations detected: {lorentz_detections} ticks")
     print()
@@ -448,24 +459,33 @@ def main():
 
     # Best case
     if results:
-        best_idx = max(range(len(results)),
-                      key=lambda i: (results[i]['baseline']['final_error_mm'] -
-                                   results[i]['lightlike']['final_error_mm']))
+        best_idx = max(
+            range(len(results)),
+            key=lambda i: (
+                results[i]["baseline"]["final_error_mm"] - results[i]["lightlike"]["final_error_mm"]
+            ),
+        )
         best = results[best_idx]
-        best_improvement = (best['baseline']['final_error_mm'] -
-                          best['lightlike']['final_error_mm']) / \
-                          best['baseline']['final_error_mm'] * 100
+        best_improvement = (
+            (best["baseline"]["final_error_mm"] - best["lightlike"]["final_error_mm"])
+            / best["baseline"]["final_error_mm"]
+            * 100
+        )
 
         print()
         print(f"BEST PERFORMANCE: {best['baseline']['scenario'].replace(' - Baseline', '')}")
         print(f"  Noise level: {best['noise_level']}")
         print(f"  Accuracy improvement: {best_improvement:+.1f}%")
-        print(f"  Oscillations: {best['baseline']['oscillations'] - best['lightlike']['oscillations']:+d}")
+        print(
+            f"  Oscillations: {best['baseline']['oscillations'] - best['lightlike']['oscillations']:+d}"
+        )
 
-        if 'lorentz_oscillations_detected' in best['lightlike']:
-            print(f"  Lorentz oscillations detected: {best['lightlike']['lorentz_oscillations_detected']}")
+        if "lorentz_oscillations_detected" in best["lightlike"]:
+            print(
+                f"  Lorentz oscillations detected: {best['lightlike']['lorentz_oscillations_detected']}"
+            )
             print(f"  Observer activations: {best['lightlike']['damping_activations']}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
