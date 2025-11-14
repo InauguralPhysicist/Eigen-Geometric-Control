@@ -87,6 +87,14 @@ from .eigen_decomposition import (
     decompose_signal,
     filtered_observation,
 )
+from .eigen_adaptive import (
+    adaptive_control_step,
+    detect_system_parameters,
+    estimate_characteristic_velocity,
+    estimate_natural_timescale,
+    estimate_oscillation_threshold,
+    renormalize_lorentz_state,
+)
 from .eigen_xor_rotation import run_xor_simulation
 
 __all__ = [
@@ -160,6 +168,13 @@ __all__ = [
     "decompose_signal",
     "filtered_observation",
     "coherent_control_step",
+    # Adaptive/dynamic parameter detection
+    "estimate_characteristic_velocity",
+    "estimate_oscillation_threshold",
+    "estimate_natural_timescale",
+    "detect_system_parameters",
+    "adaptive_control_step",
+    "renormalize_lorentz_state",
 ]
 
 __version__ = "1.0.0"
