@@ -27,7 +27,7 @@ import numpy as np
 
 sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
 
-from src import (
+from src import (  # noqa: E402
     compare_self_similarity,
     detect_oscillation,
     lightlike_damping_factor,
@@ -169,7 +169,7 @@ def demo_3_xor_oscillation_detection():
     # Detect oscillation
     oscillating, strength = detect_oscillation(history, window=2, threshold=0.95)
 
-    print(f"Oscillation detection:")
+    print("Oscillation detection:")
     print(f"  Oscillating: {oscillating}")
     print(f"  Strength: {strength:.4f}")
     print()
@@ -177,7 +177,7 @@ def demo_3_xor_oscillation_detection():
     # Compute lightlike damping
     damping = lightlike_damping_factor(strength)
 
-    print(f"Lightlike observer response:")
+    print("Lightlike observer response:")
     print(f"  Damping factor: {damping:.4f}")
     print(f"  Gradient scaling: {1.0 - damping:.4f}")
     print()
@@ -330,7 +330,7 @@ def demo_6_euclidean_vs_lorentz_geometry():
     print()
 
     print("LORENTZ inner product (with half-turn):")
-    print(f"  ⟨u,v⟩_L = u·v - ||u|| * ||v||")
+    print("  ⟨u,v⟩_L = u·v - ||u|| * ||v||")
     print(f"          = {dot_uv:.4f} - {norm_u:.4f} * {norm_v:.4f}")
 
     lorentz_prod = dot_uv - norm_u * norm_v

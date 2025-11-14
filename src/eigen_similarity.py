@@ -20,7 +20,7 @@ This prevents pathological feedback loops where standard cosine
 similarity yields 1.0, enabling infinite oscillations.
 """
 
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import numpy as np
 
