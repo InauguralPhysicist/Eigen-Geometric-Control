@@ -14,13 +14,13 @@ Test scenarios:
 - High sensor failure rate (50%)
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 from src.eigen_qec import (
-    simulate_sensor_array,
     correct_measurement_errors,
     qec_control_step,
+    simulate_sensor_array,
 )
 
 

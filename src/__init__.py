@@ -12,6 +12,14 @@ Extensions:
 - Stereo vision integration via relativistic transformations
 """
 
+from .eigen_adaptive import (
+    adaptive_control_step,
+    detect_system_parameters,
+    estimate_characteristic_velocity,
+    estimate_natural_timescale,
+    estimate_oscillation_threshold,
+    renormalize_lorentz_state,
+)
 from .eigen_arm_control import run_arm_simulation
 from .eigen_core import (
     compute_change_stability,
@@ -19,6 +27,22 @@ from .eigen_core import (
     compute_gradient,
     forward_kinematics,
     jacobian,
+)
+from .eigen_decomposition import (
+    coherence_score,
+    coherent_control_step,
+    compute_autocorrelation,
+    decompose_signal,
+    filtered_observation,
+)
+from .eigen_geodesic import (
+    Obstacle,
+    christoffel_symbols,
+    compute_geodesic_path,
+    geodesic_acceleration,
+    geodesic_control_step,
+    metric_gradient,
+    metric_tensor,
 )
 from .eigen_lorentz import (
     LorentzState,
@@ -39,27 +63,6 @@ from .eigen_lorentz import (
     stereo_to_lorentz,
     verify_lorentz_invariance,
 )
-from .eigen_noperthedron import (
-    analyze_results,
-    check_rupert_property,
-    compute_passage_ds2_discrete,
-    generate_noperthedron_vertices,
-    hamming_distance,
-    run_single_passage_test,
-    spatial_overlap,
-    vertices_to_bitstring,
-)
-from .eigen_similarity import (
-    adaptive_control_parameters,
-    compare_self_similarity,
-    detect_oscillation,
-    detect_oscillation_frequency,
-    frequency_selective_damping,
-    lightlike_damping_factor,
-    lorentz_similarity,
-    regime_from_similarity,
-    standard_cosine_similarity,
-)
 from .eigen_meta_control import (
     meta_update_parameters,
     observe_parameter_performance,
@@ -72,37 +75,15 @@ from .eigen_multi_agent import (
     paradox_mediated_damping,
     simulate_multi_agent,
 )
-from .eigen_weak_measurement import (
-    accumulate_weak_measurements,
-    apply_weak_measurement,
-    coherence_metric,
-    stereo_weak_measurement,
-    weak_measurement_operator,
-    weak_stereo_control_step,
-)
-from .eigen_decomposition import (
-    coherence_score,
-    coherent_control_step,
-    compute_autocorrelation,
-    decompose_signal,
-    filtered_observation,
-)
-from .eigen_adaptive import (
-    adaptive_control_step,
-    detect_system_parameters,
-    estimate_characteristic_velocity,
-    estimate_natural_timescale,
-    estimate_oscillation_threshold,
-    renormalize_lorentz_state,
-)
-from .eigen_geodesic import (
-    Obstacle,
-    christoffel_symbols,
-    compute_geodesic_path,
-    geodesic_acceleration,
-    geodesic_control_step,
-    metric_gradient,
-    metric_tensor,
+from .eigen_noperthedron import (
+    analyze_results,
+    check_rupert_property,
+    compute_passage_ds2_discrete,
+    generate_noperthedron_vertices,
+    hamming_distance,
+    run_single_passage_test,
+    spatial_overlap,
+    vertices_to_bitstring,
 )
 from .eigen_qec import (
     apply_measurement_errors,
@@ -112,6 +93,25 @@ from .eigen_qec import (
     encode_state_redundant,
     qec_control_step,
     simulate_sensor_array,
+)
+from .eigen_similarity import (
+    adaptive_control_parameters,
+    compare_self_similarity,
+    detect_oscillation,
+    detect_oscillation_frequency,
+    frequency_selective_damping,
+    lightlike_damping_factor,
+    lorentz_similarity,
+    regime_from_similarity,
+    standard_cosine_similarity,
+)
+from .eigen_weak_measurement import (
+    accumulate_weak_measurements,
+    apply_weak_measurement,
+    coherence_metric,
+    stereo_weak_measurement,
+    weak_measurement_operator,
+    weak_stereo_control_step,
 )
 from .eigen_xor_rotation import run_xor_simulation
 

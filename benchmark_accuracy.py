@@ -9,21 +9,23 @@ Quantitatively compares:
 4. Obstacle clearance
 """
 
-import numpy as np
 import sys
+
+import numpy as np
 
 sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
 
+import pandas as pd
+
 from src import (
-    run_arm_simulation,
-    detect_oscillation,
-    lightlike_damping_factor,
-    forward_kinematics,
+    compute_change_stability,
     compute_ds2,
     compute_gradient,
-    compute_change_stability,
+    detect_oscillation,
+    forward_kinematics,
+    lightlike_damping_factor,
+    run_arm_simulation,
 )
-import pandas as pd
 
 
 def run_arm_with_lightlike_damping(

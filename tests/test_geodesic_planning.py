@@ -12,12 +12,12 @@ import pytest
 
 from src.eigen_geodesic import (
     Obstacle,
-    metric_tensor,
-    metric_gradient,
     christoffel_symbols,
-    geodesic_acceleration,
     compute_geodesic_path,
+    geodesic_acceleration,
     geodesic_control_step,
+    metric_gradient,
+    metric_tensor,
 )
 
 
@@ -408,12 +408,12 @@ def test_module_imports():
     """Verify all functions are importable."""
     from src.eigen_geodesic import (
         Obstacle,
-        metric_tensor,
-        metric_gradient,
         christoffel_symbols,
-        geodesic_acceleration,
         compute_geodesic_path,
+        geodesic_acceleration,
         geodesic_control_step,
+        metric_gradient,
+        metric_tensor,
     )
 
     assert Obstacle is not None

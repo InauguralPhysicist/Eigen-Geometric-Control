@@ -15,7 +15,7 @@ Key insight: The framework should be scale-invariant.
 The "c" parameter and thresholds should emerge from data, not be hardcoded.
 """
 
-from typing import List, Tuple, Dict
+from typing import Dict, List, Tuple
 
 import numpy as np
 

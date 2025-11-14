@@ -11,11 +11,11 @@ import numpy as np
 import pytest
 
 from src.eigen_adaptive import (
-    estimate_characteristic_velocity,
-    estimate_oscillation_threshold,
-    estimate_natural_timescale,
-    detect_system_parameters,
     adaptive_control_step,
+    detect_system_parameters,
+    estimate_characteristic_velocity,
+    estimate_natural_timescale,
+    estimate_oscillation_threshold,
     renormalize_lorentz_state,
 )
 
@@ -397,11 +397,11 @@ class TestAdaptationBenefits:
 def test_module_imports():
     """Verify all functions are importable."""
     from src.eigen_adaptive import (
-        estimate_characteristic_velocity,
-        estimate_oscillation_threshold,
-        estimate_natural_timescale,
-        detect_system_parameters,
         adaptive_control_step,
+        detect_system_parameters,
+        estimate_characteristic_velocity,
+        estimate_natural_timescale,
+        estimate_oscillation_threshold,
         renormalize_lorentz_state,
     )
 

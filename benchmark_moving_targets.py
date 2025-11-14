@@ -9,12 +9,12 @@ Comparison:
 - Predictive (Lorentz): Estimate velocity and move toward predicted position
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 from src.eigen_lorentz import (
-    moving_target_control_step,
     estimate_target_velocity,
+    moving_target_control_step,
 )
 
 

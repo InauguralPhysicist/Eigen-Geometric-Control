@@ -18,25 +18,27 @@ The stereo noise creates oscillations in LORENTZ SPACE,
 not just Euclidean position - this is where lightlike observer should work!
 """
 
-import numpy as np
 import sys
+
+import numpy as np
 
 sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
 
+import pandas as pd
+
 from src import (
-    detect_oscillation,
-    lightlike_damping_factor,
-    forward_kinematics,
+    compute_change_stability,
     compute_ds2,
     compute_gradient,
-    compute_change_stability,
+    detect_oscillation,
+    forward_kinematics,
+    lightlike_damping_factor,
 )
 from src.eigen_lorentz import (
-    stereo_to_lorentz,
     lorentz_to_stereo,
     regime_classification,
+    stereo_to_lorentz,
 )
-import pandas as pd
 
 
 def simulate_stereo_measurement(true_target, noise_level=0.01):

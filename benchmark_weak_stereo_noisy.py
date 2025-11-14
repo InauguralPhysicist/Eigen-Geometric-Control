@@ -9,8 +9,8 @@ observations are very noisy, while strong measurements collapse
 to the noisy observation and create jittery motion.
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 from src.eigen_weak_measurement import (
     coherence_metric,

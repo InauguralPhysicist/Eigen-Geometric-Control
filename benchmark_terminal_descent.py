@@ -16,20 +16,22 @@ This tests whether lightlike observer benefits increase with:
 - Focus on final precision
 """
 
-import numpy as np
 import sys
+
+import numpy as np
 
 sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
 
+import pandas as pd
+
 from src import (
-    detect_oscillation,
-    lightlike_damping_factor,
-    forward_kinematics,
+    compute_change_stability,
     compute_ds2,
     compute_gradient,
-    compute_change_stability,
+    detect_oscillation,
+    forward_kinematics,
+    lightlike_damping_factor,
 )
-import pandas as pd
 
 
 def run_terminal_descent(
