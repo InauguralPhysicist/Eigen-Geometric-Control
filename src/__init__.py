@@ -80,6 +80,13 @@ from .eigen_weak_measurement import (
     weak_measurement_operator,
     weak_stereo_control_step,
 )
+from .eigen_decomposition import (
+    coherence_score,
+    coherent_control_step,
+    compute_autocorrelation,
+    decompose_signal,
+    filtered_observation,
+)
 from .eigen_xor_rotation import run_xor_simulation
 
 __all__ = [
@@ -147,6 +154,12 @@ __all__ = [
     "stereo_weak_measurement",
     "weak_stereo_control_step",
     "coherence_metric",
+    # Coherent/incoherent decomposition
+    "compute_autocorrelation",
+    "coherence_score",
+    "decompose_signal",
+    "filtered_observation",
+    "coherent_control_step",
 ]
 
 __version__ = "1.0.0"
