@@ -104,6 +104,15 @@ from .eigen_geodesic import (
     metric_gradient,
     metric_tensor,
 )
+from .eigen_qec import (
+    apply_measurement_errors,
+    compute_parity_checks,
+    correct_measurement_errors,
+    detect_error_location,
+    encode_state_redundant,
+    qec_control_step,
+    simulate_sensor_array,
+)
 from .eigen_xor_rotation import run_xor_simulation
 
 __all__ = [
@@ -192,6 +201,14 @@ __all__ = [
     "geodesic_acceleration",
     "compute_geodesic_path",
     "geodesic_control_step",
+    # Quantum-inspired error correction
+    "encode_state_redundant",
+    "apply_measurement_errors",
+    "compute_parity_checks",
+    "detect_error_location",
+    "correct_measurement_errors",
+    "qec_control_step",
+    "simulate_sensor_array",
 ]
 
 __version__ = "1.0.0"
