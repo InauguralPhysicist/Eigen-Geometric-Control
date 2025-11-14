@@ -490,3 +490,181 @@ def proper_distance(ds2: float) -> Optional[float]:
         return np.sqrt(-ds2)
     else:
         return None
+
+
+def estimate_target_velocity(
+    target_history: list,
+    dt: float = 1.0,
+    max_velocity: float = 10.0,
+) -> np.ndarray:
+    """
+    Estimate target velocity from position history.
+
+    Uses recent trajectory to estimate current velocity vector.
+    This is needed for Lorentz boost to target's rest frame.
+
+    Parameters
+    ----------
+    target_history : list of ndarray
+        Recent target positions [oldest, ..., newest]
+    dt : float
+        Time step between observations (default 1.0)
+    max_velocity : float
+        Maximum allowed velocity magnitude (default 10.0 for realistic tracking)
+
+    Returns
+    -------
+    velocity : ndarray
+        Estimated velocity vector
+
+    Notes
+    -----
+    Uses finite differences: v ≈ (x[t] - x[t-1]) / dt
+    If history is insufficient, returns zero velocity.
+    Velocities are clamped to max_velocity to avoid numerical issues.
+
+    Examples
+    --------
+    >>> history = [np.array([0.0, 0.0]), np.array([1.0, 0.0]), np.array([2.0, 0.0])]
+    >>> v = estimate_target_velocity(history, dt=1.0)
+    >>> np.allclose(v, [1.0, 0.0])
+    True
+    """
+    if len(target_history) < 2:
+        # Not enough history - assume stationary
+        if len(target_history) == 1:
+            return np.zeros_like(target_history[0])
+        else:
+            return np.zeros(2)  # Default to 2D
+
+    # Use last two positions for velocity estimate
+    x_current = target_history[-1]
+    x_previous = target_history[-2]
+
+    # Finite difference
+    velocity = (x_current - x_previous) / dt
+
+    # Clamp to max velocity (avoid numerical issues)
+    v_mag = np.linalg.norm(velocity)
+    if v_mag > max_velocity:
+        velocity = velocity * (max_velocity / v_mag)
+
+    return velocity
+
+
+def inverse_boost(
+    state_vector: np.ndarray,
+    beta: float,
+) -> np.ndarray:
+    """
+    Apply inverse Lorentz boost (transform from boosted frame back to lab frame).
+
+    If Λ(β) transforms lab → boosted, then Λ(-β) transforms boosted → lab.
+
+    Parameters
+    ----------
+    state_vector : ndarray, shape (2,)
+        State in boosted frame [timelike, spacelike]
+    beta : float
+        Boost velocity that was originally applied
+
+    Returns
+    -------
+    original_state : ndarray, shape (2,)
+        State in original lab frame
+
+    Notes
+    -----
+    Lorentz boosts have the property: Λ(β)⁻¹ = Λ(-β)
+    We implement this directly to avoid negative beta validation issues.
+
+    Examples
+    --------
+    >>> state = np.array([3.0, 2.0])
+    >>> boosted = apply_boost(state, beta=0.5)
+    >>> recovered = inverse_boost(boosted, beta=0.5)
+    >>> np.allclose(state, recovered)
+    True
+    """
+    if len(state_vector) != 2:
+        raise ValueError(f"State vector must have length 2, got {len(state_vector)}")
+
+    # Inverse boost: Λ(-β) with same gamma
+    gamma = lorentz_factor(beta)
+    beta_gamma = beta * gamma
+
+    # Inverse matrix (negate beta)
+    Lambda_inv = np.array([[gamma, beta_gamma], [beta_gamma, gamma]])
+
+    return Lambda_inv @ state_vector
+
+
+def moving_target_control_step(
+    robot_state: np.ndarray,
+    target_position: np.ndarray,
+    target_history: list,
+    eta: float = 0.1,
+    dt: float = 1.0,
+    lookahead_time: float = 1.0,
+) -> tuple:
+    """
+    Control step with predictive tracking for moving targets.
+
+    Algorithm:
+    1. Estimate target velocity from history
+    2. Predict where target will be after lookahead_time
+    3. Move toward predicted position
+    4. For very fast targets, clamp beta for Lorentz boost diagnostics
+
+    This approach automatically handles:
+    - Moving targets (predicts future position)
+    - Stationary targets (prediction = current position)
+    - Accelerating targets (velocity estimate updates each step)
+
+    Parameters
+    ----------
+    robot_state : ndarray
+        Current robot position (N-dimensional)
+    target_position : ndarray
+        Current target position (N-dimensional)
+    target_history : list of ndarray
+        Recent target positions for velocity estimation
+    eta : float
+        Learning rate / control gain
+    dt : float
+        Time step for velocity estimation
+    lookahead_time : float
+        How far ahead to predict target position (default 1.0)
+
+    Returns
+    -------
+    new_robot_state : ndarray
+        Updated robot position after control step
+    velocity_estimate : ndarray
+        Estimated target velocity (for diagnostics)
+    boost_beta : float
+        Velocity parameter for Lorentz boost diagnostics
+
+    Examples
+    --------
+    >>> robot = np.array([5.0, 0.0])
+    >>> target = np.array([2.0, 0.0])
+    >>> history = [np.array([0.0, 0.0]), np.array([1.0, 0.0]), np.array([2.0, 0.0])]
+    >>> new_state, velocity, beta = moving_target_control_step(robot, target, history)
+    >>> # Robot should move toward where target will be
+    """
+    # 1. Estimate target velocity
+    target_velocity = estimate_target_velocity(target_history, dt=dt)
+
+    # 2. Predict future target position
+    predicted_target = target_position + target_velocity * lookahead_time
+
+    # 3. Move toward predicted position (gradient descent)
+    direction = predicted_target - robot_state
+    new_state = robot_state + eta * direction
+
+    # 4. Compute beta for diagnostics (Lorentz boost parameter)
+    v_mag = np.linalg.norm(target_velocity)
+    beta = min(v_mag, 0.99)  # Clamp to subluminal
+
+    return new_state, target_velocity, beta
