@@ -18,7 +18,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from src.eigen_qec import (
-    correct_measurement_errors,
     qec_control_step,
     simulate_sensor_array,
 )
@@ -191,7 +190,7 @@ def run_benchmark():
 
         all_results[failure_rate] = results
 
-        print(f"  Final Error:")
+        print("  Final Error:")
         print(f"    Naive: {avg_error_naive:.3f}")
         print(f"    QEC:   {avg_error_qec:.3f}")
         print(f"    Improvement: {error_improvement:+.1f}%")

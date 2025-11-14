@@ -1,3 +1,4 @@
+import pytest
 """
 Integration tests for complete Eigen simulation pipeline
 
@@ -6,10 +7,9 @@ Tests full workflow: imports → simulation → convergence
 
 import sys
 
-sys.path.insert(0, ".")
+sys.path.insert(0, ".")  # noqa: E402
 
 import numpy as np
-import pytest
 
 from src import run_arm_simulation, run_xor_simulation
 

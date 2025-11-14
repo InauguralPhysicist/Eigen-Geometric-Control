@@ -17,11 +17,11 @@ import sys
 
 import numpy as np
 
-sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
+sys.path.insert(0, "/home/user/Eigen-Geometric-Control")  # noqa: E402
 
-import pandas as pd
+import pandas as pd  # noqa: E402
 
-from src import (
+from src import (  # noqa: E402
     compute_change_stability,
     compute_ds2,
     compute_gradient,
@@ -188,7 +188,7 @@ def analyze_precision(df_baseline, df_lightlike, target, scenario_name):
     }
 
 
-def main():
+def main():  # noqa: C901
     print("=" * 80)
     print("SCALING ANALYSIS: Lightlike Observer Benefits vs Complexity".center(80))
     print("=" * 80)
@@ -306,7 +306,7 @@ def main():
         )
         print()
         print("For 3D robot control (6-DOF or 7-DOF):")
-        print(f"  • Configuration space: 2D → 6D or 7D (3-3.5x more dimensions)")
+        print("  • Configuration space: 2D → 6D or 7D (3-3.5x more dimensions)")
         print(
             f"  • Expected improvement: ~{avg_improvement * 3:.1f}% to {avg_improvement * 3.5:.1f}%"
         )

@@ -8,7 +8,6 @@ Key proof: Coherent filtering >> No filtering for noisy signals
 """
 
 import numpy as np
-import pytest
 
 from src.eigen_decomposition import (
     coherence_score,
@@ -194,7 +193,7 @@ class TestFilteredObservation:
         filtered, info = filtered_observation(observation, history, noise_suppression=0.8)
 
         # Should be classified as coherent
-        assert info["is_coherent"] == True
+        assert info["is_coherent"] is True
 
         # Should be close to original (little noise to suppress)
         assert np.linalg.norm(filtered - observation) < 0.5
@@ -226,7 +225,7 @@ class TestFilteredObservation:
         filtered, info = filtered_observation(observation, history, noise_suppression=0.9)
 
         # Should be classified as incoherent
-        assert info["is_coherent"] == False
+        assert info["is_coherent"] is False
 
         # Filtered should be heavily suppressed (near zero)
         assert np.linalg.norm(filtered) < np.linalg.norm(observation)
@@ -301,7 +300,7 @@ class TestCoherentControlStep:
         )
 
         # Should be classified as coherent
-        assert info["is_coherent"] == True
+        assert info["is_coherent"] is True
 
         # Should trust and use the observation
         assert info["noise_reduction"] < 0.5  # Little filtering needed
@@ -327,22 +326,7 @@ class TestDecompositionBenefits:
             current, target, noisy_obs, history, eta=0.2, noise_suppression=0.9
         )
 
-        # Control WITHOUT filtering (naive)
-        # Simulate by using observation directly
-        blend = 0.5
-        naive_state = blend * noisy_obs + (1 - blend) * current
-        direction = target - naive_state
-        new_naive = naive_state + 0.2 * direction
-
-        # Filtered should be closer to smooth trajectory
-        expected_next = current + (target - current) * 0.2
-
-        dist_filter = np.linalg.norm(new_with_filter - expected_next)
-        dist_naive = np.linalg.norm(new_naive - expected_next)
-
-        # Filtered should deviate less from expected smooth trajectory
-        # (This test may be probabilistic due to random noise)
-        # We just check that filtering was applied
+        # We just check that filtering was applied and reduced noise
         assert info_filter["noise_reduction"] > 0.1
 
 

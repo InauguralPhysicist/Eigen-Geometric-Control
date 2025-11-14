@@ -158,7 +158,6 @@ def run_noisy_benchmark():
     print()
 
     weakest = results["Weak (0.05)"]
-    weak = results["Weak (0.1)"]
     strong = results["Strong (0.9)"]
 
     # Compare weakest vs strong
@@ -170,7 +169,7 @@ def run_noisy_benchmark():
     )
     error_improvement = (strong["error_mean"] - weakest["error_mean"]) / strong["error_mean"] * 100
 
-    print(f"WEAK (0.05) vs STRONG (0.9):")
+    print("WEAK (0.05) vs STRONG (0.9):")
     print("-" * 40)
     print(f"Coherence:      {coherence_improvement:+.1f}% (higher is smoother)")
     print(f"  Weak:   {weakest['coherence_mean']:.4f}")

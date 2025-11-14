@@ -16,7 +16,7 @@ This enables:
 - Integration with lightlike damping framework
 """
 
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import numpy as np
 

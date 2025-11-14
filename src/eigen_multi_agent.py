@@ -18,7 +18,7 @@ from typing import List, Tuple
 
 import numpy as np
 
-from .eigen_similarity import detect_oscillation, lorentz_similarity
+from .eigen_similarity import detect_oscillation
 
 
 def collective_lightlike_observer(
@@ -272,7 +272,6 @@ def simulate_multi_agent(
         - info_history: Diagnostic info at each step
         - converged: Did all agents reach their targets?
     """
-    n_agents = len(initial_states)
 
     # Initialize
     current_states = [s.copy() for s in initial_states]

@@ -8,7 +8,6 @@ Key proof: Weak measurement >> Strong measurement for noisy signals
 """
 
 import numpy as np
-import pytest
 
 from src.eigen_weak_measurement import (
     accumulate_weak_measurements,
@@ -32,8 +31,8 @@ class TestWeakMeasurementOperator:
         assert M_complement.shape == (2, 2)
 
         # Weak measurement is close to identity
-        I = np.eye(2)
-        weak_diff = np.linalg.norm(M_weak - I)
+        identity_matrix = np.eye(2)
+        weak_diff = np.linalg.norm(M_weak - identity_matrix)
         assert weak_diff < 0.5  # Small perturbation
 
     def test_strong_vs_weak_measurement(self):
@@ -41,10 +40,10 @@ class TestWeakMeasurementOperator:
         M_weak, _ = weak_measurement_operator(measurement_strength=0.1)
         M_strong, _ = weak_measurement_operator(measurement_strength=0.9)
 
-        I = np.eye(2)
+        identity_matrix = np.eye(2)
 
-        weak_diff = np.linalg.norm(M_weak - I)
-        strong_diff = np.linalg.norm(M_strong - I)
+        weak_diff = np.linalg.norm(M_weak - identity_matrix)
+        strong_diff = np.linalg.norm(M_strong - identity_matrix)
 
         # Strong measurement perturbs more
         assert strong_diff > weak_diff

@@ -6,7 +6,6 @@ without infinite loops - a key property of paradox-mediated computation.
 """
 
 import numpy as np
-import pytest
 
 from src.eigen_meta_control import (
     meta_update_parameters,
@@ -42,8 +41,8 @@ class TestSelfObservation:
         )
 
         # Should detect oscillation (lightlike observer at work)
-        assert needs_adj == True
-        assert diagnosis["oscillating"] == True  # numpy bool
+        assert needs_adj is True
+        assert diagnosis["oscillating"] is True  # numpy bool
         # May be flagged as oscillation or erratic motion (both are correct)
         assert diagnosis["issue"] in ["oscillation_detected", "erratic_motion"]
         assert performance < 0.7  # Poor performance due to oscillation
@@ -68,7 +67,7 @@ class TestSelfObservation:
         )
 
         # Should see convergence toward origin
-        assert diagnosis["converging"] == True
+        assert diagnosis["converging"] is True
         # Performance should be reasonable
         assert performance >= 0.0
 
@@ -84,8 +83,8 @@ class TestSelfObservation:
         )
 
         # Should detect stagnation
-        assert needs_adj == True
-        assert diagnosis["converging"] == False  # numpy bool
+        assert needs_adj is True
+        assert diagnosis["converging"] is False  # numpy bool
         # May also detect oscillation due to identical states
         assert "issue" in diagnosis
 
@@ -239,7 +238,7 @@ class TestSelfTuningControl:
         )
 
         # System should recognize convergence
-        assert meta_info["diagnosis"]["converging"] == True
+        assert meta_info["diagnosis"]["converging"] is True
         # Adjustments should be minimal if any
         if meta_info["adjustment_made"]:
             # Check changes are small

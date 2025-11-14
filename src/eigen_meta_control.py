@@ -17,7 +17,7 @@ from typing import List, Tuple
 
 import numpy as np
 
-from .eigen_similarity import detect_oscillation, standard_cosine_similarity
+from .eigen_similarity import detect_oscillation
 
 
 def observe_parameter_performance(

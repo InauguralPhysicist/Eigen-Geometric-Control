@@ -6,7 +6,7 @@ Run with: pytest tests/ -v
 
 import sys
 
-sys.path.insert(0, ".")
+sys.path.insert(0, ".")  # noqa: E402
 
 import numpy as np
 import pytest
