@@ -41,8 +41,8 @@ class TestSelfObservation:
         )
 
         # Should detect oscillation (lightlike observer at work)
-        assert needs_adj is True
-        assert diagnosis["oscillating"] is True  # numpy bool
+        assert needs_adj
+        assert diagnosis["oscillating"]  # numpy bool
         # May be flagged as oscillation or erratic motion (both are correct)
         assert diagnosis["issue"] in ["oscillation_detected", "erratic_motion"]
         assert performance < 0.7  # Poor performance due to oscillation
@@ -67,7 +67,7 @@ class TestSelfObservation:
         )
 
         # Should see convergence toward origin
-        assert diagnosis["converging"] is True
+        assert diagnosis["converging"]
         # Performance should be reasonable
         assert performance >= 0.0
 
@@ -83,8 +83,8 @@ class TestSelfObservation:
         )
 
         # Should detect stagnation
-        assert needs_adj is True
-        assert diagnosis["converging"] is False  # numpy bool
+        assert needs_adj
+        assert not diagnosis["converging"]  # numpy bool
         # May also detect oscillation due to identical states
         assert "issue" in diagnosis
 
@@ -238,7 +238,7 @@ class TestSelfTuningControl:
         )
 
         # System should recognize convergence
-        assert meta_info["diagnosis"]["converging"] is True
+        assert meta_info["diagnosis"]["converging"]
         # Adjustments should be minimal if any
         if meta_info["adjustment_made"]:
             # Check changes are small
@@ -257,8 +257,8 @@ class TestSelfTuningControl:
         )
 
         # Should not have done any meta-control
-        assert meta_info["meta_control_active"] is False
-        assert meta_info["adjustment_made"] is False
+        assert not meta_info["meta_control_active"]
+        assert not meta_info["adjustment_made"]
         assert updated_params == params
 
     def test_no_infinite_loop_in_full_step(self):
