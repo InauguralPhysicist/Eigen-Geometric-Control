@@ -47,6 +47,7 @@ from .eigen_noperthedron import (
     vertices_to_bitstring,
 )
 from .eigen_similarity import (
+    adaptive_control_parameters,
     compare_self_similarity,
     detect_oscillation,
     lightlike_damping_factor,
@@ -97,6 +98,7 @@ __all__ = [
     "lightlike_damping_factor",
     "compare_self_similarity",
     "regime_from_similarity",
+    "adaptive_control_parameters",
 ]
 
 __version__ = "1.0.0"
