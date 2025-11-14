@@ -153,13 +153,9 @@ def run_benchmark():
     strong = results["Strong Measurement (0.9)"]
 
     coherence_improvement = (
-        (weak["coherence_mean"] - strong["coherence_mean"])
-        / strong["coherence_mean"]
-        * 100
+        (weak["coherence_mean"] - strong["coherence_mean"]) / strong["coherence_mean"] * 100
     )
-    error_improvement = (
-        (strong["error_mean"] - weak["error_mean"]) / strong["error_mean"] * 100
-    )
+    error_improvement = (strong["error_mean"] - weak["error_mean"]) / strong["error_mean"] * 100
 
     print(f"Coherence Improvement: {coherence_improvement:+.1f}%")
     print(f"  Weak:   {weak['coherence_mean']:.4f} (smoother trajectory)")
@@ -218,9 +214,7 @@ def plot_results(results: dict, target: np.ndarray):
 
     # Mark start and target
     ax.scatter([5.0], [5.0], s=200, marker="*", color="green", label="Start", zorder=5)
-    ax.scatter(
-        [target[0]], [target[1]], s=200, marker="X", color="red", label="Target", zorder=5
-    )
+    ax.scatter([target[0]], [target[1]], s=200, marker="X", color="red", label="Target", zorder=5)
 
     ax.legend(loc="upper right")
     ax.set_aspect("equal")

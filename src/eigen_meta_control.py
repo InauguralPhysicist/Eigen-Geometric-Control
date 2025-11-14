@@ -70,8 +70,7 @@ def observe_parameter_performance(
             for i in range(1, len(recent_trajectory))
         ]
         velocity_changes = [
-            np.linalg.norm(velocities[i] - velocities[i - 1])
-            for i in range(1, len(velocities))
+            np.linalg.norm(velocities[i] - velocities[i - 1]) for i in range(1, len(velocities))
         ]
         smoothness = 1.0 / (1.0 + np.mean(velocity_changes))
     else:
@@ -82,9 +81,7 @@ def observe_parameter_performance(
     convergence_score = max(0.0, convergence_rate) if converging else 0.0
 
     performance_score = (
-        (1.0 - oscillation_penalty) * 0.4
-        + convergence_score * 0.4
-        + smoothness * 0.2
+        (1.0 - oscillation_penalty) * 0.4 + convergence_score * 0.4 + smoothness * 0.2
     )
 
     # Diagnose what needs adjustment
@@ -227,9 +224,7 @@ def self_tuning_control_step(
 
     # If lightlike observer detected issues, adjust parameters
     if needs_adjustment:
-        updated_params = meta_update_parameters(
-            control_params, diagnosis, meta_eta=meta_eta
-        )
+        updated_params = meta_update_parameters(control_params, diagnosis, meta_eta=meta_eta)
         meta_info["adjustment_made"] = True
         meta_info["param_changes"] = {
             key: {

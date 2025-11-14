@@ -211,9 +211,7 @@ def run_benchmark():
     print()
 
     avg_error_improvement = np.mean([r["error_improvement"] for r in all_results.values()])
-    avg_success_improvement = np.mean(
-        [r["success_improvement"] for r in all_results.values()]
-    )
+    avg_success_improvement = np.mean([r["success_improvement"] for r in all_results.values()])
 
     print(f"Average Error Improvement:   {avg_error_improvement:+.1f}%")
     print(f"Average Success Improvement: {avg_success_improvement:+.1f}%")
@@ -289,12 +287,8 @@ def plot_results(results: dict, start: np.ndarray, goal: np.ndarray):
         )
 
         # Mark start and goal
-        ax.scatter(
-            start[0], start[1], s=150, marker="*", color="green", label="Start", zorder=5
-        )
-        ax.scatter(
-            goal[0], goal[1], s=150, marker="X", color="red", label="Goal", zorder=5
-        )
+        ax.scatter(start[0], start[1], s=150, marker="*", color="green", label="Start", zorder=5)
+        ax.scatter(goal[0], goal[1], s=150, marker="X", color="red", label="Goal", zorder=5)
 
         ax.set_xlabel("X Position")
         ax.set_ylabel("Y Position")
@@ -327,9 +321,7 @@ def plot_results(results: dict, start: np.ndarray, goal: np.ndarray):
 
         # Add value labels
         for i, (nv, qv) in enumerate(zip(naive_vals, qec_vals)):
-            ax.text(
-                i - width / 2, nv, f"{nv:.1f}", ha="center", va="bottom", fontsize=8
-            )
+            ax.text(i - width / 2, nv, f"{nv:.1f}", ha="center", va="bottom", fontsize=8)
             ax.text(i + width / 2, qv, f"{qv:.1f}", ha="center", va="bottom", fontsize=8)
 
     plt.tight_layout()

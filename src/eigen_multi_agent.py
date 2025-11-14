@@ -201,9 +201,7 @@ def multi_agent_step(
     # 4. UPDATE AGENT STATES
     # Apply gradient descent with paradox-mediated damping
     new_states = []
-    for i, (state, gradient, damping) in enumerate(
-        zip(agent_states, gradients, dampings)
-    ):
+    for i, (state, gradient, damping) in enumerate(zip(agent_states, gradients, dampings)):
         # Gradient step
         velocity = eta * gradient
 
@@ -242,8 +240,7 @@ def check_convergence(
         - distances: List[float] - Distance of each agent to its target
     """
     distances = [
-        float(np.linalg.norm(state - target))
-        for state, target in zip(agent_states, agent_targets)
+        float(np.linalg.norm(state - target)) for state, target in zip(agent_states, agent_targets)
     ]
 
     all_converged = all(d < tolerance for d in distances)

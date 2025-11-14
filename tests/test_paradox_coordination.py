@@ -32,9 +32,7 @@ class TestCollectiveLightlikeObserver:
         ]
         states = [np.array([0.4, 0.4])]
 
-        collective_osc, agent_osc, collective_sim = collective_lightlike_observer(
-            states, history
-        )
+        collective_osc, agent_osc, collective_sim = collective_lightlike_observer(states, history)
 
         # Should not detect oscillation
         assert collective_osc == False
@@ -54,9 +52,7 @@ class TestCollectiveLightlikeObserver:
         ]
         states = [np.array([1.0, 0.0])]
 
-        collective_osc, agent_osc, collective_sim = collective_lightlike_observer(
-            states, history
-        )
+        collective_osc, agent_osc, collective_sim = collective_lightlike_observer(states, history)
 
         # Should detect oscillation
         assert collective_osc == True
@@ -73,9 +69,7 @@ class TestCollectiveLightlikeObserver:
         states = [np.array([1.0, 0.0]), np.array([-1.0, 10.0])]
         histories = [history_0[0], history_1[0]]
 
-        collective_osc, agent_osc, collective_sim = collective_lightlike_observer(
-            states, histories
-        )
+        collective_osc, agent_osc, collective_sim = collective_lightlike_observer(states, histories)
 
         # Agents moving in opposite directions - not high similarity
         assert collective_sim <= 1.0  # Just verify it's a valid value
@@ -92,9 +86,7 @@ class TestCollectiveLightlikeObserver:
         states = [np.array([0.6, 0.0]), np.array([0.0, 0.6])]
         histories = [history_0[0], history_1[0]]
 
-        collective_osc, agent_osc, collective_sim = collective_lightlike_observer(
-            states, histories
-        )
+        collective_osc, agent_osc, collective_sim = collective_lightlike_observer(states, histories)
 
         # Observer should detect some level of interaction
         assert isinstance(collective_sim, float)
@@ -334,9 +326,7 @@ class TestEmergentCoordination:
         # Key test: Did coordination happen?
         # Evidence: collective_oscillating flag or dampings > 0
 
-        coordination_events = sum(
-            info["coordination_active"] for info in info_history
-        )
+        coordination_events = sum(info["coordination_active"] for info in info_history)
 
         # At some point, there should be coordination
         # (or they converged so fast it wasn't needed - both are success)
@@ -348,8 +338,7 @@ class TestEmergentCoordination:
 
         # All agents start at different corners
         initial_states = [
-            np.array([np.cos(i * 2 * np.pi / n_agents), np.sin(i * 2 * np.pi / n_agents)])
-            * 5.0
+            np.array([np.cos(i * 2 * np.pi / n_agents), np.sin(i * 2 * np.pi / n_agents)]) * 5.0
             for i in range(n_agents)
         ]
 

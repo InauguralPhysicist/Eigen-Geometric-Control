@@ -25,7 +25,8 @@ Key differences from Earth landing:
 
 import numpy as np
 import sys
-sys.path.insert(0, '/home/user/Eigen-Geometric-Control')
+
+sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
 
 from src import (
     detect_oscillation,
@@ -33,7 +34,7 @@ from src import (
     forward_kinematics,
     compute_ds2,
     compute_gradient,
-    compute_change_stability
+    compute_change_stability,
 )
 import pandas as pd
 
@@ -76,17 +77,19 @@ def run_mars_baseline(
 
         C, S, ds2_CS = compute_change_stability(delta, 1e-3)
 
-        rows.append({
-            'tick': t,
-            'x': x,
-            'y': y,
-            'target_x': target[0],
-            'target_y': target[1],
-            'distance_to_target': np.sqrt((x - target[0])**2 + (y - target[1])**2),
-            'ds2_total': ds2_total,
-            'grad_norm': grad_norm,
-            'd_obs': components['d_obs'],
-        })
+        rows.append(
+            {
+                "tick": t,
+                "x": x,
+                "y": y,
+                "target_x": target[0],
+                "target_y": target[1],
+                "distance_to_target": np.sqrt((x - target[0]) ** 2 + (y - target[1]) ** 2),
+                "ds2_total": ds2_total,
+                "grad_norm": grad_norm,
+                "d_obs": components["d_obs"],
+            }
+        )
 
         theta1, theta2 = theta1_new, theta2_new
 
@@ -148,20 +151,22 @@ def run_mars_lightlike(
 
         C, S, ds2_CS = compute_change_stability(delta, 1e-3)
 
-        rows.append({
-            'tick': t,
-            'x': x,
-            'y': y,
-            'target_x': target[0],
-            'target_y': target[1],
-            'distance_to_target': np.sqrt((x - target[0])**2 + (y - target[1])**2),
-            'ds2_total': ds2_total,
-            'grad_norm': grad_norm,
-            'd_obs': components['d_obs'],
-            'oscillating': oscillating,
-            'osc_strength': osc_strength,
-            'damping': damping,
-        })
+        rows.append(
+            {
+                "tick": t,
+                "x": x,
+                "y": y,
+                "target_x": target[0],
+                "target_y": target[1],
+                "distance_to_target": np.sqrt((x - target[0]) ** 2 + (y - target[1]) ** 2),
+                "ds2_total": ds2_total,
+                "grad_norm": grad_norm,
+                "d_obs": components["d_obs"],
+                "oscillating": oscillating,
+                "osc_strength": osc_strength,
+                "damping": damping,
+            }
+        )
 
         theta1, theta2 = theta1_new, theta2_new
 
@@ -170,7 +175,7 @@ def run_mars_lightlike(
 
 def analyze_mars_landing(df, scenario_name, safe_zone_radius=0.015):
     """Analyze Mars landing with mission-critical metrics"""
-    distances = df['distance_to_target'].values
+    distances = df["distance_to_target"].values
 
     # Final landing precision (mission critical)
     final_error = distances[-1] * 1000  # mm
@@ -184,15 +189,15 @@ def analyze_mars_landing(df, scenario_name, safe_zone_radius=0.015):
     descent_stability = np.std(final_descent_distances) * 1000
 
     # Oscillation count during final descent (CRITICAL for Mars)
-    grad_norms = df['grad_norm'].values[final_descent_start:]
+    grad_norms = df["grad_norm"].values[final_descent_start:]
     descent_oscillations = 0
     for i in range(1, len(grad_norms)):
-        if grad_norms[i] > grad_norms[i-1] * 1.5:  # Significant gradient reversal
+        if grad_norms[i] > grad_norms[i - 1] * 1.5:  # Significant gradient reversal
             descent_oscillations += 1
 
     # Hazard clearance (minimum distance to obstacles)
-    min_clearance = df['d_obs'].min()
-    hazard_violations = (df['d_obs'] < 0.30).sum()
+    min_clearance = df["d_obs"].min()
+    hazard_violations = (df["d_obs"] < 0.30).sum()
 
     # Time to safe zone
     within_safe_zone = distances < safe_zone_radius
@@ -202,22 +207,22 @@ def analyze_mars_landing(df, scenario_name, safe_zone_radius=0.015):
     mean_distance = distances.mean() * 1000
 
     metrics = {
-        'scenario': scenario_name,
-        'final_landing_error_mm': final_error,
-        'mission_success': mission_success,
-        'safe_zone_radius_mm': safe_zone_radius * 1000,
-        'descent_stability_mm': descent_stability,
-        'descent_oscillations': descent_oscillations,
-        'min_hazard_clearance_m': min_clearance,
-        'hazard_violations': hazard_violations,
-        'time_to_safe_zone': time_to_safe,
-        'mean_tracking_error_mm': mean_distance,
+        "scenario": scenario_name,
+        "final_landing_error_mm": final_error,
+        "mission_success": mission_success,
+        "safe_zone_radius_mm": safe_zone_radius * 1000,
+        "descent_stability_mm": descent_stability,
+        "descent_oscillations": descent_oscillations,
+        "min_hazard_clearance_m": min_clearance,
+        "hazard_violations": hazard_violations,
+        "time_to_safe_zone": time_to_safe,
+        "mean_tracking_error_mm": mean_distance,
     }
 
-    if 'damping' in df.columns:
-        final_damping = df['damping'].iloc[final_descent_start:]
-        metrics['descent_damping_activations'] = (final_damping > 0).sum()
-        metrics['max_damping'] = df['damping'].max()
+    if "damping" in df.columns:
+        final_damping = df["damping"].iloc[final_descent_start:]
+        metrics["descent_damping_activations"] = (final_damping > 0).sum()
+        metrics["max_damping"] = df["damping"].max()
 
     return metrics
 
@@ -239,28 +244,27 @@ def main():
 
     # Scenario 1: Nominal Mars landing (like Perseverance)
     print("Scenario 1: Nominal Mars landing (clear weather)...")
+
     def nominal_landing(t):
         # Slow descent to landing zone
-        return [1.35, 0.42 - 0.0005*t]
+        return [1.35, 0.42 - 0.0005 * t]
 
     def boulder_field(t):
         return [0.75, 0.25]  # Large rock formation
 
     df_base_1 = run_mars_baseline(
-        landing_trajectory=nominal_landing,
-        obstacle_trajectory=boulder_field,
-        n_ticks=200
+        landing_trajectory=nominal_landing, obstacle_trajectory=boulder_field, n_ticks=200
     )
     df_light_1 = run_mars_lightlike(
-        landing_trajectory=nominal_landing,
-        obstacle_trajectory=boulder_field,
-        n_ticks=200
+        landing_trajectory=nominal_landing, obstacle_trajectory=boulder_field, n_ticks=200
     )
 
-    results.append({
-        'baseline': analyze_mars_landing(df_base_1, "Nominal - Baseline"),
-        'lightlike': analyze_mars_landing(df_light_1, "Nominal - Lightlike"),
-    })
+    results.append(
+        {
+            "baseline": analyze_mars_landing(df_base_1, "Nominal - Baseline"),
+            "lightlike": analyze_mars_landing(df_light_1, "Nominal - Lightlike"),
+        }
+    )
 
     # Scenario 2: Atmospheric turbulence (dust storm effects)
     print("Scenario 2: Turbulent descent (dust storm effects)...")
@@ -269,34 +273,33 @@ def main():
     turb_y = np.random.normal(0, 0.010, 200)
 
     def turbulent_descent(t):
-        base_x, base_y = 1.32, 0.38 - 0.0005*t
+        base_x, base_y = 1.32, 0.38 - 0.0005 * t
         return [base_x + turb_x[min(t, 199)], base_y + turb_y[min(t, 199)]]
 
     df_base_2 = run_mars_baseline(
-        landing_trajectory=turbulent_descent,
-        obstacle_trajectory=boulder_field,
-        n_ticks=200
+        landing_trajectory=turbulent_descent, obstacle_trajectory=boulder_field, n_ticks=200
     )
     df_light_2 = run_mars_lightlike(
-        landing_trajectory=turbulent_descent,
-        obstacle_trajectory=boulder_field,
-        n_ticks=200
+        landing_trajectory=turbulent_descent, obstacle_trajectory=boulder_field, n_ticks=200
     )
 
-    results.append({
-        'baseline': analyze_mars_landing(df_base_2, "Turbulent - Baseline"),
-        'lightlike': analyze_mars_landing(df_light_2, "Turbulent - Lightlike"),
-    })
+    results.append(
+        {
+            "baseline": analyze_mars_landing(df_base_2, "Turbulent - Baseline"),
+            "lightlike": analyze_mars_landing(df_light_2, "Turbulent - Lightlike"),
+        }
+    )
 
     # Scenario 3: Mid-descent hazard avoidance (detected obstacle)
     print("Scenario 3: Hazard avoidance maneuver...")
+
     def hazard_avoidance(t):
         # Detect hazard at t=80, shift landing site
         if t < 80:
-            return [1.35, 0.42 - 0.0005*t]
+            return [1.35, 0.42 - 0.0005 * t]
         else:
             # Shift 10cm to avoid detected boulder
-            return [1.45, 0.42 - 0.0005*t]
+            return [1.45, 0.42 - 0.0005 * t]
 
     def moving_hazard(t):
         # Hazard in original landing zone
@@ -306,22 +309,22 @@ def main():
         landing_trajectory=hazard_avoidance,
         obstacle_trajectory=moving_hazard,
         n_ticks=200,
-        Go=8.0  # Strong avoidance
+        Go=8.0,  # Strong avoidance
     )
     df_light_3 = run_mars_lightlike(
-        landing_trajectory=hazard_avoidance,
-        obstacle_trajectory=moving_hazard,
-        n_ticks=200,
-        Go=8.0
+        landing_trajectory=hazard_avoidance, obstacle_trajectory=moving_hazard, n_ticks=200, Go=8.0
     )
 
-    results.append({
-        'baseline': analyze_mars_landing(df_base_3, "Hazard Avoidance - Baseline"),
-        'lightlike': analyze_mars_landing(df_light_3, "Hazard Avoidance - Lightlike"),
-    })
+    results.append(
+        {
+            "baseline": analyze_mars_landing(df_base_3, "Hazard Avoidance - Baseline"),
+            "lightlike": analyze_mars_landing(df_light_3, "Hazard Avoidance - Lightlike"),
+        }
+    )
 
     # Scenario 4: Precision landing near hazard (tight constraints)
     print("Scenario 4: Precision landing near hazard...")
+
     def precision_site(t):
         return [1.30, 0.38]  # Fixed, small safe zone
 
@@ -333,44 +336,57 @@ def main():
         obstacle_trajectory=nearby_hazard,
         n_ticks=200,
         eta=0.10,  # Careful approach
-        Go=7.0
+        Go=7.0,
     )
     df_light_4 = run_mars_lightlike(
         landing_trajectory=precision_site,
         obstacle_trajectory=nearby_hazard,
         n_ticks=200,
         eta=0.10,
-        Go=7.0
+        Go=7.0,
     )
 
-    results.append({
-        'baseline': analyze_mars_landing(df_base_4, "Precision Near Hazard - Baseline", safe_zone_radius=0.010),
-        'lightlike': analyze_mars_landing(df_light_4, "Precision Near Hazard - Lightlike", safe_zone_radius=0.010),
-    })
+    results.append(
+        {
+            "baseline": analyze_mars_landing(
+                df_base_4, "Precision Near Hazard - Baseline", safe_zone_radius=0.010
+            ),
+            "lightlike": analyze_mars_landing(
+                df_light_4, "Precision Near Hazard - Lightlike", safe_zone_radius=0.010
+            ),
+        }
+    )
 
     # Scenario 5: Sample return landing (must land on exact spot)
     print("Scenario 5: Sample return rendezvous (ultra-precision)...")
+
     def sample_return_site(t):
         # Oscillating slightly (Mars Ascent Vehicle preparing for launch)
-        return [1.28 + 0.015*np.sin(t*0.1), 0.36 + 0.010*np.cos(t*0.15)]
+        return [1.28 + 0.015 * np.sin(t * 0.1), 0.36 + 0.010 * np.cos(t * 0.15)]
 
     df_base_5 = run_mars_baseline(
         landing_trajectory=sample_return_site,
         obstacle_trajectory=boulder_field,
         n_ticks=200,
-        eta=0.08  # Very careful
+        eta=0.08,  # Very careful
     )
     df_light_5 = run_mars_lightlike(
         landing_trajectory=sample_return_site,
         obstacle_trajectory=boulder_field,
         n_ticks=200,
-        eta=0.08
+        eta=0.08,
     )
 
-    results.append({
-        'baseline': analyze_mars_landing(df_base_5, "Sample Return - Baseline", safe_zone_radius=0.008),
-        'lightlike': analyze_mars_landing(df_light_5, "Sample Return - Lightlike", safe_zone_radius=0.008),
-    })
+    results.append(
+        {
+            "baseline": analyze_mars_landing(
+                df_base_5, "Sample Return - Baseline", safe_zone_radius=0.008
+            ),
+            "lightlike": analyze_mars_landing(
+                df_light_5, "Sample Return - Lightlike", safe_zone_radius=0.008
+            ),
+        }
+    )
 
     # Display results
     print()
@@ -382,45 +398,61 @@ def main():
     print("Final Landing Precision (mm) - MISSION CRITICAL:")
     print("-" * 80)
     for r in results:
-        base = r['baseline']
-        light = r['lightlike']
-        improvement = (base['final_landing_error_mm'] - light['final_landing_error_mm']) / base['final_landing_error_mm'] * 100
+        base = r["baseline"]
+        light = r["lightlike"]
+        improvement = (
+            (base["final_landing_error_mm"] - light["final_landing_error_mm"])
+            / base["final_landing_error_mm"]
+            * 100
+        )
 
-        base_success = "✓ SUCCESS" if base['mission_success'] else "✗ FAIL"
-        light_success = "✓ SUCCESS" if light['mission_success'] else "✗ FAIL"
+        base_success = "✓ SUCCESS" if base["mission_success"] else "✗ FAIL"
+        light_success = "✓ SUCCESS" if light["mission_success"] else "✗ FAIL"
 
-        scenario = base['scenario'].replace(' - Baseline', '')
-        safe_zone = base['safe_zone_radius_mm']
+        scenario = base["scenario"].replace(" - Baseline", "")
+        safe_zone = base["safe_zone_radius_mm"]
 
         print(f"{scenario:<30}")
-        print(f"  Baseline:  {base['final_landing_error_mm']:>6.1f}mm  {base_success}  (safe zone: <{safe_zone:.0f}mm)")
-        print(f"  Lightlike: {light['final_landing_error_mm']:>6.1f}mm  {light_success}  ({improvement:+.1f}%)")
+        print(
+            f"  Baseline:  {base['final_landing_error_mm']:>6.1f}mm  {base_success}  (safe zone: <{safe_zone:.0f}mm)"
+        )
+        print(
+            f"  Lightlike: {light['final_landing_error_mm']:>6.1f}mm  {light_success}  ({improvement:+.1f}%)"
+        )
 
     print()
     print("Descent Stability (oscillations during final 30%):")
     print("-" * 80)
     for r in results:
-        base = r['baseline']
-        light = r['lightlike']
-        reduction = base['descent_oscillations'] - light['descent_oscillations']
+        base = r["baseline"]
+        light = r["lightlike"]
+        reduction = base["descent_oscillations"] - light["descent_oscillations"]
         status = "SAFER" if reduction > 0 else "SAME" if reduction == 0 else "MORE RISK"
 
-        scenario = base['scenario'].replace(' - Baseline', '')
-        print(f"{scenario:<30} {base['descent_oscillations']:>3} → {light['descent_oscillations']:>3} oscillations  "
-              f"{status:>10} ({reduction:+d})")
+        scenario = base["scenario"].replace(" - Baseline", "")
+        print(
+            f"{scenario:<30} {base['descent_oscillations']:>3} → {light['descent_oscillations']:>3} oscillations  "
+            f"{status:>10} ({reduction:+d})"
+        )
 
     print()
     print("Descent Smoothness (std dev in mm):")
     print("-" * 80)
     for r in results:
-        base = r['baseline']
-        light = r['lightlike']
-        improvement = (base['descent_stability_mm'] - light['descent_stability_mm']) / base['descent_stability_mm'] * 100
+        base = r["baseline"]
+        light = r["lightlike"]
+        improvement = (
+            (base["descent_stability_mm"] - light["descent_stability_mm"])
+            / base["descent_stability_mm"]
+            * 100
+        )
         arrow = "↓" if improvement > 0 else "↑"
 
-        scenario = base['scenario'].replace(' - Baseline', '')
-        print(f"{scenario:<30} {base['descent_stability_mm']:>7.1f}mm → {light['descent_stability_mm']:>7.1f}mm  "
-              f"{arrow} {abs(improvement):>5.1f}%")
+        scenario = base["scenario"].replace(" - Baseline", "")
+        print(
+            f"{scenario:<30} {base['descent_stability_mm']:>7.1f}mm → {light['descent_stability_mm']:>7.1f}mm  "
+            f"{arrow} {abs(improvement):>5.1f}%"
+        )
 
     print()
     print("=" * 80)
@@ -429,29 +461,35 @@ def main():
     print()
 
     # Mission success rates
-    baseline_successes = sum(1 for r in results if r['baseline']['mission_success'])
-    lightlike_successes = sum(1 for r in results if r['lightlike']['mission_success'])
+    baseline_successes = sum(1 for r in results if r["baseline"]["mission_success"])
+    lightlike_successes = sum(1 for r in results if r["lightlike"]["mission_success"])
 
     print(f"MISSION SUCCESS RATE:")
-    print(f"  Baseline:  {baseline_successes}/{len(results)} missions successful ({baseline_successes/len(results)*100:.0f}%)")
-    print(f"  Lightlike: {lightlike_successes}/{len(results)} missions successful ({lightlike_successes/len(results)*100:.0f}%)")
+    print(
+        f"  Baseline:  {baseline_successes}/{len(results)} missions successful ({baseline_successes/len(results)*100:.0f}%)"
+    )
+    print(
+        f"  Lightlike: {lightlike_successes}/{len(results)} missions successful ({lightlike_successes/len(results)*100:.0f}%)"
+    )
     print()
 
     # Average metrics
     avg_precision_improvement = sum(
-        (r['baseline']['final_landing_error_mm'] - r['lightlike']['final_landing_error_mm']) /
-        r['baseline']['final_landing_error_mm'] * 100
+        (r["baseline"]["final_landing_error_mm"] - r["lightlike"]["final_landing_error_mm"])
+        / r["baseline"]["final_landing_error_mm"]
+        * 100
         for r in results
     ) / len(results)
 
     total_oscillation_reduction = sum(
-        r['baseline']['descent_oscillations'] - r['lightlike']['descent_oscillations']
+        r["baseline"]["descent_oscillations"] - r["lightlike"]["descent_oscillations"]
         for r in results
     )
 
     avg_stability_improvement = sum(
-        (r['baseline']['descent_stability_mm'] - r['lightlike']['descent_stability_mm']) /
-        r['baseline']['descent_stability_mm'] * 100
+        (r["baseline"]["descent_stability_mm"] - r["lightlike"]["descent_stability_mm"])
+        / r["baseline"]["descent_stability_mm"]
+        * 100
         for r in results
     ) / len(results)
 
@@ -496,23 +534,36 @@ def main():
 
     # Best scenario analysis
     if len(results) > 0:
-        best_idx = max(range(len(results)),
-                       key=lambda i: (results[i]['baseline']['final_landing_error_mm'] -
-                                     results[i]['lightlike']['final_landing_error_mm']))
+        best_idx = max(
+            range(len(results)),
+            key=lambda i: (
+                results[i]["baseline"]["final_landing_error_mm"]
+                - results[i]["lightlike"]["final_landing_error_mm"]
+            ),
+        )
         best = results[best_idx]
-        best_improvement = (best['baseline']['final_landing_error_mm'] -
-                           best['lightlike']['final_landing_error_mm']) / \
-                           best['baseline']['final_landing_error_mm'] * 100
+        best_improvement = (
+            (
+                best["baseline"]["final_landing_error_mm"]
+                - best["lightlike"]["final_landing_error_mm"]
+            )
+            / best["baseline"]["final_landing_error_mm"]
+            * 100
+        )
 
         print()
         print(f"BEST PERFORMANCE: {best['baseline']['scenario'].replace(' - Baseline', '')}")
         print(f"  Precision improvement: {best_improvement:+.1f}%")
-        print(f"  Oscillations reduced: {best['baseline']['descent_oscillations'] - best['lightlike']['descent_oscillations']} events")
+        print(
+            f"  Oscillations reduced: {best['baseline']['descent_oscillations'] - best['lightlike']['descent_oscillations']} events"
+        )
 
-        if 'descent_damping_activations' in best['lightlike']:
-            print(f"  Damping activations during descent: {best['lightlike']['descent_damping_activations']}")
+        if "descent_damping_activations" in best["lightlike"]:
+            print(
+                f"  Damping activations during descent: {best['lightlike']['descent_damping_activations']}"
+            )
             print(f"  Max damping: {best['lightlike']['max_damping']:.3f}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

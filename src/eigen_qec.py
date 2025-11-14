@@ -334,9 +334,7 @@ def correct_measurement_errors(
     # Correct measurement
     if error_location is not None:
         # Error detected - exclude faulty sensor
-        valid_measurements = [
-            m for i, m in enumerate(measurements) if i != error_location
-        ]
+        valid_measurements = [m for i, m in enumerate(measurements) if i != error_location]
         corrected_state = np.mean(valid_measurements, axis=0)
         correction_applied = True
         error_detected = True
@@ -421,9 +419,7 @@ def qec_control_step(
 
     # Update state estimate (blend current state with corrected measurement)
     blend_factor = 0.5  # Weight for measurement vs state estimate
-    updated_state = (
-        blend_factor * corrected_measurement + (1 - blend_factor) * current_state
-    )
+    updated_state = blend_factor * corrected_measurement + (1 - blend_factor) * current_state
 
     # Control: move toward target
     direction = target - updated_state

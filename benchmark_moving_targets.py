@@ -111,10 +111,12 @@ def generate_moving_target_trajectory(
         elif trajectory_type == "accelerating":
             # Accelerating target
             accel = 0.05
-            pos = initial_position + np.array([
-                velocity * t + 0.5 * accel * t**2,
-                velocity * t * 0.3,
-            ])
+            pos = initial_position + np.array(
+                [
+                    velocity * t + 0.5 * accel * t**2,
+                    velocity * t * 0.3,
+                ]
+            )
 
         else:
             raise ValueError(f"Unknown trajectory type: {trajectory_type}")

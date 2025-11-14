@@ -15,7 +15,8 @@ Scenarios tested:
 
 import numpy as np
 import sys
-sys.path.insert(0, '/home/user/Eigen-Geometric-Control')
+
+sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
 
 from src import (
     detect_oscillation,
@@ -23,7 +24,7 @@ from src import (
     forward_kinematics,
     compute_ds2,
     compute_gradient,
-    compute_change_stability
+    compute_change_stability,
 )
 import pandas as pd
 
@@ -42,7 +43,7 @@ def run_arm_with_tuned_lightlike(
     L2=0.9,
     window=5,  # Tuned: longer window = less sensitive
     threshold=0.98,  # Tuned: higher threshold = only strong oscillations
-    damping_scale=0.5  # Tuned: reduce damping strength
+    damping_scale=0.5,  # Tuned: reduce damping strength
 ):
     """Run arm simulation WITH TUNED lightlike observer parameters"""
     theta1, theta2 = theta_init
@@ -88,19 +89,21 @@ def run_arm_with_tuned_lightlike(
         C, S, ds2_CS = compute_change_stability(delta, eps_change)
 
         # Record state
-        rows.append({
-            'tick': t,
-            'theta1_rad': theta1,
-            'theta2_rad': theta2,
-            'x': x,
-            'y': y,
-            'ds2_total': ds2_total,
-            'grad_norm': grad_norm,
-            'd_obs': components['d_obs'],
-            'oscillating': oscillating,
-            'osc_strength': osc_strength,
-            'damping': damping,
-        })
+        rows.append(
+            {
+                "tick": t,
+                "theta1_rad": theta1,
+                "theta2_rad": theta2,
+                "x": x,
+                "y": y,
+                "ds2_total": ds2_total,
+                "grad_norm": grad_norm,
+                "d_obs": components["d_obs"],
+                "oscillating": oscillating,
+                "osc_strength": osc_strength,
+                "damping": damping,
+            }
+        )
 
         # Update for next iteration
         theta1, theta2 = theta1_new, theta2_new
@@ -122,6 +125,7 @@ def run_arm_baseline(
 ):
     """Run baseline without lightlike observer (for fair comparison)"""
     from src import run_arm_simulation
+
     df = run_arm_simulation(
         theta_init=theta_init,
         target=target,
@@ -132,7 +136,7 @@ def run_arm_baseline(
         Go=Go,
         lam=lam,
         L1=L1,
-        L2=L2
+        L2=L2,
     )
     return df
 
@@ -140,40 +144,45 @@ def run_arm_baseline(
 def analyze_precision(df_baseline, df_lightlike, target, scenario_name):
     """Analyze accuracy and convergence"""
     final_dist_base = np.sqrt(
-        (df_baseline['x'].iloc[-1] - target[0])**2 +
-        (df_baseline['y'].iloc[-1] - target[1])**2
+        (df_baseline["x"].iloc[-1] - target[0]) ** 2 + (df_baseline["y"].iloc[-1] - target[1]) ** 2
     )
     final_dist_light = np.sqrt(
-        (df_lightlike['x'].iloc[-1] - target[0])**2 +
-        (df_lightlike['y'].iloc[-1] - target[1])**2
+        (df_lightlike["x"].iloc[-1] - target[0]) ** 2
+        + (df_lightlike["y"].iloc[-1] - target[1]) ** 2
     )
 
     # How many ticks to reach 1cm accuracy?
     target_dist_base = np.sqrt(
-        (df_baseline['x'] - target[0])**2 + (df_baseline['y'] - target[1])**2
+        (df_baseline["x"] - target[0]) ** 2 + (df_baseline["y"] - target[1]) ** 2
     )
     target_dist_light = np.sqrt(
-        (df_lightlike['x'] - target[0])**2 + (df_lightlike['y'] - target[1])**2
+        (df_lightlike["x"] - target[0]) ** 2 + (df_lightlike["y"] - target[1]) ** 2
     )
 
-    ticks_base = (target_dist_base < 0.01).idxmax() if (target_dist_base < 0.01).any() else len(df_baseline)
-    ticks_light = (target_dist_light < 0.01).idxmax() if (target_dist_light < 0.01).any() else len(df_lightlike)
+    ticks_base = (
+        (target_dist_base < 0.01).idxmax() if (target_dist_base < 0.01).any() else len(df_baseline)
+    )
+    ticks_light = (
+        (target_dist_light < 0.01).idxmax()
+        if (target_dist_light < 0.01).any()
+        else len(df_lightlike)
+    )
 
     improvement = (final_dist_base - final_dist_light) / final_dist_base * 100
     speed_change = (ticks_light - ticks_base) / ticks_base * 100 if ticks_base > 0 else 0
 
     # Lightlike activations
-    activations = (df_lightlike['damping'] > 0).sum() if 'damping' in df_lightlike.columns else 0
+    activations = (df_lightlike["damping"] > 0).sum() if "damping" in df_lightlike.columns else 0
 
     return {
-        'scenario': scenario_name,
-        'final_dist_baseline_mm': final_dist_base * 1000,
-        'final_dist_lightlike_mm': final_dist_light * 1000,
-        'accuracy_improvement_pct': improvement,
-        'ticks_to_1cm_baseline': ticks_base,
-        'ticks_to_1cm_lightlike': ticks_light,
-        'speed_change_pct': speed_change,
-        'lightlike_activations': activations,
+        "scenario": scenario_name,
+        "final_dist_baseline_mm": final_dist_base * 1000,
+        "final_dist_lightlike_mm": final_dist_light * 1000,
+        "accuracy_improvement_pct": improvement,
+        "ticks_to_1cm_baseline": ticks_base,
+        "ticks_to_1cm_lightlike": ticks_light,
+        "speed_change_pct": speed_change,
+        "lightlike_activations": activations,
     }
 
 
@@ -198,7 +207,9 @@ def main():
     # Scenario 2: Tighter target (precision assembly)
     print("Scenario 2: High-precision task (assembly)...")
     target_precise = np.array([1.15, 0.35])
-    df_base_2 = run_arm_baseline(target=tuple(target_precise), eta=0.08)  # Smaller steps for precision
+    df_base_2 = run_arm_baseline(
+        target=tuple(target_precise), eta=0.08
+    )  # Smaller steps for precision
     df_light_2 = run_arm_with_tuned_lightlike(target=tuple(target_precise), eta=0.08)
     results.append(analyze_precision(df_base_2, df_light_2, target_precise, "2-DOF Precision"))
 
@@ -218,9 +229,7 @@ def main():
     # Scenario 5: Long-range motion
     print("Scenario 5: Long-range motion...")
     target_far = np.array([1.5, 0.5])
-    df_base_5 = run_arm_baseline(
-        theta_init=(-2.0, 2.0), target=tuple(target_far), n_ticks=200
-    )
+    df_base_5 = run_arm_baseline(theta_init=(-2.0, 2.0), target=tuple(target_far), n_ticks=200)
     df_light_5 = run_arm_with_tuned_lightlike(
         theta_init=(-2.0, 2.0), target=tuple(target_far), n_ticks=200
     )
@@ -238,31 +247,35 @@ def main():
     print("Final Accuracy (distance to target in mm):")
     print("-" * 80)
     for _, row in df_results.iterrows():
-        baseline_mm = row['final_dist_baseline_mm']
-        lightlike_mm = row['final_dist_lightlike_mm']
-        improvement = row['accuracy_improvement_pct']
+        baseline_mm = row["final_dist_baseline_mm"]
+        lightlike_mm = row["final_dist_lightlike_mm"]
+        improvement = row["accuracy_improvement_pct"]
 
         arrow = "↓" if improvement > 0 else "↑"
-        print(f"{row['scenario']:<25} {baseline_mm:>8.2f} mm → {lightlike_mm:>8.2f} mm  "
-              f"{arrow} {abs(improvement):>5.1f}%")
+        print(
+            f"{row['scenario']:<25} {baseline_mm:>8.2f} mm → {lightlike_mm:>8.2f} mm  "
+            f"{arrow} {abs(improvement):>5.1f}%"
+        )
 
     print()
     print("Convergence Speed (ticks to reach 1cm accuracy):")
     print("-" * 80)
     for _, row in df_results.iterrows():
-        base_ticks = row['ticks_to_1cm_baseline']
-        light_ticks = row['ticks_to_1cm_lightlike']
-        change = row['speed_change_pct']
+        base_ticks = row["ticks_to_1cm_baseline"]
+        light_ticks = row["ticks_to_1cm_lightlike"]
+        change = row["speed_change_pct"]
 
         arrow = "faster" if change < 0 else "slower"
-        print(f"{row['scenario']:<25} {base_ticks:>4} → {light_ticks:>4} ticks  "
-              f"({abs(change):>5.1f}% {arrow})")
+        print(
+            f"{row['scenario']:<25} {base_ticks:>4} → {light_ticks:>4} ticks  "
+            f"({abs(change):>5.1f}% {arrow})"
+        )
 
     print()
     print("Lightlike Observer Activations:")
     print("-" * 80)
     for _, row in df_results.iterrows():
-        activations = row['lightlike_activations']
+        activations = row["lightlike_activations"]
         print(f"{row['scenario']:<25} {activations:>4} activations")
 
     print()
@@ -272,11 +285,13 @@ def main():
     print()
 
     # Analyze trends
-    avg_improvement = df_results['accuracy_improvement_pct'].mean()
-    best_scenario = df_results.loc[df_results['accuracy_improvement_pct'].idxmax()]
+    avg_improvement = df_results["accuracy_improvement_pct"].mean()
+    best_scenario = df_results.loc[df_results["accuracy_improvement_pct"].idxmax()]
 
     print(f"Average accuracy improvement: {avg_improvement:+.2f}%")
-    print(f"Best scenario: {best_scenario['scenario']} ({best_scenario['accuracy_improvement_pct']:+.1f}%)")
+    print(
+        f"Best scenario: {best_scenario['scenario']} ({best_scenario['accuracy_improvement_pct']:+.1f}%)"
+    )
     print()
 
     if avg_improvement > 0.5:
@@ -284,12 +299,18 @@ def main():
         print()
         print("Key insights:")
         print(f"  • Average improvement: {avg_improvement:.1f}%")
-        print(f"  • Best case: {best_scenario['accuracy_improvement_pct']:.1f}% in {best_scenario['scenario']}")
+        print(
+            f"  • Best case: {best_scenario['accuracy_improvement_pct']:.1f}% in {best_scenario['scenario']}"
+        )
         print()
         print("For 3D robot control (6-DOF or 7-DOF):")
         print(f"  • Configuration space: 2D → 6D or 7D (3-3.5x more dimensions)")
-        print(f"  • Expected improvement: ~{avg_improvement * 3:.1f}% to {avg_improvement * 3.5:.1f}%")
-        print(f"  • In millimeters: {avg_improvement * 3 / 100 * 50:.1f}mm to {avg_improvement * 3.5 / 100 * 50:.1f}mm on 5cm tolerance")
+        print(
+            f"  • Expected improvement: ~{avg_improvement * 3:.1f}% to {avg_improvement * 3.5:.1f}%"
+        )
+        print(
+            f"  • In millimeters: {avg_improvement * 3 / 100 * 50:.1f}mm to {avg_improvement * 3.5 / 100 * 50:.1f}mm on 5cm tolerance"
+        )
         print()
         print("  This could be the difference between:")
         print("    - Successful vs failed grasp")
@@ -309,5 +330,5 @@ def main():
     return df_results
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

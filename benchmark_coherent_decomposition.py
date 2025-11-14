@@ -109,12 +109,8 @@ def compute_trajectory_metrics(
 
     # Path smoothness (lower is smoother)
     if len(trajectory) > 2:
-        velocities = [
-            trajectory[i] - trajectory[i - 1] for i in range(1, len(trajectory))
-        ]
-        accelerations = [
-            velocities[i] - velocities[i - 1] for i in range(1, len(velocities))
-        ]
+        velocities = [trajectory[i] - trajectory[i - 1] for i in range(1, len(trajectory))]
+        accelerations = [velocities[i] - velocities[i - 1] for i in range(1, len(velocities))]
         jitter = np.mean([np.linalg.norm(a) for a in accelerations])
     else:
         jitter = 0.0
@@ -219,9 +215,7 @@ def run_benchmark():
             * 100
         )
         jitter_reduction = (
-            (results["naive_jitter"] - results["filtered_jitter"])
-            / results["naive_jitter"]
-            * 100
+            (results["naive_jitter"] - results["filtered_jitter"]) / results["naive_jitter"] * 100
         )
 
         results["error_improvement"] = error_improvement
@@ -244,12 +238,8 @@ def run_benchmark():
     print("=" * 70)
     print()
 
-    avg_error_improvement = np.mean(
-        [r["error_improvement"] for r in all_results.values()]
-    )
-    avg_jitter_reduction = np.mean(
-        [r["jitter_reduction"] for r in all_results.values()]
-    )
+    avg_error_improvement = np.mean([r["error_improvement"] for r in all_results.values()])
+    avg_jitter_reduction = np.mean([r["jitter_reduction"] for r in all_results.values()])
 
     print(f"Average Error Improvement: {avg_error_improvement:+.1f}%")
     print(f"Average Jitter Reduction:  {avg_jitter_reduction:+.1f}%")
@@ -342,9 +332,7 @@ def plot_results(results: dict, target: np.ndarray):
 
         # Bottom row: Performance comparison
         ax = axes[1, idx]
-        ax.set_title(
-            f"Improvement: {data['error_improvement']:+.1f}%", fontsize=11
-        )
+        ax.set_title(f"Improvement: {data['error_improvement']:+.1f}%", fontsize=11)
 
         metrics = ["Mean Error", "Jitter"]
         naive_vals = [data["naive_mean_error"], data["naive_jitter"]]
@@ -354,9 +342,7 @@ def plot_results(results: dict, target: np.ndarray):
         width = 0.35
 
         ax.bar(x - width / 2, naive_vals, width, label="Naive", color="red", alpha=0.7)
-        ax.bar(
-            x + width / 2, filt_vals, width, label="Filtered", color="blue", alpha=0.7
-        )
+        ax.bar(x + width / 2, filt_vals, width, label="Filtered", color="blue", alpha=0.7)
 
         ax.set_ylabel("Value")
         ax.set_xticks(x)

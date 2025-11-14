@@ -198,8 +198,10 @@ def christoffel_symbols(
             for rho in range(d):
                 # Sum over sigma
                 for sigma in range(d):
-                    Gamma[mu, nu, rho] += 0.5 * g_inv[mu, sigma] * (
-                        dg[sigma, nu, rho] + dg[sigma, rho, nu] - dg[nu, rho, sigma]
+                    Gamma[mu, nu, rho] += (
+                        0.5
+                        * g_inv[mu, sigma]
+                        * (dg[sigma, nu, rho] + dg[sigma, rho, nu] - dg[nu, rho, sigma])
                     )
 
     return Gamma
@@ -424,9 +426,7 @@ def geodesic_control_step(
         elif dist < obs.radius * 3.0:  # Repulsion range
             # Repulsion magnitude: stronger when closer
             # F_repel ~ 1/dist² (like Coulomb force)
-            repulsion_magnitude = (
-                obs.strength * repulsion_strength / (dist**2 + 0.1)
-            )
+            repulsion_magnitude = obs.strength * repulsion_strength / (dist**2 + 0.1)
             # Direction: away from obstacle
             repulsion_direction = diff / dist
             repulsive_force += repulsion_magnitude * repulsion_direction

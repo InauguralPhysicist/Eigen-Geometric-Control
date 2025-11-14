@@ -74,9 +74,7 @@ def simulate_noisy_stereo_control(
 
     # Measure smoothness (via velocity changes)
     velocities = [trajectory[i] - trajectory[i - 1] for i in range(1, len(trajectory))]
-    accelerations = [
-        velocities[i] - velocities[i - 1] for i in range(1, len(velocities))
-    ]
+    accelerations = [velocities[i] - velocities[i - 1] for i in range(1, len(velocities))]
     jitter = np.mean([np.linalg.norm(a) for a in accelerations])
 
     return trajectory, coherence, final_error, jitter
@@ -142,9 +140,15 @@ def run_noisy_benchmark():
             "color": config["color"],
         }
 
-        print(f"  Coherence:    {results[config['name']]['coherence_mean']:.4f} ± {results[config['name']]['coherence_std']:.4f}")
-        print(f"  Final Error:  {results[config['name']]['error_mean']:.4f} ± {results[config['name']]['error_std']:.4f}")
-        print(f"  Jitter:       {results[config['name']]['jitter_mean']:.4f} ± {results[config['name']]['jitter_std']:.4f}")
+        print(
+            f"  Coherence:    {results[config['name']]['coherence_mean']:.4f} ± {results[config['name']]['coherence_std']:.4f}"
+        )
+        print(
+            f"  Final Error:  {results[config['name']]['error_mean']:.4f} ± {results[config['name']]['error_std']:.4f}"
+        )
+        print(
+            f"  Jitter:       {results[config['name']]['jitter_mean']:.4f} ± {results[config['name']]['jitter_std']:.4f}"
+        )
         print()
 
     # Summary
@@ -159,16 +163,12 @@ def run_noisy_benchmark():
 
     # Compare weakest vs strong
     coherence_improvement = (
-        (weakest["coherence_mean"] - strong["coherence_mean"])
-        / strong["coherence_mean"]
-        * 100
+        (weakest["coherence_mean"] - strong["coherence_mean"]) / strong["coherence_mean"] * 100
     )
     jitter_reduction = (
         (strong["jitter_mean"] - weakest["jitter_mean"]) / strong["jitter_mean"] * 100
     )
-    error_improvement = (
-        (strong["error_mean"] - weakest["error_mean"]) / strong["error_mean"] * 100
-    )
+    error_improvement = (strong["error_mean"] - weakest["error_mean"]) / strong["error_mean"] * 100
 
     print(f"WEAK (0.05) vs STRONG (0.9):")
     print("-" * 40)
@@ -232,9 +232,7 @@ def plot_noisy_results(results: dict, target: np.ndarray):
         )
 
     ax.scatter([8.0], [8.0], s=200, marker="*", color="green", label="Start", zorder=5)
-    ax.scatter(
-        [target[0]], [target[1]], s=200, marker="X", color="red", label="Target", zorder=5
-    )
+    ax.scatter([target[0]], [target[1]], s=200, marker="X", color="red", label="Target", zorder=5)
     ax.legend(loc="upper right", fontsize=10)
     ax.set_aspect("equal")
 
@@ -294,9 +292,7 @@ def plot_noisy_results(results: dict, target: np.ndarray):
     final_errors = [results[name]["error_mean"] for name in names]
     errors = [results[name]["error_std"] for name in names]
 
-    bars = ax.bar(
-        range(len(names)), final_errors, yerr=errors, color=colors, alpha=0.7
-    )
+    bars = ax.bar(range(len(names)), final_errors, yerr=errors, color=colors, alpha=0.7)
     ax.set_xticks(range(len(names)))
     ax.set_xticklabels(names, fontsize=10)
     ax.grid(True, axis="y", alpha=0.3)

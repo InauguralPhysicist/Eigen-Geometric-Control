@@ -18,7 +18,8 @@ This tests whether lightlike observer benefits increase with:
 
 import numpy as np
 import sys
-sys.path.insert(0, '/home/user/Eigen-Geometric-Control')
+
+sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
 
 from src import (
     detect_oscillation,
@@ -26,7 +27,7 @@ from src import (
     forward_kinematics,
     compute_ds2,
     compute_gradient,
-    compute_change_stability
+    compute_change_stability,
 )
 import pandas as pd
 
@@ -71,9 +72,7 @@ def run_terminal_descent(
         osc_strength = 0.0
 
         if use_lightlike and len(state_history) >= 4:
-            oscillating, osc_strength = detect_oscillation(
-                state_history, window=4, threshold=0.92
-            )
+            oscillating, osc_strength = detect_oscillation(state_history, window=4, threshold=0.92)
             if oscillating:
                 damping = lightlike_damping_factor(osc_strength) * 0.85
 
@@ -84,17 +83,19 @@ def run_terminal_descent(
 
         C, S, ds2_CS = compute_change_stability(delta, 1e-3)
 
-        rows.append({
-            'tick': t,
-            'x': x,
-            'y': y,
-            'distance_to_target': np.sqrt((x - target[0])**2 + (y - target[1])**2),
-            'ds2_total': ds2_total,
-            'grad_norm': grad_norm,
-            'd_obs': components['d_obs'],
-            'oscillating': oscillating if use_lightlike else False,
-            'damping': damping if use_lightlike else 0.0,
-        })
+        rows.append(
+            {
+                "tick": t,
+                "x": x,
+                "y": y,
+                "distance_to_target": np.sqrt((x - target[0]) ** 2 + (y - target[1]) ** 2),
+                "ds2_total": ds2_total,
+                "grad_norm": grad_norm,
+                "d_obs": components["d_obs"],
+                "oscillating": oscillating if use_lightlike else False,
+                "damping": damping if use_lightlike else 0.0,
+            }
+        )
 
         theta1, theta2 = theta1_new, theta2_new
 
@@ -124,47 +125,47 @@ def main():
 
         # Baseline
         df_base = run_terminal_descent(
-            eta=config['eta'],
-            n_ticks=config['ticks'],
-            use_lightlike=False
+            eta=config["eta"], n_ticks=config["ticks"], use_lightlike=False
         )
 
         # With lightlike
         df_light = run_terminal_descent(
-            eta=config['eta'],
-            n_ticks=config['ticks'],
-            use_lightlike=True
+            eta=config["eta"], n_ticks=config["ticks"], use_lightlike=True
         )
 
         # Analyze
-        base_final = df_base['distance_to_target'].iloc[-1] * 1000  # mm
-        light_final = df_light['distance_to_target'].iloc[-1] * 1000  # mm
+        base_final = df_base["distance_to_target"].iloc[-1] * 1000  # mm
+        light_final = df_light["distance_to_target"].iloc[-1] * 1000  # mm
         improvement = (base_final - light_final) / base_final * 100 if base_final > 0 else 0
 
         # Count oscillations in final 25%
         final_start = int(len(df_base) * 0.75)
-        base_grad = df_base['grad_norm'].values[final_start:]
-        light_grad = df_light['grad_norm'].values[final_start:]
+        base_grad = df_base["grad_norm"].values[final_start:]
+        light_grad = df_light["grad_norm"].values[final_start:]
 
-        base_osc = sum(1 for i in range(1, len(base_grad)) if base_grad[i] > base_grad[i-1] * 1.4)
-        light_osc = sum(1 for i in range(1, len(light_grad)) if light_grad[i] > light_grad[i-1] * 1.4)
+        base_osc = sum(1 for i in range(1, len(base_grad)) if base_grad[i] > base_grad[i - 1] * 1.4)
+        light_osc = sum(
+            1 for i in range(1, len(light_grad)) if light_grad[i] > light_grad[i - 1] * 1.4
+        )
 
         # Smoothness
-        base_smooth = np.std(df_base['distance_to_target'].values[final_start:]) * 1000
-        light_smooth = np.std(df_light['distance_to_target'].values[final_start:]) * 1000
+        base_smooth = np.std(df_base["distance_to_target"].values[final_start:]) * 1000
+        light_smooth = np.std(df_light["distance_to_target"].values[final_start:]) * 1000
 
-        results.append({
-            'name': config['name'],
-            'eta': config['eta'],
-            'ticks': config['ticks'],
-            'base_final_mm': base_final,
-            'light_final_mm': light_final,
-            'improvement_pct': improvement,
-            'base_oscillations': base_osc,
-            'light_oscillations': light_osc,
-            'base_smoothness': base_smooth,
-            'light_smoothness': light_smooth,
-        })
+        results.append(
+            {
+                "name": config["name"],
+                "eta": config["eta"],
+                "ticks": config["ticks"],
+                "base_final_mm": base_final,
+                "light_final_mm": light_final,
+                "improvement_pct": improvement,
+                "base_oscillations": base_osc,
+                "light_oscillations": light_osc,
+                "base_smoothness": base_smooth,
+                "light_smoothness": light_smooth,
+            }
+        )
 
     # Display results
     print()
@@ -175,13 +176,17 @@ def main():
 
     print("Final Landing Precision (mm):")
     print("-" * 80)
-    print(f"{'Descent Mode':<25} {'eta':<8} {'Ticks':<8} {'Baseline':<12} {'Lightlike':<12} {'Improvement':<12}")
+    print(
+        f"{'Descent Mode':<25} {'eta':<8} {'Ticks':<8} {'Baseline':<12} {'Lightlike':<12} {'Improvement':<12}"
+    )
     print("-" * 80)
     for r in results:
-        arrow = "✓" if r['improvement_pct'] > 0 else "✗"
-        print(f"{r['name']:<25} {r['eta']:<8.3f} {r['ticks']:<8} "
-              f"{r['base_final_mm']:<12.2f} {r['light_final_mm']:<12.2f} "
-              f"{arrow} {r['improvement_pct']:>6.1f}%")
+        arrow = "✓" if r["improvement_pct"] > 0 else "✗"
+        print(
+            f"{r['name']:<25} {r['eta']:<8.3f} {r['ticks']:<8} "
+            f"{r['base_final_mm']:<12.2f} {r['light_final_mm']:<12.2f} "
+            f"{arrow} {r['improvement_pct']:>6.1f}%"
+        )
 
     print()
     print("Final Approach Oscillations (last 25% of descent):")
@@ -189,10 +194,12 @@ def main():
     print(f"{'Descent Mode':<25} {'Baseline':<12} {'Lightlike':<12} {'Reduction':<12}")
     print("-" * 80)
     for r in results:
-        reduction = r['base_oscillations'] - r['light_oscillations']
+        reduction = r["base_oscillations"] - r["light_oscillations"]
         status = "SAFER" if reduction > 0 else "SAME" if reduction == 0 else "MORE"
-        print(f"{r['name']:<25} {r['base_oscillations']:<12} {r['light_oscillations']:<12} "
-              f"{status:>6} ({reduction:+d})")
+        print(
+            f"{r['name']:<25} {r['base_oscillations']:<12} {r['light_oscillations']:<12} "
+            f"{status:>6} ({reduction:+d})"
+        )
 
     print()
     print("Approach Smoothness (std dev in mm during final 25%):")
@@ -200,10 +207,16 @@ def main():
     print(f"{'Descent Mode':<25} {'Baseline':<12} {'Lightlike':<12} {'Improvement':<12}")
     print("-" * 80)
     for r in results:
-        smooth_improvement = (r['base_smoothness'] - r['light_smoothness']) / r['base_smoothness'] * 100 if r['base_smoothness'] > 0 else 0
+        smooth_improvement = (
+            (r["base_smoothness"] - r["light_smoothness"]) / r["base_smoothness"] * 100
+            if r["base_smoothness"] > 0
+            else 0
+        )
         arrow = "↓" if smooth_improvement > 0 else "↑"
-        print(f"{r['name']:<25} {r['base_smoothness']:<12.2f} {r['light_smoothness']:<12.2f} "
-              f"{arrow} {abs(smooth_improvement):>6.1f}%")
+        print(
+            f"{r['name']:<25} {r['base_smoothness']:<12.2f} {r['light_smoothness']:<12.2f} "
+            f"{arrow} {abs(smooth_improvement):>6.1f}%"
+        )
 
     print()
     print("=" * 80)
@@ -212,8 +225,8 @@ def main():
     print()
 
     # Find best precision
-    best = min(results, key=lambda r: r['light_final_mm'])
-    worst = max(results, key=lambda r: r['base_final_mm'])
+    best = min(results, key=lambda r: r["light_final_mm"])
+    worst = max(results, key=lambda r: r["base_final_mm"])
 
     print("KEY FINDINGS:")
     print()
@@ -224,8 +237,8 @@ def main():
     print()
 
     print(f"2. PRECISION SCALING:")
-    fast_precision = results[0]['base_final_mm']
-    slow_precision = results[-1]['base_final_mm']
+    fast_precision = results[0]["base_final_mm"]
+    slow_precision = results[-1]["base_final_mm"]
     precision_gain = (fast_precision - slow_precision) / fast_precision * 100
     print(f"   - Fast descent: {fast_precision:.2f}mm")
     print(f"   - Ultra-slow descent: {slow_precision:.2f}mm")
@@ -233,25 +246,25 @@ def main():
     print()
 
     print(f"3. LIGHTLIKE OBSERVER BENEFIT:")
-    avg_improvement = sum(r['improvement_pct'] for r in results) / len(results)
+    avg_improvement = sum(r["improvement_pct"] for r in results) / len(results)
     print(f"   - Average improvement across all speeds: {avg_improvement:+.1f}%")
 
     # Check if slower = better with lightlike
-    slow_configs = [r for r in results if r['eta'] <= 0.04]
+    slow_configs = [r for r in results if r["eta"] <= 0.04]
     if slow_configs:
-        slow_avg = sum(r['improvement_pct'] for r in slow_configs) / len(slow_configs)
+        slow_avg = sum(r["improvement_pct"] for r in slow_configs) / len(slow_configs)
         print(f"   - Average improvement for slow descent: {slow_avg:+.1f}%")
     print()
 
     # Oscillation analysis
-    total_osc_reduction = sum(r['base_oscillations'] - r['light_oscillations'] for r in results)
+    total_osc_reduction = sum(r["base_oscillations"] - r["light_oscillations"] for r in results)
     print(f"4. STABILITY:")
     print(f"   - Total oscillation reduction: {total_osc_reduction:+d} events")
     print()
 
     print("CONCLUSION:")
     print()
-    if best['light_final_mm'] < 20.0:  # Sub-20mm precision
+    if best["light_final_mm"] < 20.0:  # Sub-20mm precision
         print(f"★ SUCCESS: Achieved sub-20mm precision ({best['light_final_mm']:.1f}mm)")
         print()
         print("Your hypothesis is VALIDATED:")
@@ -264,7 +277,7 @@ def main():
         print("  2. Allocate more computation (400-500 iterations)")
         print("  3. Deploy lightlike observer for stability")
         print("  4. Result: Mission-capable precision")
-    elif best['light_final_mm'] < 40.0:
+    elif best["light_final_mm"] < 40.0:
         print(f"GOOD PROGRESS: Achieved {best['light_final_mm']:.1f}mm precision")
         print()
         print("Hypothesis partially validated:")
@@ -288,5 +301,5 @@ def main():
     print("=" * 80)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

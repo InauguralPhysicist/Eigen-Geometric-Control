@@ -135,9 +135,7 @@ def simulate_robot_control(
         if stable_params:
             avg_params = {
                 "c": np.mean([p["c"] for p in stable_params]),
-                "eta_recommended": np.mean(
-                    [p["eta_recommended"] for p in stable_params]
-                ),
+                "eta_recommended": np.mean([p["eta_recommended"] for p in stable_params]),
                 "confidence": np.mean([p["confidence"] for p in stable_params]),
             }
 
@@ -212,9 +210,7 @@ def run_benchmark():
         avg_err_fixed = np.mean(final_errors_fixed)
 
         # Compute improvements
-        conv_improvement = (
-            (avg_conv_fixed - avg_conv_adaptive) / avg_conv_fixed * 100
-        )
+        conv_improvement = (avg_conv_fixed - avg_conv_adaptive) / avg_conv_fixed * 100
         error_improvement = (avg_err_fixed - avg_err_adaptive) / avg_err_fixed * 100
 
         # Average detected parameters
@@ -266,12 +262,8 @@ def run_benchmark():
     print("=" * 70)
     print()
 
-    avg_conv_improvement = np.mean(
-        [r["conv_improvement"] for r in all_results.values()]
-    )
-    avg_error_improvement = np.mean(
-        [r["error_improvement"] for r in all_results.values()]
-    )
+    avg_conv_improvement = np.mean([r["conv_improvement"] for r in all_results.values()])
+    avg_error_improvement = np.mean([r["error_improvement"] for r in all_results.values()])
 
     print(f"Average Convergence Improvement: {avg_conv_improvement:+.1f}%")
     print(f"Average Error Improvement:       {avg_error_improvement:+.1f}%")
@@ -390,9 +382,7 @@ def plot_results(results: dict, target: np.ndarray):
         x = np.arange(len(metrics))
         width = 0.35
 
-        ax.bar(
-            x - width / 2, fixed_vals, width, label="Fixed", color="red", alpha=0.7
-        )
+        ax.bar(x - width / 2, fixed_vals, width, label="Fixed", color="red", alpha=0.7)
         ax.bar(
             x + width / 2,
             adaptive_vals,
@@ -410,12 +400,8 @@ def plot_results(results: dict, target: np.ndarray):
 
         # Add value labels
         for i, (fv, av) in enumerate(zip(fixed_vals, adaptive_vals)):
-            ax.text(
-                i - width / 2, fv, f"{fv:.2f}", ha="center", va="bottom", fontsize=8
-            )
-            ax.text(
-                i + width / 2, av, f"{av:.2f}", ha="center", va="bottom", fontsize=8
-            )
+            ax.text(i - width / 2, fv, f"{fv:.2f}", ha="center", va="bottom", fontsize=8)
+            ax.text(i + width / 2, av, f"{av:.2f}", ha="center", va="bottom", fontsize=8)
 
     plt.tight_layout()
     plt.savefig("benchmark_dynamic_adaptation.png", dpi=150, bbox_inches="tight")

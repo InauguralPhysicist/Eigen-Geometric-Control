@@ -191,9 +191,7 @@ class TestFilteredObservation:
         history = [np.array([float(i)]) for i in range(10)]
         observation = np.array([10.0])  # Continues trend
 
-        filtered, info = filtered_observation(
-            observation, history, noise_suppression=0.8
-        )
+        filtered, info = filtered_observation(observation, history, noise_suppression=0.8)
 
         # Should be classified as coherent
         assert info["is_coherent"] == True
@@ -208,9 +206,7 @@ class TestFilteredObservation:
         # Add large noise to observation
         observation = np.array([10.0 + 3.0])  # Expected 10, noise +3
 
-        filtered, info = filtered_observation(
-            observation, history, noise_suppression=0.8
-        )
+        filtered, info = filtered_observation(observation, history, noise_suppression=0.8)
 
         # Should detect coherence
         assert info["coherence_score"] > 0.5
@@ -227,9 +223,7 @@ class TestFilteredObservation:
         history = [np.random.randn(2) for _ in range(10)]
         observation = np.random.randn(2)
 
-        filtered, info = filtered_observation(
-            observation, history, noise_suppression=0.9
-        )
+        filtered, info = filtered_observation(observation, history, noise_suppression=0.9)
 
         # Should be classified as incoherent
         assert info["is_coherent"] == False
@@ -242,9 +236,7 @@ class TestFilteredObservation:
         history = [np.array([float(i)]) for i in range(5)]
         observation = np.array([5.0 + 1.0])
 
-        filtered, info = filtered_observation(
-            observation, history, noise_suppression=0.0
-        )
+        filtered, info = filtered_observation(observation, history, noise_suppression=0.0)
 
         # Should return original observation
         assert np.allclose(filtered, observation)
@@ -260,9 +252,7 @@ class TestCoherentControlStep:
         observation = current.copy()
         history = [current.copy()]
 
-        new_state, info = coherent_control_step(
-            current, target, observation, history, eta=0.2
-        )
+        new_state, info = coherent_control_step(current, target, observation, history, eta=0.2)
 
         # Should move closer to target
         dist_before = np.linalg.norm(current - target)
