@@ -3,9 +3,9 @@
 Visualize why lightlike boundary is the invariant in any system
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle, FancyArrowPatch
+import numpy as np
+from matplotlib.patches import FancyArrowPatch, Rectangle
 
 fig, axes = plt.subplots(2, 2, figsize=(14, 12))
 

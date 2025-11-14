@@ -3,8 +3,8 @@
 Visualize the difference between random noise and systematic oscillations
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Create time axis
 t = np.linspace(0, 10, 100)
