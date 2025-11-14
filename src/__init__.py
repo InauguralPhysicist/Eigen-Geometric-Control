@@ -62,6 +62,13 @@ from .eigen_meta_control import (
     observe_parameter_performance,
     self_tuning_control_step,
 )
+from .eigen_multi_agent import (
+    check_convergence,
+    collective_lightlike_observer,
+    multi_agent_step,
+    paradox_mediated_damping,
+    simulate_multi_agent,
+)
 from .eigen_xor_rotation import run_xor_simulation
 
 __all__ = [
@@ -112,6 +119,12 @@ __all__ = [
     "observe_parameter_performance",
     "meta_update_parameters",
     "self_tuning_control_step",
+    # Multi-agent coordination (paradox-mediated)
+    "collective_lightlike_observer",
+    "paradox_mediated_damping",
+    "multi_agent_step",
+    "check_convergence",
+    "simulate_multi_agent",
 ]
 
 __version__ = "1.0.0"
