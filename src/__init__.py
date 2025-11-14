@@ -46,6 +46,14 @@ from .eigen_noperthedron import (
     spatial_overlap,
     vertices_to_bitstring,
 )
+from .eigen_similarity import (
+    compare_self_similarity,
+    detect_oscillation,
+    lightlike_damping_factor,
+    lorentz_similarity,
+    regime_from_similarity,
+    standard_cosine_similarity,
+)
 from .eigen_xor_rotation import run_xor_simulation
 
 __all__ = [
@@ -82,6 +90,13 @@ __all__ = [
     "proper_time",
     "proper_distance",
     "verify_lorentz_invariance",
+    # Lorentz-invariant similarity (lightlike observer)
+    "lorentz_similarity",
+    "standard_cosine_similarity",
+    "detect_oscillation",
+    "lightlike_damping_factor",
+    "compare_self_similarity",
+    "regime_from_similarity",
 ]
 
 __version__ = "1.0.0"
