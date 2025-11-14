@@ -149,9 +149,7 @@ def main():
     print(f"Coordination events: {coordination_count_3}")
     print()
 
-    max_final_dist = max(
-        np.linalg.norm(traj[-1] - targets_3[0]) for traj in trajectories_3
-    )
+    max_final_dist = max(np.linalg.norm(traj[-1] - targets_3[0]) for traj in trajectories_3)
     print(f"Maximum final distance from target: {max_final_dist:.3f}")
     print()
 
