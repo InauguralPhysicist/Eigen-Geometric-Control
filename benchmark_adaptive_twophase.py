@@ -18,11 +18,11 @@ import sys
 
 import numpy as np
 
-sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
+sys.path.insert(0, "/home/user/Eigen-Geometric-Control")  # noqa: E402
 
-import pandas as pd
+import pandas as pd  # noqa: E402
 
-from src import (
+from src import (  # noqa: E402
     adaptive_control_parameters,
     compute_ds2,
     compute_gradient,
@@ -288,11 +288,11 @@ def main():
     ) * 100
 
     print("IMPROVEMENTS:")
-    print(f"  vs Fixed Fast:")
+    print("  vs Fixed Fast:")
     print(f"    • {vs_fast_precision:+.1f}% better precision")
     print(f"    • Similar speed (both reach 10cm in ~{adaptive_ticks_to_10cm} ticks)")
     print()
-    print(f"  vs Fixed Ultra-Slow:")
+    print("  vs Fixed Ultra-Slow:")
     print(f"    • {vs_ultraslow_speed:+.1f}% faster to 10cm")
     print(
         f"    • Similar precision ({adaptive_final_error:.1f}mm vs {ultraslow_final_error:.1f}mm)"
@@ -315,7 +315,7 @@ def main():
         print(
             f"  Adaptive control spent only {terminal_phase_ticks/len(df_adaptive)*100:.1f}% of time in slow mode,"
         )
-        print(f"  but achieved precision comparable to 100% ultra-slow!")
+        print("  but achieved precision comparable to 100% ultra-slow!")
 
     print()
     print("=" * 80)

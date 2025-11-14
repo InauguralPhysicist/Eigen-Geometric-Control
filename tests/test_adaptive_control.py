@@ -1,10 +1,10 @@
+import pytest
 # -*- coding: utf-8 -*-
 """
 Tests for adaptive two-phase control parameters
 """
 
 import numpy as np
-import pytest
 
 from src import adaptive_control_parameters
 

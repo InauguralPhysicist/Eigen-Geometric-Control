@@ -8,7 +8,6 @@ Key proof: Auto-detected parameters → robust across different systems
 """
 
 import numpy as np
-import pytest
 
 from src.eigen_adaptive import (
     adaptive_control_step,
@@ -270,7 +269,7 @@ class TestAdaptiveControlStep:
         )
 
         # Should have detected parameters
-        assert info["parameters_detected"] == True
+        assert info["parameters_detected"] is True
         assert info["c"] > 0
         assert info["confidence"] > 0
 
@@ -283,7 +282,7 @@ class TestAdaptiveControlStep:
         new_state, info = adaptive_control_step(current, target, history, auto_tune=True)
 
         # Should use defaults
-        assert info["parameters_detected"] == False
+        assert info["parameters_detected"] is False
         assert info["c"] == 1.0
         assert info["confidence"] == 0.0
 
@@ -306,7 +305,7 @@ class TestAdaptiveControlStep:
 
         new_state, info = adaptive_control_step(current, target, history, auto_tune=False)
 
-        assert info["parameters_detected"] == False
+        assert info["parameters_detected"] is False
 
 
 class TestRenormalizeLorentzState:

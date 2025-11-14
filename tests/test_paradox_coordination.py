@@ -8,7 +8,6 @@ Key proof: N agents + 1 shared observer → emergent coordination
 """
 
 import numpy as np
-import pytest
 
 from src.eigen_multi_agent import (
     check_convergence,
@@ -35,9 +34,9 @@ class TestCollectiveLightlikeObserver:
         collective_osc, agent_osc, collective_sim = collective_lightlike_observer(states, history)
 
         # Should not detect oscillation
-        assert collective_osc == False
+        assert collective_osc is False
         assert len(agent_osc) == 1
-        assert agent_osc[0] == False
+        assert agent_osc[0] is False
 
     def test_single_agent_oscillating(self):
         """Single agent oscillating - detected by observer."""
@@ -55,8 +54,8 @@ class TestCollectiveLightlikeObserver:
         collective_osc, agent_osc, collective_sim = collective_lightlike_observer(states, history)
 
         # Should detect oscillation
-        assert collective_osc == True
-        assert agent_osc[0] == True
+        assert collective_osc is True
+        assert agent_osc[0] is True
 
     def test_two_agents_independent(self):
         """Two agents with independent goals - no conflict."""
@@ -227,7 +226,7 @@ class TestSimulateMultiAgent:
 
         # Both agents should converge
         assert len(trajectories) == 2
-        assert converged == True
+        assert converged is True
 
         # Check final positions
         final_0 = trajectories[0][-1]
@@ -260,7 +259,6 @@ class TestSimulateMultiAgent:
         assert len(trajectories) == 3
 
         # Check coordination was active at some point
-        coordination_active = any(info["coordination_active"] for info in info_history)
 
         # Agents trying to reach same point → should have coordination
         # (though they might converge before conflict)
@@ -273,7 +271,7 @@ class TestSimulateMultiAgent:
         all_conv, distances = check_convergence(states, targets, tolerance=0.1)
 
         # Both within tolerance
-        assert all_conv == True
+        assert all_conv is True
         assert len(distances) == 2
         assert all(d < 0.1 for d in distances)
 

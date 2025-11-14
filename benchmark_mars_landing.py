@@ -27,11 +27,11 @@ import sys
 
 import numpy as np
 
-sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
+sys.path.insert(0, "/home/user/Eigen-Geometric-Control")  # noqa: E402
 
-import pandas as pd
+import pandas as pd  # noqa: E402
 
-from src import (
+from src import (  # noqa: E402
     compute_change_stability,
     compute_ds2,
     compute_gradient,
@@ -229,7 +229,7 @@ def analyze_mars_landing(df, scenario_name, safe_zone_radius=0.015):
     return metrics
 
 
-def main():
+def main():  # noqa: C901
     print("=" * 80)
     print("MARS LANDING: Mission-Critical Precision Landing".center(80))
     print("=" * 80)
@@ -466,7 +466,7 @@ def main():
     baseline_successes = sum(1 for r in results if r["baseline"]["mission_success"])
     lightlike_successes = sum(1 for r in results if r["lightlike"]["mission_success"])
 
-    print(f"MISSION SUCCESS RATE:")
+    print("MISSION SUCCESS RATE:")
     print(
         f"  Baseline:  {baseline_successes}/{len(results)} missions successful ({baseline_successes/len(results)*100:.0f}%)"
     )
@@ -503,7 +503,7 @@ def main():
     if lightlike_successes > baseline_successes or total_oscillation_reduction > 5:
         print("★★★ MISSION-CRITICAL IMPROVEMENT ★★★")
         print()
-        print(f"The lightlike observer SAVES MISSIONS:")
+        print("The lightlike observer SAVES MISSIONS:")
         print(f"  • {lightlike_successes - baseline_successes} additional successful landing(s)")
         print(f"  • {total_oscillation_reduction} fewer descent oscillations")
         print(f"  • {avg_precision_improvement:.1f}% better landing precision")

@@ -1,10 +1,10 @@
+import pytest
 # -*- coding: utf-8 -*-
 """
 Tests for frequency-selective damping
 """
 
 import numpy as np
-import pytest
 
 from src import detect_oscillation_frequency, frequency_selective_damping
 

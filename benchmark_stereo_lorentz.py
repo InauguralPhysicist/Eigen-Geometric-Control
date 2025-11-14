@@ -22,11 +22,11 @@ import sys
 
 import numpy as np
 
-sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
+sys.path.insert(0, "/home/user/Eigen-Geometric-Control")  # noqa: E402
 
-import pandas as pd
+import pandas as pd  # noqa: E402
 
-from src import (
+from src import (  # noqa: E402
     compute_change_stability,
     compute_ds2,
     compute_gradient,
@@ -34,8 +34,7 @@ from src import (
     forward_kinematics,
     lightlike_damping_factor,
 )
-from src.eigen_lorentz import (
-    lorentz_to_stereo,
+from src.eigen_lorentz import (  # noqa: E402
     regime_classification,
     stereo_to_lorentz,
 )

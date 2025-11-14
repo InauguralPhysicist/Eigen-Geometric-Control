@@ -10,11 +10,11 @@ import sys
 
 import numpy as np
 
-sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
+sys.path.insert(0, "/home/user/Eigen-Geometric-Control")  # noqa: E402
 
-import pandas as pd
+import pandas as pd  # noqa: E402
 
-from src import (
+from src import (  # noqa: E402
     compute_change_stability,
     compute_ds2,
     compute_gradient,
@@ -150,6 +150,10 @@ def main():
     # Run baseline XOR (should oscillate forever)
     print("1. Running baseline XOR (v1.0.0 algorithm)...")
     df_baseline = run_xor_simulation(n_ticks=40)
+
+    # Run with lightlike observer
+    print("2. Running with lightlike observer...")
+    df_lightlike = run_xor_with_lightlike_damping(n_ticks=40)
 
     # Note: XOR rotation is a bit-level operation, not robot arm control
     # The lightlike observer is not applicable to this discrete bit-flip problem

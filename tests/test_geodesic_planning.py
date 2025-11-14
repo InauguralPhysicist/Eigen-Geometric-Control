@@ -8,7 +8,6 @@ Key proof: Geodesic paths >> straight-line paths in obstacle environments
 """
 
 import numpy as np
-import pytest
 
 from src.eigen_geodesic import (
     Obstacle,

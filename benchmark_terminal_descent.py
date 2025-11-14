@@ -20,11 +20,11 @@ import sys
 
 import numpy as np
 
-sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
+sys.path.insert(0, "/home/user/Eigen-Geometric-Control")  # noqa: E402
 
-import pandas as pd
+import pandas as pd  # noqa: E402
 
-from src import (
+from src import (  # noqa: E402
     compute_change_stability,
     compute_ds2,
     compute_gradient,
@@ -228,7 +228,6 @@ def main():
 
     # Find best precision
     best = min(results, key=lambda r: r["light_final_mm"])
-    worst = max(results, key=lambda r: r["base_final_mm"])
 
     print("KEY FINDINGS:")
     print()
@@ -238,7 +237,7 @@ def main():
     print(f"   - Configuration: eta={best['eta']}, {best['ticks']} iterations")
     print()
 
-    print(f"2. PRECISION SCALING:")
+    print("2. PRECISION SCALING:")
     fast_precision = results[0]["base_final_mm"]
     slow_precision = results[-1]["base_final_mm"]
     precision_gain = (fast_precision - slow_precision) / fast_precision * 100
@@ -247,7 +246,7 @@ def main():
     print(f"   - Improvement from slowing down: {precision_gain:.1f}%")
     print()
 
-    print(f"3. LIGHTLIKE OBSERVER BENEFIT:")
+    print("3. LIGHTLIKE OBSERVER BENEFIT:")
     avg_improvement = sum(r["improvement_pct"] for r in results) / len(results)
     print(f"   - Average improvement across all speeds: {avg_improvement:+.1f}%")
 
@@ -260,7 +259,7 @@ def main():
 
     # Oscillation analysis
     total_osc_reduction = sum(r["base_oscillations"] - r["light_oscillations"] for r in results)
-    print(f"4. STABILITY:")
+    print("4. STABILITY:")
     print(f"   - Total oscillation reduction: {total_osc_reduction:+d} events")
     print()
 

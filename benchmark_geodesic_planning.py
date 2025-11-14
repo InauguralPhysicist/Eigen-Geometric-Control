@@ -227,17 +227,17 @@ def run_benchmark():
 
         all_results[scenario_name] = results
 
-        print(f"  Success Rate:")
+        print("  Success Rate:")
         print(f"    Naive:      {naive_success_rate:.1f}%")
         print(f"    Geodesic:   {geo_success_rate:.1f}%")
         print(f"    Improvement: {success_improvement:+.1f}%")
         print()
-        print(f"  Collisions:")
+        print("  Collisions:")
         print(f"    Naive:      {naive_avg_collisions:.2f}")
         print(f"    Geodesic:   {geo_avg_collisions:.2f}")
         print(f"    Reduction:  {collision_reduction:+.1f}%")
         print()
-        print(f"  Path Length:")
+        print("  Path Length:")
         print(f"    Naive:      {naive_avg_length:.2f}")
         print(f"    Geodesic:   {geo_avg_length:.2f}")
         print()

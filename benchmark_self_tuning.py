@@ -11,7 +11,6 @@ handles self-reference constructively via lightlike observer.
 import numpy as np
 
 from src.eigen_meta_control import self_tuning_control_step
-from src.eigen_similarity import lightlike_damping_factor
 
 
 def gradient_step_with_damping(
@@ -192,9 +191,9 @@ def main():
     print("=" * 70)
     print()
     print("Key Results:")
-    print(f"  1. No infinite loops despite self-reference (TC+ property ✓)")
+    print("  1. No infinite loops despite self-reference (TC+ property ✓)")
     print(f"  2. Parameters self-adjusted in {len(params2)-1} iterations")
-    print(f"  3. Recovered from bad initial params automatically")
+    print("  3. Recovered from bad initial params automatically")
     print()
     print("Computational Implications:")
     print("  • System observes itself: a = current_params")

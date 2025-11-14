@@ -12,10 +12,7 @@ Comparison:
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.eigen_lorentz import (
-    estimate_target_velocity,
-    moving_target_control_step,
-)
+from src.eigen_lorentz import moving_target_control_step
 
 
 def simulate_moving_target_tracking(

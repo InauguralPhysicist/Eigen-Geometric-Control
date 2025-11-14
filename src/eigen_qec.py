@@ -176,7 +176,7 @@ def compute_parity_checks(
     return np.array(syndromes)
 
 
-def detect_error_location(
+def detect_error_location(  # noqa: C901
     syndromes: np.ndarray,
     threshold: float = 0.5,
 ) -> Optional[int]:

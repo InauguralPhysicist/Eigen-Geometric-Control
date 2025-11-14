@@ -8,7 +8,6 @@ Key proof: QEC >> No error correction for faulty sensors
 """
 
 import numpy as np
-import pytest
 
 from src.eigen_qec import (
     apply_measurement_errors,
@@ -200,7 +199,7 @@ class TestCorrectMeasurementErrors:
         # Should average all three
         expected = np.mean(measurements, axis=0)
         assert np.allclose(corrected, expected)
-        assert info["error_detected"] == False
+        assert info["error_detected"] is False
 
     def test_detects_and_corrects_error(self):
         """One faulty sensor → detect and exclude it."""
@@ -214,9 +213,9 @@ class TestCorrectMeasurementErrors:
         corrected, info = correct_measurement_errors(measurements, threshold=0.5)
 
         # Should detect error at sensor 1
-        assert info["error_detected"] == True
+        assert info["error_detected"] is True
         assert info["error_location"] == 1
-        assert info["correction_applied"] == True
+        assert info["correction_applied"] is True
 
         # Should exclude faulty sensor and average the other two
         assert np.allclose(corrected, true_state, atol=0.1)
@@ -228,7 +227,7 @@ class TestCorrectMeasurementErrors:
         corrected, info = correct_measurement_errors([measurement])
 
         assert np.allclose(corrected, measurement)
-        assert info["error_detected"] == False
+        assert info["error_detected"] is False
 
     def test_reports_syndromes(self):
         """Should report syndrome values."""
@@ -284,7 +283,7 @@ class TestQECControlStep:
         new_state, info = qec_control_step(current, target, measurements, eta=0.2)
 
         # Should detect error
-        assert info["error_detected"] == True
+        assert info["error_detected"] is True
         assert info["error_location"] == 1
 
         # Should still move toward target (not misled by error)
@@ -399,7 +398,7 @@ class TestQECBenefits:
         assert np.linalg.norm(corrected - true_state) < 0.5
 
         # Should detect the error
-        assert info["error_detected"] == True
+        assert info["error_detected"] is True
 
     def test_naive_average_fails_with_outlier(self):
         """Naive averaging performs poorly with outliers."""

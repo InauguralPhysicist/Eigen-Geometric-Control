@@ -17,11 +17,11 @@ import sys
 
 import numpy as np
 
-sys.path.insert(0, "/home/user/Eigen-Geometric-Control")
+sys.path.insert(0, "/home/user/Eigen-Geometric-Control")  # noqa: E402
 
-import pandas as pd
+import pandas as pd  # noqa: E402
 
-from src import (
+from src import (  # noqa: E402
     compute_change_stability,
     compute_ds2,
     compute_gradient,
@@ -216,7 +216,7 @@ def analyze_tracking(df, scenario_name):
     return metrics
 
 
-def main():
+def main():  # noqa: C901
     print("=" * 80)
     print("DYNAMIC SCENARIOS: Moving Targets and Obstacles".center(80))
     print("=" * 80)

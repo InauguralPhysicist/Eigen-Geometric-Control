@@ -1,3 +1,4 @@
+import pytest
 # -*- coding: utf-8 -*-
 """
 Tests for Noperthedron analysis module
@@ -7,7 +8,6 @@ for passage testing.
 """
 
 import numpy as np
-import pytest
 
 from src.eigen_noperthedron import (
     PassageAttempt,

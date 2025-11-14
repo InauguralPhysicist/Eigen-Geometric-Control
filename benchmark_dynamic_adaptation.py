@@ -48,17 +48,14 @@ def simulate_robot_control(
         # Heavy robot: slow movements, needs small eta
         velocity_scale = 0.1
         noise_level = 0.05
-        optimal_eta = 0.05
     elif robot_type == "fast":
         # Agile robot: fast movements, can handle large eta
         velocity_scale = 2.0
         noise_level = 0.2
-        optimal_eta = 0.3
     else:  # medium
         # Baseline robot
         velocity_scale = 0.5
         noise_level = 0.1
-        optimal_eta = 0.1
 
     state = initial_state.copy()
     trajectory = [state.copy()]
@@ -240,17 +237,17 @@ def run_benchmark():
 
         all_results[robot_type] = results
 
-        print(f"  Convergence Time:")
+        print("  Convergence Time:")
         print(f"    Adaptive:  {avg_conv_adaptive:.1f} steps")
         print(f"    Fixed:     {avg_conv_fixed:.1f} steps")
         print(f"    Improvement: {conv_improvement:+.1f}%")
         print()
-        print(f"  Final Error:")
+        print("  Final Error:")
         print(f"    Adaptive:  {avg_err_adaptive:.4f}")
         print(f"    Fixed:     {avg_err_fixed:.4f}")
         print(f"    Improvement: {error_improvement:+.1f}%")
         print()
-        print(f"  Auto-Detected Parameters:")
+        print("  Auto-Detected Parameters:")
         print(f"    c (characteristic velocity): {avg_c:.3f}")
         print(f"    eta (recommended):           {avg_eta:.3f}")
         print(f"    confidence:                  {avg_confidence:.3f}")

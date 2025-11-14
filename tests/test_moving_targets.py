@@ -8,7 +8,6 @@ Key proof: Moving target tracking >> stationary tracking approaches
 """
 
 import numpy as np
-import pytest
 
 from src.eigen_lorentz import (
     apply_boost,
