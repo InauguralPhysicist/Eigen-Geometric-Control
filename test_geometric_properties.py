@@ -9,49 +9,7 @@ the lightlike invariant I = (A - B)².
 
 import numpy as np
 
-
-def compute_geometric_properties(A, B):
-    """
-    Extract all geometric properties from opposing pair (A, B).
-
-    Given any two opposing quantities:
-    - I = (A - B)² is the lightlike invariant (r²)
-    - All geometric properties scale from this
-
-    Returns:
-        dict: Geometric characterization of the problem
-            - radius: Problem scale (1D)
-            - surface_area: Complexity measure (2D)
-            - volume: Search space size (3D)
-            - curvature: Problem conditioning (1/r)
-    """
-    # The invariant contains everything
-    I = (A - B) ** 2
-
-    if I < 1e-12:  # Near equilibrium
-        return {
-            "radius": 0.0,
-            "surface_area": 0.0,
-            "volume": 0.0,
-            "curvature": np.inf,
-            "status": "equilibrium",
-        }
-
-    # All properties derive from r = sqrt(I)
-    r = np.sqrt(I)
-
-    # Geometric properties (treating space/time/light consistently)
-    surface_area = 4 * np.pi * I  # 4πr²
-    volume = (4 / 3) * np.pi * I ** (3 / 2)  # (4/3)πr³
-    curvature = 1 / r  # κ = 1/r
-
-    return {
-        "radius": r,
-        "surface_area": surface_area,
-        "volume": volume,
-        "curvature": curvature,
-        "status": "active",
-    }
+from src.eigen_invariants import compute_geometric_properties
 
 
 def test_problem_scales():

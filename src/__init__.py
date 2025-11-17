@@ -28,6 +28,7 @@ from .eigen_core import (
     forward_kinematics,
     jacobian,
 )
+from .eigen_invariants import compute_geometric_properties
 from .eigen_decomposition import (
     coherence_score,
     coherent_control_step,
@@ -122,6 +123,7 @@ __all__ = [
     "compute_ds2",
     "compute_gradient",
     "compute_change_stability",
+    "compute_geometric_properties",
     # Simulation runners
     "run_arm_simulation",
     "run_xor_simulation",
