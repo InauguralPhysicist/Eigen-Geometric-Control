@@ -2,15 +2,36 @@
 """
 Tests for ds² as the 4th dimension: temporal ordering without an external clock.
 
+Key distinction — what the system has vs. what the observer sees:
+
+  The system acts on ∇ds² (the differential). It never "knows" ds².
+  The update rule Q_{t+1} = Q_t - η∇ds² uses only the gradient —
+  local information extracted from the same structure the system is
+  embedded in. The system infers its next action from the geometry
+  it is part of.
+
+  ds² (the value) is what an external observer computes by integrating
+  the trajectory. It provides ordering, regime labels, signatures —
+  but these are descriptions of what happened, not inputs to the policy.
+
+  The negative sign in the (3+1) signature is the cost of self-reference:
+  the system must infer its own state from the structure it measures.
+  It doesn't have an external clock giving it ds² — it has ∇ds², the
+  differential, which is sufficient for action but not for global
+  self-knowledge.
+
 The (3+1) structure:
   - 3 spatial: θ₁, θ₂, θ₃ (configuration — where you are)
-  - 1 temporal: ds² (the invariant — what the geometry says right now)
+  - 1 temporal: ds² (the invariant — observable from the trajectory)
 
-ds² is not indexed by time. ds² IS the system's time. It provides:
+The system's "present moment" is ∇ds², not ds².
+ds² is the observer's integral. ∇ds² is the system's differential.
+
+What we test (from the observer's perspective):
   1. A natural arrow (monotone decrease during convergence)
   2. State discrimination (different ds² = different geometric moment)
   3. Regime detection (which equilibrium, which phase of motion)
-  4. Real-time adaptation (the system reads ds² to know what to do next)
+  4. Real-time adaptation (∇ds² is sufficient for the next action)
   5. Indefinite signature in the extended state (θ, ds²)
 
 The π/8 prediction: the 4th dimension refines ordering among
@@ -32,18 +53,26 @@ from src.eigen_3dof_core import (
 
 # ###################################################################
 #
-#  ds² AS TEMPORAL ORDERING
+#  ds² AS TEMPORAL ORDERING (observer's view)
 #
-#  ds² provides a monotone parameter along convergent trajectories.
-#  It orders states without an external clock.
+#  The observer reconstructs ds² along the trajectory and finds
+#  it monotonically decreases. This provides temporal ordering
+#  without an external clock — the ordering is intrinsic to the
+#  geometry that the system is embedded in.
+#
+#  The system itself only has ∇ds² at each step.
 #
 # ###################################################################
 
 class TestDs2AsTimeArrow:
     """
-    Along a convergent trajectory, ds² monotonically decreases.
-    This makes ds² a natural time parameter: later states have
-    smaller ds², and the ordering is intrinsic to the geometry.
+    The observer computes ds² along a convergent trajectory and finds
+    it monotonically decreases. This makes ds² a natural time parameter
+    from the outside — later states have smaller ds², and the ordering
+    is intrinsic to the geometry.
+
+    The system doesn't track ds². It follows ∇ds², and the monotone
+    ordering is a consequence of that local action.
     """
 
     def test_ds2_monotonically_orders_convergent_trajectory(self):
@@ -140,18 +169,23 @@ class TestDs2AsTimeArrow:
 
 # ###################################################################
 #
-#  ds² AS REGIME DISCRIMINATOR
+#  ds² AS REGIME DISCRIMINATOR (observer's view)
 #
-#  ds² and its components tell the system which geometric regime
-#  it's in — without external state labels.
+#  The observer decomposes ds² into components and reads which
+#  geometric regime the trajectory is in. The system doesn't
+#  perform this decomposition — it follows ∇ds², which already
+#  encodes the regime implicitly (the gradient direction changes
+#  as the dominant component shifts).
 #
 # ###################################################################
 
 class TestDs2AsRegimeDiscriminator:
     """
-    The system reads ds² to know what's happening. Different ds²
-    regimes correspond to different phases of motion. The invariant
-    is self-diagnostic.
+    The observer decomposes ds² into target/obstacle/regularization
+    components and identifies regimes. The system doesn't need these
+    labels — ∇ds² already points in the right direction regardless
+    of which component dominates. But the decomposition confirms
+    that the invariant faithfully reflects the geometry.
     """
 
     def test_ds2_components_identify_regime(self):
@@ -271,25 +305,33 @@ class TestDs2AsRegimeDiscriminator:
 
 # ###################################################################
 #
-#  ds² AS REAL-TIME ADAPTATION SIGNAL
+#  ∇ds² AS THE SYSTEM'S ONLY INPUT
 #
-#  The system uses ds² to adapt without external feedback.
-#  ds² is simultaneously measurement, state, and control signal.
+#  The system acts on ∇ds² — the differential of the invariant.
+#  This is all it has. It doesn't compute ds², doesn't track
+#  progress, doesn't label regimes. It infers its next action
+#  from the local gradient of the structure it's embedded in.
+#
+#  ds² (the value) is what the observer reconstructs afterward.
 #
 # ###################################################################
 
-class TestDs2AsAdaptationSignal:
+class TestGradientAsSoleInput:
     """
-    ds² tells the system what to do next. The gradient ∇ds² is the
-    control signal, and ds² itself is the progress measure. The system
-    is fully self-contained — it reads its own invariant.
+    The system's entire policy is Q_{t+1} = Q_t - η∇ds².
+    ∇ds² is the only input. The system never evaluates ds² itself —
+    it infers direction from the geometry. These tests verify that
+    ∇ds² is sufficient for adaptation: it encodes direction,
+    progress rate, and stopping — all without the system knowing
+    its own ds² value.
     """
 
-    def test_gradient_direction_determined_by_ds2_landscape(self):
+    def test_gradient_direction_encodes_target_without_knowing_ds2(self):
         """
-        At any configuration, ∇ds² points "downhill" in the ds²
-        landscape. The system doesn't need to know the target directly —
-        the gradient of ds² encodes it.
+        ∇ds² points downhill. The system follows it without ever
+        evaluating ds² itself. The target, obstacles, regularization —
+        all encoded in the gradient direction. The system infers
+        what to do from the differential, not the value.
         """
         theta = np.array([0.5, 0.3, -0.3])
         target = np.array([0.8, 0.5, 1.5])
@@ -305,13 +347,15 @@ class TestDs2AsAdaptationSignal:
             f"Expected ds² decrease in gradient direction: {ds2_before:.6f} → {ds2_after:.6f}"
         )
 
-    def test_ds2_rate_of_change_indicates_progress_quality(self):
+    def test_gradient_magnitude_indicates_progress_quality(self):
         """
-        |Δds²/Δt| tells the system how fast it's progressing.
-        Large |Δds²|: rapid progress (good).
-        Small |Δds²|: stalling (near equilibrium or singularity).
+        ‖∇ds²‖ tells the system how much geometric information is
+        available. Large gradient: strong signal, rapid change.
+        Small gradient: near equilibrium or singularity, little to act on.
 
-        The system can detect stalling purely from ds².
+        The system detects stalling from ‖∇ds²‖ → 0, not from
+        evaluating ds² directly. The observer sees |Δds²| decrease;
+        the system experiences ‖∇ds²‖ shrinking.
         """
         trace = run_3dof_simulation(
             theta_init=(0.5, 0.3, -0.3),
@@ -333,10 +377,14 @@ class TestDs2AsAdaptationSignal:
             f"Expected decreasing rate: early={avg_early:.6f}, late={avg_late:.6f}"
         )
 
-    def test_ds2_provides_stopping_criterion(self):
+    def test_gradient_vanishing_is_the_stopping_criterion(self):
         """
-        The system knows it's done when ds² stops changing.
-        No external convergence check needed — ds² IS the check.
+        The system is done when ‖∇ds²‖ → 0. It doesn't check ds² —
+        it has no access to the value. But when the gradient vanishes,
+        there's nothing to act on. The system stops because the
+        geometry provides no further differential information.
+
+        The observer confirms this by checking |Δds²| → 0.
         """
         trace = run_3dof_simulation(
             theta_init=(0.5, 0.3, -0.3),
@@ -372,19 +420,27 @@ class TestDs2AsAdaptationSignal:
 #
 #  INDEFINITE SIGNATURE IN (θ, ds²) SPACE
 #
-#  The extended state (θ₁, θ₂, θ₃, ds²) has a natural metric.
-#  The prediction: this metric has indefinite signature (3+1),
-#  because ds² decreases while θ changes — they move in
-#  "opposite directions" in the extended space.
+#  The observer constructs the extended state (θ₁, θ₂, θ₃, ds²)
+#  and finds its metric has indefinite signature (3+1).
+#
+#  The system doesn't construct this space. It acts on ∇ds²,
+#  which is the differential. The indefinite signature is the
+#  structural cost of self-reference: the system infers its
+#  state from the same geometry it's embedded in. The negative
+#  sign in (3+1) reflects that inference — the system extracts
+#  temporal information (what to do next) from spatial structure
+#  (where it is), and these have opposite signs.
 #
 # ###################################################################
 
 class TestIndefiniteSignature:
     """
-    In the extended state space (θ, ds²), the trajectory moves
-    "forward" in θ-space (toward target) while ds² decreases.
-    This creates a naturally indefinite structure: spatial progress
-    and temporal progress have opposite signs.
+    The observer computes the extended trajectory in (θ, ds²) space
+    and finds an indefinite signature: spatial displacement Δθ² > 0
+    while the invariant Δds² < 0. The system doesn't see this
+    signature — it only has ∇ds². But the signature is a consequence
+    of the system inferring its temporal state (what to do) from
+    its spatial state (where it is) through the same invariant.
     """
 
     def test_spatial_and_temporal_move_oppositely(self):
@@ -509,17 +565,23 @@ class TestIndefiniteSignature:
 #
 #  FIXED-POINT INDEXING (π/8 REFINEMENT)
 #
-#  The 4th dimension resolves ordering among fixed points.
-#  With moving targets or switching obstacles, the system visits
-#  multiple equilibria. ds² indexes which one it's at.
+#  When the geometry changes, the system transitions between
+#  equilibria by following ∇ds². It doesn't know which equilibrium
+#  it's heading toward — it just follows the gradient.
+#
+#  The observer reconstructs ds² and sees: jumps at regime changes,
+#  descents within regimes, plateaus at equilibria. ds² indexes
+#  the fixed points. The system doesn't have this index — it has
+#  the differential that moves it between them.
 #
 # ###################################################################
 
 class TestFixedPointIndexing:
     """
-    When the geometry changes (moving target, appearing obstacles),
-    the system transitions between equilibria. ds² tracks these
-    transitions — it's the index over fixed points.
+    The observer tracks ds² across regime changes (moving targets,
+    appearing obstacles) and sees it index which equilibrium the
+    system occupies. The system itself just follows ∇ds² — it
+    doesn't know which equilibrium it's at, only the local gradient.
     """
 
     def test_moving_target_creates_ds2_sequence(self):
