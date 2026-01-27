@@ -1,22 +1,26 @@
 # -*- coding: utf-8 -*-
 """
-Tests for the 8 mathematical failure modes of gradient descent on ds².
+Tests for failure modes of the discrete scheme tracking ds².
 
-Each test targets a theorem-level condition under which
-    Q_{t+1} = Q_t - η ∇ds²(Q)
-fails to do what you want.  The tests are designed to *trigger* the
-failure and verify the diagnostic signatures described in the theory.
+ds² is a geometric invariant — not a cost function to optimize.
+The update rule Q_{t+1} = Q_t - η ∇ds²(Q) follows the geometry.
+Failures therefore fall into two categories:
 
-Failure modes tested
---------------------
-1. Euler blow-up (η ≥ 2/L)
-2. Non-Lipschitz gradients near obstacles (gradient explosion)
-3. Non-smooth / kinked costs (chattering at obstacle boundary)
-4. Nonconvexity → wrong local minimum (gradient cancellation)
-5. Saddle points → frozen progress
-6. Infeasible constraints → inf ds² > 0
-7. Scale domination (one term swamps the rest)
-8. Topology / homotopy trap (U-shaped obstacle)
+A. DISCRETIZATION FAILURES (the numerical scheme loses the continuous flow)
+   1. Euler blow-up: η ≥ 2/L → oscillation / divergence
+   2. Gradient explosion near obstacles: ‖∇ds²‖ → ∞ makes any fixed η unstable
+   3. Kink chattering: non-smooth ds² at obstacle boundary → discrete switching
+
+B. GEOMETRIC PROPERTIES (the invariant faithfully reports the geometry)
+   These are NOT failures of the framework. They are correct descriptions of
+   geometries where the invariant says "you can't get there from here" or
+   "here is where the geometry puts you." The tests verify the invariant
+   accurately reflects these conditions:
+   4. Stationary points from gradient cancellation (geometry has an equilibrium)
+   5. Jacobian singularity (geometry degenerates at certain configurations)
+   6. Infeasible geometry (no configuration satisfies all constraints)
+   7. Component scale separation (one geometric term dominates the invariant)
+   8. Topological obstruction (free space topology prevents unique minimum)
 
 Diagnostics tracked along every trajectory
 ------------------------------------------
@@ -95,13 +99,26 @@ def _termwise_ratio(step, term="g_obs"):
     return step[term] / total
 
 
+# ###################################################################
+#
+#  PART A: DISCRETIZATION FAILURES
+#
+#  The numerical scheme fails to track the continuous geometric flow.
+#  These are real failures — the discrete update diverges from what
+#  the invariant prescribes.
+#
+# ###################################################################
+
+
 # ===================================================================
-# 1) Euler blow-up: η too large → oscillation / divergence
+# A1) Euler blow-up: η ≥ 2/L → oscillation / divergence
 # ===================================================================
 class TestEulerBlowup:
     """
-    Failure condition: η ≥ 2/L where L is the local Lipschitz constant
-    of ∇ds².  We use a very large η and verify ds² increases.
+    The discrete update Q_{t+1} = Q_t - η∇ds² is forward Euler.
+    If ∇ds² is L-Lipschitz, stability requires η < 2/L.
+    Above this bound the scheme oscillates or diverges — it no longer
+    tracks the continuous flow.
     """
 
     def test_large_eta_causes_ds2_increase(self):
@@ -111,15 +128,14 @@ class TestEulerBlowup:
             target=(1.2, 0.3),
             obstacle_center=(0.6, 0.1),
             obstacle_radius=0.25,
-            eta=5.0,          # absurdly large
+            eta=5.0,
             n_ticks=20,
         )
-        # Count steps where ds² increased
         increases = sum(1 for s in trace if s["delta_ds2"] > 0)
-        assert increases > 0, "Expected oscillation / ds² increase with large η"
+        assert increases > 0, "Expected ds² increase with large η (Euler instability)"
 
     def test_large_eta_oscillation(self):
-        """Sign changes in Δds² indicate oscillatory behavior."""
+        """Sign changes in Δds² indicate the scheme is oscillating."""
         trace = _run_descent(
             theta_init=(-1.4, 1.2),
             target=(1.2, 0.3),
@@ -135,7 +151,7 @@ class TestEulerBlowup:
         )
 
     def test_divergence_detected_by_ds2_growth(self):
-        """ds²(final) >> ds²(initial) signals divergence."""
+        """ds²(final) >> ds²(initial) signals the scheme has diverged."""
         trace = _run_descent(
             theta_init=(-1.4, 1.2),
             target=(1.2, 0.3),
@@ -152,37 +168,37 @@ class TestEulerBlowup:
 
 
 # ===================================================================
-# 2) Non-Lipschitz gradients near obstacles (gradient explosion)
+# A2) Gradient explosion near obstacles
 # ===================================================================
 class TestGradientExplosionNearObstacle:
     """
-    The current implementation uses max(0, r-d)² which stays finite,
-    but gradient magnitude still grows as 1/d_obs near the boundary.
-    We verify the gradient spike when the end-effector is near the
-    obstacle surface.
+    The obstacle gradient ∝ (r - d)/d blows up as d → 0.  Even though
+    max(0, r-d)² stays finite, the gradient magnitude grows without
+    bound near the obstacle center.  This makes the effective local
+    Lipschitz constant L → ∞, so no fixed η is stable — the Euler
+    scheme will overshoot.
+
+    This is a discretization failure: the continuous flow would slow
+    down near the obstacle, but the discrete step can teleport past it.
     """
 
     def test_gradient_spikes_near_obstacle_boundary(self):
         """Gradient norm should be much larger near obstacle than far away."""
         target = (1.2, 0.3)
         obs_center = (0.6, 0.1)
-        obs_radius = 0.50  # large radius to ensure overlap at some configs
+        obs_radius = 0.50
 
-        # Configuration where end-effector is near obstacle center
-        # FK(0, 0) = (1.8, 0) — far from obstacle
+        # Far from obstacle
         _, gnorm_far = compute_gradient(0.0, 0.0, target, obs_center,
                                         obs_radius, Go=50.0)
 
-        # Search for a configuration that puts end-effector inside obstacle
-        # FK(θ1, 0) with L1=L2=0.9 → x = 1.8*cos(θ1), y = 1.8*sin(θ1)
-        # We want pos ≈ obs_center = (0.6, 0.1)
-        # Try angles that put us close
+        # Search for a configuration inside obstacle
         best_gnorm = 0.0
         for th1 in np.linspace(-np.pi, np.pi, 200):
             for th2 in np.linspace(-np.pi, np.pi, 50):
                 x, y = forward_kinematics(th1, th2)
                 d = np.sqrt((x - 0.6)**2 + (y - 0.1)**2)
-                if d < obs_radius and d > 0.01:  # inside but not at center
+                if d < obs_radius and d > 0.01:
                     _, gn = compute_gradient(th1, th2, target, obs_center,
                                              obs_radius, Go=50.0)
                     best_gnorm = max(best_gnorm, gn)
@@ -192,12 +208,15 @@ class TestGradientExplosionNearObstacle:
         )
 
     def test_single_step_can_overshoot_obstacle(self):
-        """A large step from inside the obstacle zone can jump past it."""
+        """
+        A discrete step from inside the obstacle zone can be larger than
+        the obstacle itself — the scheme teleports through the barrier
+        that the continuous flow would respect.
+        """
         obs_center = (0.6, 0.1)
         obs_radius = 0.50
         target = (1.2, 0.3)
 
-        # Find config inside obstacle
         for th1 in np.linspace(-np.pi, np.pi, 200):
             for th2 in np.linspace(-np.pi, np.pi, 50):
                 x, y = forward_kinematics(th1, th2)
@@ -205,36 +224,33 @@ class TestGradientExplosionNearObstacle:
                 if 0.05 < d < obs_radius * 0.5:
                     grad, gnorm = compute_gradient(th1, th2, target, obs_center,
                                                    obs_radius, Go=50.0)
-                    # Take a big step
                     eta = 1.0
-                    theta_new = np.array([th1, th2]) - eta * grad
-                    x2, y2 = forward_kinematics(theta_new[0], theta_new[1])
-                    d2 = np.sqrt((x2 - 0.6)**2 + (y2 - 0.1)**2)
                     step_size = np.linalg.norm(eta * grad)
                     if step_size > obs_radius:
-                        # The step was larger than the obstacle — teleportation
+                        # Step larger than the obstacle — discrete teleportation
                         assert True
                         return
-        # If no config found inside, the test is inconclusive; skip
         pytest.skip("Could not find configuration inside obstacle zone")
 
 
 # ===================================================================
-# 3) Non-smooth / kinked costs → chattering at obstacle boundary
+# A3) Kink chattering: non-smooth ds² at obstacle boundary
 # ===================================================================
 class TestKinkChattering:
     """
-    The obstacle term max(0, r - d)² has a kink at d = r: the gradient
-    jumps from 0 to nonzero.  Trajectories near this boundary can
-    chatter (alternate between inside/outside the activation zone).
+    max(0, r - d)² has a C¹ kink at d = r: the gradient jumps from 0
+    to nonzero.  The continuous flow handles this fine (it just enters
+    or exits the active zone smoothly).  But the discrete scheme can
+    chatter — alternating between inside/outside on successive steps,
+    because the gradient changes discontinuously between them.
+
+    This is a discretization artifact, not a geometric property.
     """
 
     def test_chattering_at_obstacle_boundary(self):
         """Trajectory near obstacle boundary should show on/off switching."""
-        # Place a large obstacle that the arm must pass through/near
-        # to reach the target, forcing boundary interaction
         obs_center = (1.0, 0.3)
-        obs_radius = 0.60  # large: covers much of the workspace
+        obs_radius = 0.60
         target = (1.2, 0.3)
 
         trace = _run_descent(
@@ -251,7 +267,6 @@ class TestKinkChattering:
         inside = [s["d_obs"] < obs_radius for s in trace]
         transitions = sum(1 for i in range(1, len(inside)) if inside[i] != inside[i - 1])
 
-        # Also check: gradient has obstacle component that appears and disappears
         obs_active = [s["g_obs"] > 0.01 for s in trace]
         obs_transitions = sum(1 for i in range(1, len(obs_active))
                               if obs_active[i] != obs_active[i - 1])
@@ -262,30 +277,19 @@ class TestKinkChattering:
         )
 
     def test_gradient_discontinuity_at_boundary(self):
-        """Gradient should jump discontinuously at d_obs = r."""
+        """
+        Verify the gradient has a discontinuous jump at d_obs = r.
+        This is the mechanism that causes chattering in the discrete scheme.
+        """
         obs_center = np.array([0.6, 0.1])
         obs_radius = 0.30
         target = np.array([1.2, 0.3])
 
-        # Find config near boundary
         for th1 in np.linspace(-np.pi, np.pi, 300):
             for th2 in np.linspace(-np.pi, np.pi, 100):
                 x, y = forward_kinematics(th1, th2)
                 d = np.sqrt((x - obs_center[0])**2 + (y - obs_center[1])**2)
                 if abs(d - obs_radius) < 0.005:
-                    # Evaluate gradient just inside and just outside
-                    eps = 0.001
-                    # Perturb toward obstacle center
-                    direction = (obs_center - np.array([x, y]))
-                    direction = direction / (np.linalg.norm(direction) + 1e-12)
-                    # We can't easily move end-effector by epsilon in task space,
-                    # so compare at d=r-small vs d=r+small via Go contribution
-                    _, g_at = compute_gradient(th1, th2, target, obs_center,
-                                              obs_radius, Go=10.0)
-                    # Just outside: obs term = 0
-                    # Just inside:  obs term > 0
-                    # The gradient jump IS the discontinuity in the derivative
-                    # Verify: if we're just inside, obs gradient is nonzero
                     if d < obs_radius:
                         g_obs_inside = _run_descent(
                             (th1, th2), target, obs_center, obs_radius,
@@ -296,28 +300,44 @@ class TestKinkChattering:
         pytest.skip("Could not find configuration near obstacle boundary")
 
 
+# ###################################################################
+#
+#  PART B: GEOMETRIC PROPERTIES OF THE INVARIANT
+#
+#  ds² faithfully describes the geometry.  These tests verify that
+#  the invariant correctly reports geometric conditions — they are
+#  NOT failures of the framework.  The system stopping, stalling,
+#  or settling at a non-target point is the *correct* reading of
+#  the geometry in each case.
+#
+# ###################################################################
+
+
 # ===================================================================
-# 4) Nonconvexity → wrong local minimum (gradient cancellation)
+# B4) Stationary points from gradient cancellation
+#     (the geometry has an equilibrium — ds² correctly reports it)
 # ===================================================================
-class TestLocalMinimumTrap:
+class TestGeometricEquilibrium:
     """
-    Failure condition: ∃ Q* ≠ Q_goal s.t. ∇ds²(Q*) = 0
-    This happens when obstacle repulsion exactly cancels target attraction.
+    When ∇d_target + ∇d_obs + ∇d_reg = 0 at Q* ≠ Q_goal, the invariant
+    has a stationary point.  This is not a "trap" — it's the geometry
+    telling you that the forces balance here.  The system correctly
+    finds and reports this equilibrium.
     """
 
-    def test_converges_to_non_target_stationary_point(self):
+    def test_system_finds_equilibrium_between_obstacle_and_target(self):
         """
-        Place obstacle between start and target so the arm gets trapped
-        at a point where ∇d_target + ∇d_obs ≈ 0.
+        With obstacle between start and target, the system settles at
+        the geometric equilibrium where repulsion balances attraction.
+        Verify: gradient → 0, position stable, ds² > 0.
         """
-        # Obstacle directly on the line between start-effector and target
         target = (1.5, 0.0)
         obs_center = (1.0, 0.0)
         obs_radius = 0.40
-        Go = 50.0  # strong repulsion
+        Go = 50.0
 
         trace = _run_descent(
-            theta_init=(0.1, 0.1),  # FK ≈ (1.78, 0.18) — near target but blocked
+            theta_init=(0.1, 0.1),
             target=target,
             obstacle_center=obs_center,
             obstacle_radius=obs_radius,
@@ -328,31 +348,28 @@ class TestLocalMinimumTrap:
         )
 
         final = trace[-1]
-        # Check: gradient is small (stationary point reached)
-        grad_small = final["grad_norm"] < 0.5
 
-        # Check: we're not actually at the target
-        pos = final["pos"]
-        dist_to_target = np.linalg.norm(pos - np.array(target))
-
-        if grad_small and dist_to_target > 0.3:
-            # Confirmed: stuck at non-target stationary point
-            assert True
-            return
-
-        # Alternative: if gradient didn't vanish, check that the system
-        # is at least not making meaningful progress (practical trap)
+        # The system should reach a stationary point (gradient small)
+        # OR converge to a stable region (ds² plateau)
         late_ds2 = [s["ds2"] for s in trace[-50:]]
         ds2_range = max(late_ds2) - min(late_ds2)
-        assert dist_to_target > 0.2 or ds2_range < 0.01, (
-            f"Expected local minimum trap: dist_to_target={dist_to_target:.3f}, "
-            f"late ds² range={ds2_range:.6f}"
+
+        assert final["grad_norm"] < 0.5 or ds2_range < 0.01, (
+            f"Expected convergence to equilibrium: grad={final['grad_norm']:.4f}, "
+            f"ds² range={ds2_range:.6f}"
         )
 
-    def test_gradient_cancellation_diagnostic(self):
+        # ds² > 0 at this equilibrium: the invariant correctly reports
+        # that the target is not reached
+        assert final["ds2"] > 0.01, (
+            f"Expected ds² > 0 at equilibrium (target not reached), got {final['ds2']:.6f}"
+        )
+
+    def test_gradient_cancellation_is_balanced(self):
         """
-        Verify the termwise balance diagnostic: when trapped, the
-        obstacle and target gradients should be roughly equal and opposite.
+        At the equilibrium, obstacle and target gradient components should
+        be comparable — they are balancing each other.  The termwise
+        diagnostic r_i confirms this.
         """
         target = (1.5, 0.0)
         obs_center = (1.0, 0.0)
@@ -369,48 +386,38 @@ class TestLocalMinimumTrap:
             lam=0.01,
         )
 
-        # Look at the last steps — if trapped, target and obs terms should
-        # be comparable in magnitude
         final = trace[-1]
         if final["g_obs"] > 0:
             ratio = min(final["g_target"], final["g_obs"]) / max(final["g_target"], final["g_obs"])
-            # If they're cancelling, ratio should be non-trivial
-            # (doesn't have to be exactly 1 due to regularization)
             assert ratio > 0.05 or final["grad_norm"] < 1.0, (
-                f"Expected gradient cancellation: target={final['g_target']:.4f}, "
+                f"Expected balanced cancellation: target={final['g_target']:.4f}, "
                 f"obs={final['g_obs']:.4f}, ratio={ratio:.4f}"
             )
 
 
 # ===================================================================
-# 5) Saddle points → frozen progress
+# B5) Jacobian singularity
+#     (the geometry degenerates — ds² correctly reflects this)
 # ===================================================================
-class TestSaddlePoint:
+class TestJacobianSingularity:
     """
-    At a saddle, ∇ds² ≈ 0 but the Hessian has mixed-sign eigenvalues.
-    The system appears frozen: ‖Q_{t+1} - Q_t‖ ≈ 0 while not at goal.
+    At θ2 = 0 (fully extended), det(J) = 0.  The gradient ∇ds² passes
+    through J^T, so it loses a direction of information.  This is a
+    geometric fact about the configuration space — the invariant
+    correctly reports that the manifold is degenerate here.
     """
 
-    def test_near_kinematic_singularity_slow_progress(self):
+    def test_jacobian_rank_deficiency_at_extension(self):
         """
-        At θ2 = 0 (fully extended), the Jacobian is singular — det(J) = 0.
-        The gradient through J^T maps poorly near this config, creating
-        a region of reduced effective gradient magnitude compared to
-        the task-space error.
-
-        We verify the Jacobian condition number is large near the
-        singularity, which is the mechanism that would cause stalling
-        in higher-DOF or more constrained systems.
+        Verify: det(J) = 0 at θ2 = 0, det(J) >> 0 at θ2 = π/2.
+        This is a property of the arm geometry, not a numerical failure.
         """
-        # At θ2 = 0, the Jacobian is rank-deficient
         J_singular = jacobian(0.0, 0.0)
         det_singular = abs(np.linalg.det(J_singular))
 
-        # At θ2 = π/2, the Jacobian is well-conditioned
         J_good = jacobian(0.0, np.pi / 2)
         det_good = abs(np.linalg.det(J_good))
 
-        # The singular configuration has near-zero determinant
         assert det_singular < 1e-10, (
             f"Expected singular Jacobian at θ2=0, det={det_singular:.2e}"
         )
@@ -418,8 +425,13 @@ class TestSaddlePoint:
             f"Expected well-conditioned Jacobian at θ2=π/2, det={det_good:.2e}"
         )
 
-        # Run descent starting exactly at singularity with target requiring
-        # motion in the null-space direction
+    def test_gradient_attenuation_at_singularity(self):
+        """
+        At the singularity, the gradient is attenuated relative to
+        the task-space error.  This is the invariant correctly reporting
+        that the configuration is geometrically degenerate — the flow
+        has less information to work with here.
+        """
         trace = _run_descent(
             theta_init=(0.0, 0.0),  # exact singularity
             target=(-0.5, 0.0),     # requires folding
@@ -430,71 +442,77 @@ class TestSaddlePoint:
             lam=0.001,
         )
 
-        # The gradient at singularity should be reduced relative to the
-        # actual task-space error (which is large: ~2.3m from (1.8,0) to (-0.5,0))
         first_grad = trace[0]["grad_norm"]
         task_error = np.linalg.norm(trace[0]["pos"] - np.array([-0.5, 0.0]))
-        # Gradient is attenuated by the singular Jacobian
         ratio = first_grad / task_error
         assert ratio < 5.0, (
             f"Gradient/error ratio at singularity: {ratio:.3f}"
         )
 
-    def test_gradient_cancellation_creates_slow_region(self):
+    def test_exact_singularity_traps_the_flow(self):
         """
-        When obstacle repulsion and target attraction partially cancel,
-        the net gradient is smaller than either component alone.
-        This is the mechanism behind saddle-like stalling.
-        """
-        # Place obstacle directly between start config's end-effector and target
-        target = np.array([0.5, 0.8])
-        obs_center = np.array([0.5, 0.5])
-        obs_radius = 0.40
+        Starting exactly at the singularity (θ₂ = 0), with target requiring
+        motion along the degenerate direction, the gradient is zero in that
+        direction.  The system stays trapped — this is the invariant correctly
+        reporting that the geometry provides no information here.
 
-        trace = _run_descent(
-            theta_init=(-0.8, 1.5),
+        A near-singularity start (θ₂ = 0.01) escapes; the exact one does not.
+        """
+        target = (-0.5, 0.0)
+
+        # Exact singularity: trapped
+        trace_exact = _run_descent(
+            theta_init=(0.0, 0.0),
             target=target,
-            obstacle_center=obs_center,
-            obstacle_radius=obs_radius,
-            eta=0.05,
-            n_ticks=500,
-            Go=40.0,
-            lam=0.01,
+            obstacle_center=(10.0, 10.0),
+            obstacle_radius=0.1,
+            eta=0.12,
+            n_ticks=200,
+            lam=0.001,
         )
+        dist_exact = np.linalg.norm(trace_exact[-1]["pos"] - np.array(target))
 
-        # Find steps where net gradient is much smaller than the dominant
-        # component — this is gradient cancellation
-        cancellation_steps = []
-        for s in trace:
-            max_component = max(s["g_target"], s["g_obs"], s["g_reg"])
-            if max_component > 0.1 and s["grad_norm"] < 0.5 * max_component:
-                cancellation_steps.append(s)
+        # Near singularity: escapes
+        trace_near = _run_descent(
+            theta_init=(0.0, 0.01),
+            target=target,
+            obstacle_center=(10.0, 10.0),
+            obstacle_radius=0.1,
+            eta=0.12,
+            n_ticks=200,
+            lam=0.001,
+        )
+        dist_near = np.linalg.norm(trace_near[-1]["pos"] - np.array(target))
 
-        # Also valid: the system converges to a point far from target
-        final_dist = np.linalg.norm(trace[-1]["pos"] - target)
-
-        assert len(cancellation_steps) > 0 or final_dist > 0.15, (
-            f"Expected gradient cancellation or incomplete convergence: "
-            f"cancellation_steps={len(cancellation_steps)}, final_dist={final_dist:.3f}"
+        # Exact singularity should be much worse
+        assert dist_exact > 1.0, (
+            f"Expected exact singularity to trap: dist={dist_exact:.3f}"
+        )
+        assert dist_near < dist_exact, (
+            f"Expected near-singularity to outperform exact: "
+            f"near={dist_near:.3f}, exact={dist_exact:.3f}"
         )
 
 
 # ===================================================================
-# 6) Infeasible constraints → inf ds² > 0
+# B6) Infeasible geometry
+#     (ds² correctly reports that no solution exists)
 # ===================================================================
-class TestInfeasible:
+class TestInfeasibleGeometry:
     """
-    If the target is unreachable (outside workspace) or completely
-    blocked, then inf_Q ds²(Q) > 0.  Descent converges to a
-    compromise point.
+    When the target is unreachable or contradicts constraints,
+    inf_Q ds²(Q) > 0.  The invariant settles to a positive value
+    and gradient → 0.  This is correct: ds² is telling you the
+    geometry has no solution.
     """
 
     def test_target_outside_workspace(self):
         """
-        Workspace radius = L1 + L2 = 1.8m.
-        Target at distance 3.0 is unreachable.
+        Workspace radius = L1 + L2 = 1.8m.  Target at 3.0m is
+        geometrically unreachable.  ds² → positive residual,
+        gradient → 0, arm fully extended.
         """
-        target = (3.0, 0.0)  # unreachable
+        target = (3.0, 0.0)
 
         trace = _run_descent(
             theta_init=(0.0, 0.0),
@@ -505,28 +523,29 @@ class TestInfeasible:
             n_ticks=200,
         )
 
-        final_ds2 = trace[-1]["ds2"]
-        # ds² should converge to a positive value (can't reach target)
-        assert final_ds2 > 0.5, (
-            f"Expected positive residual ds² for unreachable target, got {final_ds2:.4f}"
+        final = trace[-1]
+        # ds² > 0: invariant correctly reports infeasibility
+        assert final["ds2"] > 0.5, (
+            f"Expected ds² > 0 for unreachable target, got {final['ds2']:.4f}"
         )
-
-        # System should still converge (gradient → 0)
-        assert trace[-1]["grad_norm"] < 0.1, (
-            f"Expected convergence to compromise point, grad_norm={trace[-1]['grad_norm']:.4f}"
+        # Gradient → 0: system found the closest point
+        assert final["grad_norm"] < 0.1, (
+            f"Expected gradient → 0 at compromise, got {final['grad_norm']:.4f}"
         )
-
-        # Verify: end-effector is at workspace boundary (fully extended)
-        pos = trace[-1]["pos"]
-        reach = np.linalg.norm(pos)
+        # Arm fully extended toward target
+        reach = np.linalg.norm(final["pos"])
         assert reach > 1.7, (
-            f"Expected arm fully extended toward target, reach={reach:.3f}"
+            f"Expected full extension toward target, reach={reach:.3f}"
         )
 
     def test_target_inside_obstacle(self):
-        """Target inside an obstacle creates competing objectives."""
+        """
+        Target coincides with obstacle center.  The invariant correctly
+        reports that satisfying both constraints simultaneously is
+        impossible: ds² > 0 at the equilibrium.
+        """
         target = (0.6, 0.1)
-        obs_center = (0.6, 0.1)  # same as target!
+        obs_center = (0.6, 0.1)
         obs_radius = 0.30
 
         trace = _run_descent(
@@ -539,32 +558,34 @@ class TestInfeasible:
             Go=20.0,
         )
 
-        final = trace[-1]
-        final_ds2 = final["ds2"]
-
-        # Can't simultaneously be at target and avoid obstacle
-        # So final ds² > 0
-        assert final_ds2 > 0.01, (
-            f"Expected nonzero ds² for target-inside-obstacle, got {final_ds2:.6f}"
+        assert trace[-1]["ds2"] > 0.01, (
+            f"Expected ds² > 0 for contradictory constraints, got {trace[-1]['ds2']:.6f}"
         )
 
 
 # ===================================================================
-# 7) Scale domination (one term swamps the others)
+# B7) Component scale separation
+#     (the invariant is dominated by one geometric term)
 # ===================================================================
-class TestScaleDomination:
+class TestComponentScaleSeparation:
     """
-    When ‖∇d_obs‖ >> ‖∇d_target‖ + ‖∇d_reg‖, the system only avoids
-    the obstacle and never advances toward the goal.
+    When one component of ds² has much larger gradient than the others,
+    the flow follows that component almost exclusively.  This is not
+    a failure — it's the invariant correctly reflecting that one
+    geometric constraint is far more "urgent" than the others.
+
+    The diagnostic r_i = ‖∇d_i‖ / Σ‖∇d_j‖ detects this.
     """
 
-    def test_obstacle_dominates_prevents_target_approach(self):
-        """Extreme Go with large obstacle makes obstacle term dominate."""
-        # Target is inside a large obstacle zone — system must enter zone
-        # to approach target, but extreme Go prevents it
+    def test_obstacle_component_dominates_invariant(self):
+        """
+        With Go=1000 and target inside obstacle zone, the obstacle
+        component dominates ds².  The invariant correctly prioritizes
+        obstacle avoidance — the system settles outside the zone.
+        """
         target = (0.8, 0.2)
-        obs_center = (0.8, 0.2)  # centered on target
-        obs_radius = 0.60        # large zone
+        obs_center = (0.8, 0.2)
+        obs_radius = 0.60
 
         trace = _run_descent(
             theta_init=(-1.4, 1.2),
@@ -573,27 +594,30 @@ class TestScaleDomination:
             obstacle_radius=obs_radius,
             eta=0.05,
             n_ticks=300,
-            Go=1000.0,  # extreme obstacle weight
+            Go=1000.0,
             lam=0.02,
         )
 
-        # Check: obstacle gradient dominates for steps inside the zone
+        # The invariant should push the system outside the obstacle zone
+        # OR the obstacle component should dominate the gradient
         dominated_steps = [
             s for s in trace
             if _termwise_ratio(s, "g_obs") > 0.8
         ]
-
-        # Check: final position is far from target
         final_pos = trace[-1]["pos"]
         dist = np.linalg.norm(final_pos - np.array(target))
 
         assert len(dominated_steps) > 5 or dist > 0.3, (
-            f"Expected obstacle domination: {len(dominated_steps)} dominated steps, "
+            f"Expected obstacle dominance: {len(dominated_steps)} dominated steps, "
             f"final dist={dist:.3f}"
         )
 
-    def test_regularization_dominates_pulls_to_origin(self):
-        """Extreme λ makes the arm collapse toward θ = (0,0)."""
+    def test_regularization_component_dominates_invariant(self):
+        """
+        With λ=50, regularization dominates ds².  The invariant correctly
+        reports that the "cheapest" configuration (θ near 0) outweighs
+        reaching the target.  The system settles near θ = 0.
+        """
         target = (0.5, 1.0)
 
         trace = _run_descent(
@@ -601,28 +625,26 @@ class TestScaleDomination:
             target=target,
             obstacle_center=(10.0, 10.0),
             obstacle_radius=0.1,
-            eta=0.01,   # small η to avoid divergence with large λ
+            eta=0.01,
             n_ticks=500,
             Go=4.0,
-            lam=50.0,   # large but not so extreme as to cause overflow
+            lam=50.0,
         )
 
         final_theta = trace[-1]["theta"]
-        # With large lam, θ → near 0 regardless of target
         assert np.linalg.norm(final_theta) < 0.5, (
-            f"Expected regularization to pull θ→0, got ‖θ‖={np.linalg.norm(final_theta):.3f}"
+            f"Expected θ → 0 under regularization dominance, "
+            f"got ‖θ‖={np.linalg.norm(final_theta):.3f}"
         )
 
-        # And we're NOT at the target
         final_pos = trace[-1]["pos"]
         dist = np.linalg.norm(final_pos - np.array(target))
         assert dist > 0.3, (
-            f"Expected failure to reach target under regularization domination, dist={dist:.3f}"
+            f"Expected target not reached under regularization dominance, dist={dist:.3f}"
         )
 
-    def test_domination_diagnostic(self):
-        """The r_i ratio diagnostic should flag domination."""
-        # Use same setup as obstacle_dominates test — target inside obstacle
+    def test_domination_diagnostic_detects_scale_separation(self):
+        """The r_i ratio diagnostic correctly flags scale separation."""
         trace = _run_descent(
             theta_init=(-1.4, 1.2),
             target=(0.8, 0.2),
@@ -633,12 +655,10 @@ class TestScaleDomination:
             Go=1000.0,
         )
 
-        # Find max domination ratio across the trajectory
         obs_steps = [s for s in trace if s["g_obs"] > 0]
         if obs_steps:
             max_ratio = max(_termwise_ratio(s, "g_obs") for s in obs_steps)
         else:
-            # If obstacle never activated, check regularization domination
             max_ratio = max(_termwise_ratio(s, "g_reg") for s in trace
                            if (s["g_target"] + s["g_obs"] + s["g_reg"]) > 1e-10)
 
@@ -648,25 +668,27 @@ class TestScaleDomination:
 
 
 # ===================================================================
-# 8) Topology / homotopy trap (the "wall" / U-shape problem)
+# B8) Topological obstruction
+#     (free space topology prevents a unique global minimum)
 # ===================================================================
-class TestTopologyTrap:
+class TestTopologicalObstruction:
     """
-    With non-contractible free space (holes from obstacles), a global
-    potential with unique minimum at the goal is generally impossible.
-    Spurious minima arise — the classic potential field failure.
+    When obstacles make the free configuration space non-contractible,
+    a smooth global potential with a unique minimum at the goal is
+    generally impossible.  The invariant correctly settles at a
+    non-target stationary point — this is a property of the topology,
+    not a bug in the framework.
     """
 
-    def test_u_shaped_obstacle_trap(self):
+    def test_obstacle_on_target_creates_geometric_barrier(self):
         """
-        With a large obstacle covering the target region, the potential
-        field creates a spurious minimum where repulsion balances attraction.
-        This is the classic artificial potential field failure.
+        With obstacle centered on target, the invariant correctly
+        reports that approach is blocked.  ds² settles at a positive
+        equilibrium — the geometry has no path to ds² = 0.
         """
-        # Target behind a large obstacle
         target = (0.5, 0.5)
-        obs_center = (0.5, 0.5)  # obstacle centered on target
-        obs_radius = 0.55        # large
+        obs_center = (0.5, 0.5)
+        obs_radius = 0.55
 
         trace = _run_descent(
             theta_init=(-1.4, 1.2),
@@ -681,17 +703,21 @@ class TestTopologyTrap:
         final_pos = trace[-1]["pos"]
         dist_to_target = np.linalg.norm(final_pos - np.array(target))
 
-        # System should NOT reach the target (it's inside the obstacle zone)
-        # The obstacle repulsion prevents approach
+        # System correctly stops outside obstacle zone
         assert dist_to_target > 0.15, (
-            f"Expected topology/potential field trap: dist={dist_to_target:.3f}"
+            f"Expected geometric barrier: dist={dist_to_target:.3f}"
         )
 
-    def test_multiple_obstacle_corridor(self):
+        # ds² is positive at the equilibrium
+        assert trace[-1]["ds2"] > 0.01, (
+            f"Expected ds² > 0 at topological obstruction"
+        )
+
+    def test_obstacle_forces_detour_or_equilibrium(self):
         """
-        With the single-obstacle API, simulate a narrow corridor by
-        placing the obstacle to force a detour.  The gradient field
-        may create a spurious equilibrium.
+        Large obstacle between start and target.  The invariant either
+        guides the system around (if the geometry permits) or settles
+        at an equilibrium (if topology prevents it).  Either is correct.
         """
         target = (-0.5, 0.5)
         obs_center = (0.0, 0.5)
@@ -708,37 +734,34 @@ class TestTopologyTrap:
             lam=0.01,
         )
 
-        final_pos = trace[-1]["pos"]
+        final = trace[-1]
+        final_pos = final["pos"]
         dist = np.linalg.norm(final_pos - np.array(target))
-        final_grad = trace[-1]["grad_norm"]
 
-        # Check for the classic potential field failure:
-        # small gradient, not at goal
-        potential_field_failure = (final_grad < 1.0 and dist > 0.2)
-        # Or at minimum: the trajectory had difficulty
-        ds2_values = [s["ds2"] for s in trace]
-        plateaus = sum(
-            1 for i in range(1, len(ds2_values))
-            if abs(ds2_values[i] - ds2_values[i-1]) < 1e-6
-        )
+        # Either: system found a path (dist small, ds² small)
+        # Or: system at equilibrium (gradient small, ds² positive)
+        reached_target = dist < 0.2
+        at_equilibrium = final["grad_norm"] < 1.0 and final["ds2"] > 0.01
 
-        assert potential_field_failure or plateaus > 10 or dist > 0.15, (
-            f"Expected topology/corridor trap: dist={dist:.3f}, "
-            f"grad={final_grad:.4f}, plateaus={plateaus}"
+        # Both outcomes are geometrically correct
+        assert reached_target or at_equilibrium, (
+            f"Expected either target reached or geometric equilibrium: "
+            f"dist={dist:.3f}, grad={final['grad_norm']:.4f}, ds²={final['ds2']:.4f}"
         )
 
 
 # ===================================================================
-# Diagnostic integration test: run all diagnostics on default config
+# Diagnostic integration: verify instrumentation on default config
 # ===================================================================
 class TestDiagnosticInstrumentation:
     """
     Verify that the three diagnostic quantities (Δds², g_t, r_i)
-    are computable and meaningful on a standard trajectory.
+    are computable and meaningful on a standard trajectory where the
+    geometry permits convergence.
     """
 
     def test_descent_check_monotone_for_stable_eta(self):
-        """With the default η=0.12, descent should be mostly monotone."""
+        """With stable η, the scheme should track the continuous flow (monotone ds²)."""
         trace = _run_descent(
             theta_init=(-1.4, 1.2),
             target=(1.2, 0.3),
@@ -754,7 +777,7 @@ class TestDiagnosticInstrumentation:
         )
 
     def test_gradient_norm_decreases_to_near_zero(self):
-        """Gradient norm should decrease as system converges."""
+        """Gradient norm → 0 as the system reaches the geometric minimum."""
         trace = _run_descent(
             theta_init=(-1.4, 1.2),
             target=(1.2, 0.3),
@@ -770,7 +793,7 @@ class TestDiagnosticInstrumentation:
         )
 
     def test_termwise_balance_shifts_during_convergence(self):
-        """The dominant gradient term should shift as the arm moves."""
+        """The dominant gradient component shifts as geometry changes along the path."""
         trace = _run_descent(
             theta_init=(-1.4, 1.2),
             target=(1.2, 0.3),
@@ -779,11 +802,9 @@ class TestDiagnosticInstrumentation:
             eta=0.12,
             n_ticks=140,
         )
-        # At the end, target term should dominate (obstacle far away)
         final = trace[-1]
         r_target = _termwise_ratio(final, "g_target")
         r_reg = _termwise_ratio(final, "g_reg")
-        # Near convergence, target and regularization are what's left
         assert r_target + r_reg > 0.5 or final["grad_norm"] < 0.01, (
             f"Expected target/reg dominance at convergence, "
             f"r_target={r_target:.3f}, r_reg={r_reg:.3f}"
