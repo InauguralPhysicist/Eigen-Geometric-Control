@@ -20,11 +20,10 @@ reaching eigenstate at the surface.
 import numpy as np
 from typing import Dict, List, Optional, Tuple
 
-
 # ---------- physical constants ----------
-MARS_G = 3.72076         # m/s², Mars surface gravity
-RHO0_MARS = 0.020        # kg/m³, Mars surface atmospheric density
-SCALE_HEIGHT = 11100.0   # m, Mars atmosphere scale height
+MARS_G = 3.72076  # m/s², Mars surface gravity
+RHO0_MARS = 0.020  # kg/m³, Mars surface atmospheric density
+SCALE_HEIGHT = 11100.0  # m, Mars atmosphere scale height
 
 
 def mars_atmosphere(alt: float) -> float:
@@ -34,8 +33,9 @@ def mars_atmosphere(alt: float) -> float:
     return RHO0_MARS * np.exp(-alt / SCALE_HEIGHT)
 
 
-def drag_accel(alt: float, v: np.ndarray, Cd: float = 1.5, A: float = 15.0,
-               mass: float = 900.0) -> np.ndarray:
+def drag_accel(
+    alt: float, v: np.ndarray, Cd: float = 1.5, A: float = 15.0, mass: float = 900.0
+) -> np.ndarray:
     """
     Aerodynamic drag acceleration: a_drag = -0.5 * rho * Cd * A / m * |v| * v
     Points opposite to velocity. All units SI.
@@ -47,8 +47,14 @@ def drag_accel(alt: float, v: np.ndarray, Cd: float = 1.5, A: float = 15.0,
     return -0.5 * rho * Cd * A / mass * speed * v
 
 
-def dynamics(state: np.ndarray, thrust_vec: np.ndarray, fuel: float,
-             Cd: float = 1.5, A: float = 15.0, mass: float = 900.0) -> np.ndarray:
+def dynamics(
+    state: np.ndarray,
+    thrust_vec: np.ndarray,
+    fuel: float,
+    Cd: float = 1.5,
+    A: float = 15.0,
+    mass: float = 900.0,
+) -> np.ndarray:
     """
     Equations of motion for the lander. All in acceleration units.
 
@@ -83,6 +89,7 @@ def dynamics(state: np.ndarray, thrust_vec: np.ndarray, fuel: float,
 
 # ---------- ds² computation ----------
 
+
 def compute_ds2_edl(
     state: np.ndarray,
     control: np.ndarray,
@@ -116,27 +123,27 @@ def compute_ds2_edl(
 
     # Position term (weighted)
     pos_err = pos - target_pos
-    target_term = float(W_pos * np.sum(pos_err ** 2))
+    target_term = float(W_pos * np.sum(pos_err**2))
 
     # Velocity term
     vel_err = vel - target_vel
-    vel_match_term = float(W_vel * np.sum(vel_err ** 2))
+    vel_match_term = float(W_vel * np.sum(vel_err**2))
 
     # Terrain hazard avoidance (horizontal plane only)
     terrain_term = 0.0
-    d_terrain_min = float('inf')
+    d_terrain_min = float("inf")
     horizontal_pos = state[1:3]  # [dr, cr]
     for center_2d, radius in terrain_hazards:
         center_2d = np.asarray(center_2d, dtype=float)
         d = float(np.linalg.norm(horizontal_pos - center_2d))
         d_terrain_min = min(d_terrain_min, d)
         penetration = max(0.0, radius - d)
-        terrain_term += Go_terrain * penetration ** 2
+        terrain_term += Go_terrain * penetration**2
 
     # Velocity limit term
     speed = float(np.linalg.norm(vel))
     vel_excess = max(0.0, speed - v_max)
-    vel_limit_term = float(Go_vel * vel_excess ** 2)
+    vel_limit_term = float(Go_vel * vel_excess**2)
 
     # Fuel term: as fuel depletes, cost of thrusting increases
     fuel_term = 0.0
@@ -144,7 +151,7 @@ def compute_ds2_edl(
         fuel_term = float(fuel_weight / (fuel + 1.0))
 
     # Control regularization
-    reg_term = float(lam * np.sum(control ** 2))
+    reg_term = float(lam * np.sum(control**2))
 
     ds2 = target_term + vel_match_term + terrain_term + vel_limit_term + fuel_term + reg_term
 
@@ -212,8 +219,18 @@ def compute_gradient_edl(
                 s[3] = min(s[3], 0.0)
                 break
         val, _ = compute_ds2_edl(
-            s, ctrl, f, target_state, terrain_hazards,
-            W_pos, W_vel, Go_terrain, Go_vel, v_max, lam, fuel_weight
+            s,
+            ctrl,
+            f,
+            target_state,
+            terrain_hazards,
+            W_pos,
+            W_vel,
+            Go_terrain,
+            Go_vel,
+            v_max,
+            lam,
+            fuel_weight,
         )
         return val
 
@@ -293,9 +310,21 @@ def run_edl_simulation(
 
         # Compute ∇ds² on sensed state
         grad, gnorm = compute_gradient_edl(
-            sensed_state, control, fuel, target_state, terrain_hazards,
-            W_pos, W_vel, Go_terrain, Go_vel, v_max, lam, fuel_weight,
-            dt=dt, Cd=Cd, A=A,
+            sensed_state,
+            control,
+            fuel,
+            target_state,
+            terrain_hazards,
+            W_pos,
+            W_vel,
+            Go_terrain,
+            Go_vel,
+            v_max,
+            lam,
+            fuel_weight,
+            dt=dt,
+            Cd=Cd,
+            A=A,
         )
 
         # Update control via gradient descent
@@ -309,26 +338,38 @@ def run_edl_simulation(
 
         # Compute ds² for diagnostics (observer quantity)
         ds2, comp = compute_ds2_edl(
-            sensed_state, control_new, fuel, target_state, terrain_hazards,
-            W_pos, W_vel, Go_terrain, Go_vel, v_max, lam, fuel_weight
+            sensed_state,
+            control_new,
+            fuel,
+            target_state,
+            terrain_hazards,
+            W_pos,
+            W_vel,
+            Go_terrain,
+            Go_vel,
+            v_max,
+            lam,
+            fuel_weight,
         )
 
         # Record
-        trace.append({
-            "t": t,
-            "time": t * dt,
-            "state": state.copy(),
-            "sensed_state": sensed_state.copy(),
-            "control": control_new.copy(),
-            "thrust_mag": float(np.linalg.norm(control_new)),
-            "ds2": ds2,
-            "grad_norm": gnorm,
-            "fuel": fuel,
-            "altitude": state[0],
-            "speed": float(np.linalg.norm(state[3:])),
-            "vertical_speed": state[3],
-            "components": comp,
-        })
+        trace.append(
+            {
+                "t": t,
+                "time": t * dt,
+                "state": state.copy(),
+                "sensed_state": sensed_state.copy(),
+                "control": control_new.copy(),
+                "thrust_mag": float(np.linalg.norm(control_new)),
+                "ds2": ds2,
+                "grad_norm": gnorm,
+                "fuel": fuel,
+                "altitude": state[0],
+                "speed": float(np.linalg.norm(state[3:])),
+                "vertical_speed": state[3],
+                "components": comp,
+            }
+        )
 
         # Check termination: landed
         if state[0] <= 0.0:
