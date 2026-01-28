@@ -24,12 +24,8 @@ import numpy as np
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from eigen_edl_core import (
-    MARS_G,
     compute_ds2_edl,
     compute_gradient_edl,
-    drag_accel,
-    dynamics,
-    mars_atmosphere,
     run_edl_simulation,
 )
 
@@ -261,7 +257,6 @@ class TestSensorDropout(unittest.TestCase):
         Compare landing quality to no-dropout baseline.
         """
         # Baseline
-        trace_normal = run_edl_simulation(**default_scenario(n_ticks=3000))
         # Dropout at tick 500: run two phases
         trace_phase1 = run_edl_simulation(**default_scenario(n_ticks=500))
         if len(trace_phase1) >= 500:

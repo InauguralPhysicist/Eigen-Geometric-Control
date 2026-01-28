@@ -40,13 +40,11 @@ it indexes which geometric state you're in.
 """
 
 import numpy as np
-import pytest
 
 from src.eigen_3dof_core import (
     compute_ds2_3d,
     compute_gradient_3d,
     forward_kinematics_3d,
-    jacobian_3d,
     run_3dof_simulation,
 )
 
@@ -297,11 +295,9 @@ class TestDs2AsRegimeDiscriminator:
             traces.append(trace)
 
         final_ds2_values = [t[-1]["ds2"] for t in traces]
-        final_positions = [t[-1]["pos"] for t in traces]
 
         # Different final ds² values indicate different equilibria
         # (or same equilibrium from different approaches — both valid)
-        ds2_spread = max(final_ds2_values) - min(final_ds2_values)
 
         # At minimum, ds² should be well-defined at each equilibrium
         for ds2_val in final_ds2_values:

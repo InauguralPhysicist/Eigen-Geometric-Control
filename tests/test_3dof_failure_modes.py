@@ -21,7 +21,6 @@ import numpy as np
 import pytest
 
 from src.eigen_3dof_core import (
-    compute_ds2_3d,
     compute_gradient_3d,
     forward_kinematics_3d,
     jacobian_3d,
@@ -220,8 +219,6 @@ class TestGeometricEquilibrium3D:
         )
 
         final = trace[-1]
-        target_arr = np.array([0.8, 0.3, 1.5])
-        dist = np.linalg.norm(final["pos"] - target_arr)
 
         # Check: system settled (gradient small or ds² plateau)
         late_ds2 = [s["ds2"] for s in trace[-50:]]
@@ -345,13 +342,8 @@ class TestJacobianSingularity3D:
             lam=0.001,
         )
 
-        dist_singular = np.linalg.norm(trace_singular[-1]["pos"] - target)
-        dist_off = np.linalg.norm(trace_off[-1]["pos"] - target)
-
         # The on-manifold start should perform worse (or at least
         # the gradient should be attenuated at the start)
-        grad_singular_0 = trace_singular[0]["grad_norm"]
-        grad_off_0 = trace_off[0]["grad_norm"]
 
         # At minimum: the Jacobian determinant is smaller on-manifold
         assert abs(trace_singular[0]["det_J"]) < abs(trace_off[0]["det_J"]), (
@@ -620,7 +612,6 @@ class TestTopologicalObstruction3D:
         )
 
         final = trace[-1]
-        dist = np.linalg.norm(final["pos"] - target)
 
         # With enclosure, ds² should report inability to reach target
         # OR find a gap between obstacles

@@ -707,7 +707,7 @@ class TestTopologicalObstruction:
         assert dist_to_target > 0.15, f"Expected geometric barrier: dist={dist_to_target:.3f}"
 
         # ds² is positive at the equilibrium
-        assert trace[-1]["ds2"] > 0.01, f"Expected ds² > 0 at topological obstruction"
+        assert trace[-1]["ds2"] > 0.01, "Expected ds² > 0 at topological obstruction"
 
     def test_obstacle_forces_detour_or_equilibrium(self):
         """
