@@ -17,8 +17,9 @@ Entry, descent, and landing are not three modes — they are one flow
 reaching eigenstate at the surface.
 """
 
-import numpy as np
 from typing import Dict, List, Optional, Tuple
+
+import numpy as np
 
 # ---------- physical constants ----------
 MARS_G = 3.72076  # m/s², Mars surface gravity

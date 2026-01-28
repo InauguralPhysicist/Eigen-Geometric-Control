@@ -15,21 +15,22 @@ The system acts on ∇ds². The observer sets conditions, doesn't choose results
   7. Degenerate geometry — Jacobian-analog singularity, stalls for correct reason
 """
 
-import sys
 import os
-import numpy as np
+import sys
 import unittest
+
+import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from eigen_edl_core import (
-    run_edl_simulation,
+    MARS_G,
     compute_ds2_edl,
     compute_gradient_edl,
+    drag_accel,
     dynamics,
     mars_atmosphere,
-    drag_accel,
-    MARS_G,
+    run_edl_simulation,
 )
 
 # ──────────────────────────────────────────────
