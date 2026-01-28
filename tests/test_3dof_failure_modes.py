@@ -28,10 +28,10 @@ from src.eigen_3dof_core import (
     run_3dof_simulation,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _termwise_ratio(step, term="g_obs"):
     total = step["g_target"] + step["g_obs"] + step["g_reg"]
@@ -100,41 +100,44 @@ class TestGradientExplosion3D:
         _, gnorm_far = compute_gradient_3d(
             np.array([0.0, 0.0, 0.0]),
             np.array([1.0, 0.5, 1.5]),
-            obs, Go=50.0,
+            obs,
+            Go=50.0,
         )
 
         # Search for config inside obstacle
         best_gnorm = 0.0
         for th1 in np.linspace(-np.pi, np.pi, 50):
-            for th2 in np.linspace(-np.pi/2, np.pi/2, 30):
+            for th2 in np.linspace(-np.pi / 2, np.pi / 2, 30):
                 for th3 in np.linspace(-np.pi, np.pi, 30):
                     x, y, z = forward_kinematics_3d(th1, th2, th3)
-                    d = np.sqrt((x - 0.6)**2 + (y - 0.1)**2 + (z - 1.0)**2)
+                    d = np.sqrt((x - 0.6) ** 2 + (y - 0.1) ** 2 + (z - 1.0) ** 2)
                     if 0.02 < d < 0.40:
                         _, gn = compute_gradient_3d(
                             np.array([th1, th2, th3]),
                             np.array([1.0, 0.5, 1.5]),
-                            obs, Go=50.0,
+                            obs,
+                            Go=50.0,
                         )
                         best_gnorm = max(best_gnorm, gn)
 
-        assert best_gnorm > 5.0 * max(gnorm_far, 1e-6), (
-            f"Expected gradient spike: near={best_gnorm:.4f}, far={gnorm_far:.4f}"
-        )
+        assert best_gnorm > 5.0 * max(
+            gnorm_far, 1e-6
+        ), f"Expected gradient spike: near={best_gnorm:.4f}, far={gnorm_far:.4f}"
 
     def test_discrete_step_teleports_past_obstacle(self):
         obs = [(np.array([0.6, 0.1, 1.0]), 0.50)]
 
         for th1 in np.linspace(-np.pi, np.pi, 50):
-            for th2 in np.linspace(-np.pi/2, np.pi/2, 30):
+            for th2 in np.linspace(-np.pi / 2, np.pi / 2, 30):
                 for th3 in np.linspace(-np.pi, np.pi, 30):
                     x, y, z = forward_kinematics_3d(th1, th2, th3)
-                    d = np.sqrt((x - 0.6)**2 + (y - 0.1)**2 + (z - 1.0)**2)
+                    d = np.sqrt((x - 0.6) ** 2 + (y - 0.1) ** 2 + (z - 1.0) ** 2)
                     if 0.05 < d < 0.25:
                         grad, _ = compute_gradient_3d(
                             np.array([th1, th2, th3]),
                             np.array([1.0, 0.5, 1.5]),
-                            obs, Go=50.0,
+                            obs,
+                            Go=50.0,
                         )
                         step_size = np.linalg.norm(1.0 * grad)
                         if step_size > 0.50:
@@ -168,12 +171,13 @@ class TestKinkChattering3D:
         inside = [s["d_obs_min"] < 0.60 for s in trace]
         transitions = sum(1 for i in range(1, len(inside)) if inside[i] != inside[i - 1])
         obs_active = [s["g_obs"] > 0.01 for s in trace]
-        obs_transitions = sum(1 for i in range(1, len(obs_active))
-                              if obs_active[i] != obs_active[i - 1])
-
-        assert transitions >= 1 or obs_transitions >= 1, (
-            f"Expected boundary transitions: spatial={transitions}, gradient={obs_transitions}"
+        obs_transitions = sum(
+            1 for i in range(1, len(obs_active)) if obs_active[i] != obs_active[i - 1]
         )
+
+        assert (
+            transitions >= 1 or obs_transitions >= 1
+        ), f"Expected boundary transitions: spatial={transitions}, gradient={obs_transitions}"
 
 
 # ###################################################################
@@ -225,12 +229,10 @@ class TestGeometricEquilibrium3D:
         settled = final["grad_norm"] < 0.5 or ds2_range < 0.01
 
         # ds² > 0 at equilibrium
-        assert settled, (
-            f"Expected convergence: grad={final['grad_norm']:.4f}, ds² range={ds2_range:.6f}"
-        )
-        assert final["ds2"] > 0.001, (
-            f"Expected ds² > 0 at equilibrium, got {final['ds2']:.6f}"
-        )
+        assert (
+            settled
+        ), f"Expected convergence: grad={final['grad_norm']:.4f}, ds² range={ds2_range:.6f}"
+        assert final["ds2"] > 0.001, f"Expected ds² > 0 at equilibrium, got {final['ds2']:.6f}"
 
     def test_multiple_obstacles_create_equilibrium(self):
         """
@@ -263,9 +265,9 @@ class TestGeometricEquilibrium3D:
         reached = dist < 0.2
         at_equilibrium = ds2_range < 0.01
 
-        assert reached or at_equilibrium, (
-            f"Expected target or equilibrium: dist={dist:.3f}, ds² range={ds2_range:.6f}"
-        )
+        assert (
+            reached or at_equilibrium
+        ), f"Expected target or equilibrium: dist={dist:.3f}, ds² range={ds2_range:.6f}"
 
 
 # ===================================================================
@@ -293,15 +295,15 @@ class TestJacobianSingularity3D:
             dets.append(abs(np.linalg.det(J)))
 
         # All should be near-singular (det ≈ 0) regardless of θ₁
-        assert all(d < 0.1 for d in dets), (
-            f"Expected singular manifold at θ₃=0: dets={[f'{d:.4f}' for d in dets[:5]]}"
-        )
+        assert all(
+            d < 0.1 for d in dets
+        ), f"Expected singular manifold at θ₃=0: dets={[f'{d:.4f}' for d in dets[:5]]}"
 
         # Verify: perturbing θ₃ away from 0 restores rank
         J_good = jacobian_3d(0.0, 0.5, np.pi / 3)
-        assert abs(np.linalg.det(J_good)) > 0.05, (
-            f"Expected non-singular at θ₃=π/3, det={abs(np.linalg.det(J_good)):.4f}"
-        )
+        assert (
+            abs(np.linalg.det(J_good)) > 0.05
+        ), f"Expected non-singular at θ₃=π/3, det={abs(np.linalg.det(J_good)):.4f}"
 
     def test_singularity_manifold_at_theta2_zero(self):
         """
@@ -311,16 +313,12 @@ class TestJacobianSingularity3D:
         # At θ₂ = 0, θ₃ = 0: both shoulder and elbow extended
         J = jacobian_3d(0.0, 0.0, 0.0)
         det_both = abs(np.linalg.det(J))
-        assert det_both < 1e-10, (
-            f"Expected singularity at θ₂=θ₃=0, det={det_both:.2e}"
-        )
+        assert det_both < 1e-10, f"Expected singularity at θ₂=θ₃=0, det={det_both:.2e}"
 
         # At θ₂ = 0, θ₃ = π: elbow fully folded
         J_folded = jacobian_3d(0.0, 0.0, np.pi)
         det_folded = abs(np.linalg.det(J_folded))
-        assert det_folded < 1e-10, (
-            f"Expected singularity at θ₂=0, θ₃=π, det={det_folded:.2e}"
-        )
+        assert det_folded < 1e-10, f"Expected singularity at θ₂=0, θ₃=π, det={det_folded:.2e}"
 
     def test_singularity_traps_flow_on_manifold(self):
         """
@@ -386,9 +384,7 @@ class TestJacobianSingularity3D:
         frac_3d = near_singular_3d / n_samples
         # A nontrivial fraction should be near-singular
         # (the singular set θ₃ ≈ 0 occupies ~threshold/π of the range)
-        assert frac_3d > 0.01, (
-            f"Expected nontrivial singular fraction in 3-DOF, got {frac_3d:.3f}"
-        )
+        assert frac_3d > 0.01, f"Expected nontrivial singular fraction in 3-DOF, got {frac_3d:.3f}"
 
 
 # ===================================================================
@@ -407,17 +403,17 @@ class TestInfeasibleGeometry3D:
         trace = run_3dof_simulation(
             theta_init=(0.0, 0.5, -0.5),
             target=target,
-            eta=0.02,   # small η to avoid Euler instability at workspace edge
+            eta=0.02,  # small η to avoid Euler instability at workspace edge
             n_ticks=500,
         )
 
-        assert trace[-1]["ds2"] > 1.0, (
-            f"Expected ds² > 0 for unreachable target, got {trace[-1]['ds2']:.4f}"
-        )
+        assert (
+            trace[-1]["ds2"] > 1.0
+        ), f"Expected ds² > 0 for unreachable target, got {trace[-1]['ds2']:.4f}"
         # Gradient should decrease toward compromise point
-        assert trace[-1]["grad_norm"] < trace[0]["grad_norm"], (
-            f"Expected gradient decrease: {trace[0]['grad_norm']:.4f} → {trace[-1]['grad_norm']:.4f}"
-        )
+        assert (
+            trace[-1]["grad_norm"] < trace[0]["grad_norm"]
+        ), f"Expected gradient decrease: {trace[0]['grad_norm']:.4f} → {trace[-1]['grad_norm']:.4f}"
 
     def test_target_inside_obstacle(self):
         """Target coincides with obstacle center in 3D."""
@@ -433,9 +429,9 @@ class TestInfeasibleGeometry3D:
             Go=20.0,
         )
 
-        assert trace[-1]["ds2"] > 0.01, (
-            f"Expected ds² > 0 for contradictory constraints, got {trace[-1]['ds2']:.6f}"
-        )
+        assert (
+            trace[-1]["ds2"] > 0.01
+        ), f"Expected ds² > 0 for contradictory constraints, got {trace[-1]['ds2']:.6f}"
 
     def test_target_inside_inner_workspace_hole(self):
         """
@@ -454,9 +450,9 @@ class TestInfeasibleGeometry3D:
         )
 
         # L1 = 0.9 is the base height offset, so the arm can't reach (0,0,0)
-        assert trace[-1]["ds2"] > 0.1, (
-            f"Expected ds² > 0 for target inside workspace hole, got {trace[-1]['ds2']:.4f}"
-        )
+        assert (
+            trace[-1]["ds2"] > 0.1
+        ), f"Expected ds² > 0 for target inside workspace hole, got {trace[-1]['ds2']:.4f}"
 
 
 # ===================================================================
@@ -483,9 +479,9 @@ class TestComponentScaleSeparation3D:
         dominated = [s for s in trace if _termwise_ratio(s, "g_obs") > 0.8]
         dist = np.linalg.norm(trace[-1]["pos"] - np.array([0.8, 0.3, 1.2]))
 
-        assert len(dominated) > 5 or dist > 0.3, (
-            f"Expected obstacle dominance: {len(dominated)} steps, dist={dist:.3f}"
-        )
+        assert (
+            len(dominated) > 5 or dist > 0.3
+        ), f"Expected obstacle dominance: {len(dominated)} steps, dist={dist:.3f}"
 
     def test_regularization_dominates(self):
         trace = run_3dof_simulation(
@@ -497,9 +493,9 @@ class TestComponentScaleSeparation3D:
         )
 
         final_theta = trace[-1]["theta"]
-        assert np.linalg.norm(final_theta) < 0.5, (
-            f"Expected θ → 0 under reg dominance, ‖θ‖={np.linalg.norm(final_theta):.3f}"
-        )
+        assert (
+            np.linalg.norm(final_theta) < 0.5
+        ), f"Expected θ → 0 under reg dominance, ‖θ‖={np.linalg.norm(final_theta):.3f}"
 
 
 # ===================================================================
@@ -591,9 +587,9 @@ class TestTopologicalObstruction3D:
         reached = dist < 0.2
         at_equilibrium = ds2_range < 0.01
 
-        assert reached or at_equilibrium, (
-            f"Expected target or equilibrium: dist={dist:.3f}, ds² range={ds2_range:.6f}"
-        )
+        assert (
+            reached or at_equilibrium
+        ), f"Expected target or equilibrium: dist={dist:.3f}, ds² range={ds2_range:.6f}"
 
     def test_enclosed_target_requires_going_around(self):
         """
@@ -605,11 +601,11 @@ class TestTopologicalObstruction3D:
         target = np.array([0.8, 0.3, 1.3])
         r = 0.20
         obs = [
-            (target + np.array([ 0.35, 0.0, 0.0]), r),
+            (target + np.array([0.35, 0.0, 0.0]), r),
             (target + np.array([-0.35, 0.0, 0.0]), r),
-            (target + np.array([0.0,  0.35, 0.0]), r),
+            (target + np.array([0.0, 0.35, 0.0]), r),
             (target + np.array([0.0, -0.35, 0.0]), r),
-            (target + np.array([0.0, 0.0,  0.35]), r),
+            (target + np.array([0.0, 0.0, 0.35]), r),
             (target + np.array([0.0, 0.0, -0.35]), r),
         ]
 
@@ -628,9 +624,7 @@ class TestTopologicalObstruction3D:
 
         # With enclosure, ds² should report inability to reach target
         # OR find a gap between obstacles
-        assert final["ds2"] > 0.01, (
-            f"Expected ds² > 0 with cage obstacles, got {final['ds2']:.6f}"
-        )
+        assert final["ds2"] > 0.01, f"Expected ds² > 0 with cage obstacles, got {final['ds2']:.6f}"
 
         # The system should have settled
         late_ds2 = [s["ds2"] for s in trace[-50:]]
@@ -677,6 +671,7 @@ class TestDimensionalComparison:
 
         # 2-DOF: fraction near-singular
         from src.eigen_core import jacobian as jacobian_2d
+
         near_2d = 0
         for _ in range(n_samples):
             th = np.random.uniform(-np.pi, np.pi, 2)
@@ -702,7 +697,7 @@ class TestDimensionalComparison:
         octants_reached = set()
 
         for th1 in np.linspace(-np.pi, np.pi, 30):
-            for th2 in np.linspace(-np.pi/2, np.pi/2, 20):
+            for th2 in np.linspace(-np.pi / 2, np.pi / 2, 20):
                 for th3 in np.linspace(-np.pi, np.pi, 20):
                     x, y, z = forward_kinematics_3d(th1, th2, th3)
                     octant = (
@@ -733,12 +728,15 @@ class TestDimensionalComparison:
 
         # det should change sign (cross zero)
         signs = np.sign(dets)
-        sign_changes = sum(1 for i in range(1, len(signs))
-                           if signs[i] != signs[i - 1] and signs[i] != 0 and signs[i - 1] != 0)
-
-        assert sign_changes >= 1, (
-            f"Expected det(J) sign change across singularity, got {sign_changes} changes"
+        sign_changes = sum(
+            1
+            for i in range(1, len(signs))
+            if signs[i] != signs[i - 1] and signs[i] != 0 and signs[i - 1] != 0
         )
+
+        assert (
+            sign_changes >= 1
+        ), f"Expected det(J) sign change across singularity, got {sign_changes} changes"
 
 
 # ===================================================================
@@ -767,9 +765,9 @@ class TestDiagnosticInstrumentation3D:
             eta=0.08,
             n_ticks=200,
         )
-        assert trace[-1]["grad_norm"] < trace[0]["grad_norm"] * 0.1, (
-            f"Expected gradient reduction: {trace[0]['grad_norm']:.4f} → {trace[-1]['grad_norm']:.4f}"
-        )
+        assert (
+            trace[-1]["grad_norm"] < trace[0]["grad_norm"] * 0.1
+        ), f"Expected gradient reduction: {trace[0]['grad_norm']:.4f} → {trace[-1]['grad_norm']:.4f}"
 
     def test_convergence_to_target(self):
         trace = run_3dof_simulation(

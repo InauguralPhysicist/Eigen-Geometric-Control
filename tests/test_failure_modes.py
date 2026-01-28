@@ -34,22 +34,32 @@ import pytest
 
 from src.eigen_core import compute_ds2, compute_gradient, forward_kinematics, jacobian
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _run_descent(theta_init, target, obstacle_center, obstacle_radius,
-                 eta, n_ticks, Go=4.0, lam=0.02, L1=0.9, L2=0.9):
+
+def _run_descent(
+    theta_init,
+    target,
+    obstacle_center,
+    obstacle_radius,
+    eta,
+    n_ticks,
+    Go=4.0,
+    lam=0.02,
+    L1=0.9,
+    L2=0.9,
+):
     """Run plain gradient descent and return full diagnostic trace."""
     theta = np.array(theta_init, dtype=float)
     trace = []
     for t in range(n_ticks):
         th1, th2 = theta
-        ds2, comp = compute_ds2(th1, th2, target, obstacle_center,
-                                obstacle_radius, Go, lam, L1, L2)
-        grad, gnorm = compute_gradient(th1, th2, target, obstacle_center,
-                                       obstacle_radius, Go, lam, L1, L2)
+        ds2, comp = compute_ds2(th1, th2, target, obstacle_center, obstacle_radius, Go, lam, L1, L2)
+        grad, gnorm = compute_gradient(
+            th1, th2, target, obstacle_center, obstacle_radius, Go, lam, L1, L2
+        )
         # Per-term gradient norms for balance diagnostic
         x, y = forward_kinematics(th1, th2, L1, L2)
         pos = np.array([x, y])
@@ -58,8 +68,11 @@ def _run_descent(theta_init, target, obstacle_center, obstacle_radius,
         d_obs = np.linalg.norm(pos - np.asarray(obstacle_center))
         if obstacle_radius - d_obs > 0:
             g_obs = np.linalg.norm(
-                Go * 2.0 * (obstacle_radius - d_obs)
-                * (-1.0 / d_obs) * (J.T @ (pos - np.asarray(obstacle_center)))
+                Go
+                * 2.0
+                * (obstacle_radius - d_obs)
+                * (-1.0 / d_obs)
+                * (J.T @ (pos - np.asarray(obstacle_center)))
             )
         else:
             g_obs = 0.0
@@ -69,24 +82,26 @@ def _run_descent(theta_init, target, obstacle_center, obstacle_radius,
         theta_new = theta + delta
 
         # Next-step ds² for descent check
-        ds2_next, _ = compute_ds2(theta_new[0], theta_new[1], target,
-                                  obstacle_center, obstacle_radius,
-                                  Go, lam, L1, L2)
+        ds2_next, _ = compute_ds2(
+            theta_new[0], theta_new[1], target, obstacle_center, obstacle_radius, Go, lam, L1, L2
+        )
 
-        trace.append({
-            "t": t,
-            "theta": theta.copy(),
-            "ds2": ds2,
-            "ds2_next": ds2_next,
-            "delta_ds2": ds2_next - ds2,
-            "grad_norm": gnorm,
-            "grad": grad.copy(),
-            "g_target": g_target,
-            "g_obs": g_obs,
-            "g_reg": g_reg,
-            "d_obs": d_obs,
-            "pos": pos.copy(),
-        })
+        trace.append(
+            {
+                "t": t,
+                "theta": theta.copy(),
+                "ds2": ds2,
+                "ds2_next": ds2_next,
+                "delta_ds2": ds2_next - ds2,
+                "grad_norm": gnorm,
+                "grad": grad.copy(),
+                "g_target": g_target,
+                "g_obs": g_obs,
+                "g_reg": g_reg,
+                "d_obs": d_obs,
+                "pos": pos.copy(),
+            }
+        )
         theta = theta_new
     return trace
 
@@ -146,9 +161,7 @@ class TestEulerBlowup:
         )
         signs = [np.sign(s["delta_ds2"]) for s in trace if abs(s["delta_ds2"]) > 1e-10]
         sign_changes = sum(1 for i in range(1, len(signs)) if signs[i] != signs[i - 1])
-        assert sign_changes >= 2, (
-            f"Expected oscillation (sign changes in Δds²), got {sign_changes}"
-        )
+        assert sign_changes >= 2, f"Expected oscillation (sign changes in Δds²), got {sign_changes}"
 
     def test_divergence_detected_by_ds2_growth(self):
         """ds²(final) >> ds²(initial) signals the scheme has diverged."""
@@ -162,9 +175,9 @@ class TestEulerBlowup:
         )
         ds2_init = trace[0]["ds2"]
         ds2_final = trace[-1]["ds2"]
-        assert ds2_final > ds2_init, (
-            f"Expected divergence: ds² should grow, got {ds2_init:.4f} → {ds2_final:.4f}"
-        )
+        assert (
+            ds2_final > ds2_init
+        ), f"Expected divergence: ds² should grow, got {ds2_init:.4f} → {ds2_final:.4f}"
 
 
 # ===================================================================
@@ -189,23 +202,21 @@ class TestGradientExplosionNearObstacle:
         obs_radius = 0.50
 
         # Far from obstacle
-        _, gnorm_far = compute_gradient(0.0, 0.0, target, obs_center,
-                                        obs_radius, Go=50.0)
+        _, gnorm_far = compute_gradient(0.0, 0.0, target, obs_center, obs_radius, Go=50.0)
 
         # Search for a configuration inside obstacle
         best_gnorm = 0.0
         for th1 in np.linspace(-np.pi, np.pi, 200):
             for th2 in np.linspace(-np.pi, np.pi, 50):
                 x, y = forward_kinematics(th1, th2)
-                d = np.sqrt((x - 0.6)**2 + (y - 0.1)**2)
+                d = np.sqrt((x - 0.6) ** 2 + (y - 0.1) ** 2)
                 if d < obs_radius and d > 0.01:
-                    _, gn = compute_gradient(th1, th2, target, obs_center,
-                                             obs_radius, Go=50.0)
+                    _, gn = compute_gradient(th1, th2, target, obs_center, obs_radius, Go=50.0)
                     best_gnorm = max(best_gnorm, gn)
 
-        assert best_gnorm > 10.0 * max(gnorm_far, 1e-6), (
-            f"Expected gradient spike near obstacle, got {best_gnorm:.4f} vs far {gnorm_far:.4f}"
-        )
+        assert best_gnorm > 10.0 * max(
+            gnorm_far, 1e-6
+        ), f"Expected gradient spike near obstacle, got {best_gnorm:.4f} vs far {gnorm_far:.4f}"
 
     def test_single_step_can_overshoot_obstacle(self):
         """
@@ -220,10 +231,11 @@ class TestGradientExplosionNearObstacle:
         for th1 in np.linspace(-np.pi, np.pi, 200):
             for th2 in np.linspace(-np.pi, np.pi, 50):
                 x, y = forward_kinematics(th1, th2)
-                d = np.sqrt((x - 0.6)**2 + (y - 0.1)**2)
+                d = np.sqrt((x - 0.6) ** 2 + (y - 0.1) ** 2)
                 if 0.05 < d < obs_radius * 0.5:
-                    grad, gnorm = compute_gradient(th1, th2, target, obs_center,
-                                                   obs_radius, Go=50.0)
+                    grad, gnorm = compute_gradient(
+                        th1, th2, target, obs_center, obs_radius, Go=50.0
+                    )
                     eta = 1.0
                     step_size = np.linalg.norm(eta * grad)
                     if step_size > obs_radius:
@@ -268,8 +280,9 @@ class TestKinkChattering:
         transitions = sum(1 for i in range(1, len(inside)) if inside[i] != inside[i - 1])
 
         obs_active = [s["g_obs"] > 0.01 for s in trace]
-        obs_transitions = sum(1 for i in range(1, len(obs_active))
-                              if obs_active[i] != obs_active[i - 1])
+        obs_transitions = sum(
+            1 for i in range(1, len(obs_active)) if obs_active[i] != obs_active[i - 1]
+        )
 
         assert transitions >= 1 or obs_transitions >= 1, (
             f"Expected obstacle boundary transitions: spatial={transitions}, "
@@ -288,12 +301,11 @@ class TestKinkChattering:
         for th1 in np.linspace(-np.pi, np.pi, 300):
             for th2 in np.linspace(-np.pi, np.pi, 100):
                 x, y = forward_kinematics(th1, th2)
-                d = np.sqrt((x - obs_center[0])**2 + (y - obs_center[1])**2)
+                d = np.sqrt((x - obs_center[0]) ** 2 + (y - obs_center[1]) ** 2)
                 if abs(d - obs_radius) < 0.005:
                     if d < obs_radius:
                         g_obs_inside = _run_descent(
-                            (th1, th2), target, obs_center, obs_radius,
-                            eta=0.0, n_ticks=1, Go=10.0
+                            (th1, th2), target, obs_center, obs_radius, eta=0.0, n_ticks=1, Go=10.0
                         )[0]["g_obs"]
                         assert g_obs_inside > 0, "Obstacle gradient should be active inside"
                     return
@@ -361,9 +373,9 @@ class TestGeometricEquilibrium:
 
         # ds² > 0 at this equilibrium: the invariant correctly reports
         # that the target is not reached
-        assert final["ds2"] > 0.01, (
-            f"Expected ds² > 0 at equilibrium (target not reached), got {final['ds2']:.6f}"
-        )
+        assert (
+            final["ds2"] > 0.01
+        ), f"Expected ds² > 0 at equilibrium (target not reached), got {final['ds2']:.6f}"
 
     def test_gradient_cancellation_is_balanced(self):
         """
@@ -418,12 +430,8 @@ class TestJacobianSingularity:
         J_good = jacobian(0.0, np.pi / 2)
         det_good = abs(np.linalg.det(J_good))
 
-        assert det_singular < 1e-10, (
-            f"Expected singular Jacobian at θ2=0, det={det_singular:.2e}"
-        )
-        assert det_good > 0.1, (
-            f"Expected well-conditioned Jacobian at θ2=π/2, det={det_good:.2e}"
-        )
+        assert det_singular < 1e-10, f"Expected singular Jacobian at θ2=0, det={det_singular:.2e}"
+        assert det_good > 0.1, f"Expected well-conditioned Jacobian at θ2=π/2, det={det_good:.2e}"
 
     def test_gradient_attenuation_at_singularity(self):
         """
@@ -434,7 +442,7 @@ class TestJacobianSingularity:
         """
         trace = _run_descent(
             theta_init=(0.0, 0.0),  # exact singularity
-            target=(-0.5, 0.0),     # requires folding
+            target=(-0.5, 0.0),  # requires folding
             obstacle_center=(10.0, 10.0),
             obstacle_radius=0.1,
             eta=0.12,
@@ -445,9 +453,7 @@ class TestJacobianSingularity:
         first_grad = trace[0]["grad_norm"]
         task_error = np.linalg.norm(trace[0]["pos"] - np.array([-0.5, 0.0]))
         ratio = first_grad / task_error
-        assert ratio < 5.0, (
-            f"Gradient/error ratio at singularity: {ratio:.3f}"
-        )
+        assert ratio < 5.0, f"Gradient/error ratio at singularity: {ratio:.3f}"
 
     def test_exact_singularity_traps_the_flow(self):
         """
@@ -485,9 +491,7 @@ class TestJacobianSingularity:
         dist_near = np.linalg.norm(trace_near[-1]["pos"] - np.array(target))
 
         # Exact singularity should be much worse
-        assert dist_exact > 1.0, (
-            f"Expected exact singularity to trap: dist={dist_exact:.3f}"
-        )
+        assert dist_exact > 1.0, f"Expected exact singularity to trap: dist={dist_exact:.3f}"
         assert dist_near < dist_exact, (
             f"Expected near-singularity to outperform exact: "
             f"near={dist_near:.3f}, exact={dist_exact:.3f}"
@@ -525,18 +529,16 @@ class TestInfeasibleGeometry:
 
         final = trace[-1]
         # ds² > 0: invariant correctly reports infeasibility
-        assert final["ds2"] > 0.5, (
-            f"Expected ds² > 0 for unreachable target, got {final['ds2']:.4f}"
-        )
+        assert (
+            final["ds2"] > 0.5
+        ), f"Expected ds² > 0 for unreachable target, got {final['ds2']:.4f}"
         # Gradient → 0: system found the closest point
-        assert final["grad_norm"] < 0.1, (
-            f"Expected gradient → 0 at compromise, got {final['grad_norm']:.4f}"
-        )
+        assert (
+            final["grad_norm"] < 0.1
+        ), f"Expected gradient → 0 at compromise, got {final['grad_norm']:.4f}"
         # Arm fully extended toward target
         reach = np.linalg.norm(final["pos"])
-        assert reach > 1.7, (
-            f"Expected full extension toward target, reach={reach:.3f}"
-        )
+        assert reach > 1.7, f"Expected full extension toward target, reach={reach:.3f}"
 
     def test_target_inside_obstacle(self):
         """
@@ -558,9 +560,9 @@ class TestInfeasibleGeometry:
             Go=20.0,
         )
 
-        assert trace[-1]["ds2"] > 0.01, (
-            f"Expected ds² > 0 for contradictory constraints, got {trace[-1]['ds2']:.6f}"
-        )
+        assert (
+            trace[-1]["ds2"] > 0.01
+        ), f"Expected ds² > 0 for contradictory constraints, got {trace[-1]['ds2']:.6f}"
 
 
 # ===================================================================
@@ -600,10 +602,7 @@ class TestComponentScaleSeparation:
 
         # The invariant should push the system outside the obstacle zone
         # OR the obstacle component should dominate the gradient
-        dominated_steps = [
-            s for s in trace
-            if _termwise_ratio(s, "g_obs") > 0.8
-        ]
+        dominated_steps = [s for s in trace if _termwise_ratio(s, "g_obs") > 0.8]
         final_pos = trace[-1]["pos"]
         dist = np.linalg.norm(final_pos - np.array(target))
 
@@ -639,9 +638,9 @@ class TestComponentScaleSeparation:
 
         final_pos = trace[-1]["pos"]
         dist = np.linalg.norm(final_pos - np.array(target))
-        assert dist > 0.3, (
-            f"Expected target not reached under regularization dominance, dist={dist:.3f}"
-        )
+        assert (
+            dist > 0.3
+        ), f"Expected target not reached under regularization dominance, dist={dist:.3f}"
 
     def test_domination_diagnostic_detects_scale_separation(self):
         """The r_i ratio diagnostic correctly flags scale separation."""
@@ -659,12 +658,13 @@ class TestComponentScaleSeparation:
         if obs_steps:
             max_ratio = max(_termwise_ratio(s, "g_obs") for s in obs_steps)
         else:
-            max_ratio = max(_termwise_ratio(s, "g_reg") for s in trace
-                           if (s["g_target"] + s["g_obs"] + s["g_reg"]) > 1e-10)
+            max_ratio = max(
+                _termwise_ratio(s, "g_reg")
+                for s in trace
+                if (s["g_target"] + s["g_obs"] + s["g_reg"]) > 1e-10
+            )
 
-        assert max_ratio > 0.7, (
-            f"Expected domination ratio > 0.7, got {max_ratio:.3f}"
-        )
+        assert max_ratio > 0.7, f"Expected domination ratio > 0.7, got {max_ratio:.3f}"
 
 
 # ===================================================================
@@ -704,14 +704,10 @@ class TestTopologicalObstruction:
         dist_to_target = np.linalg.norm(final_pos - np.array(target))
 
         # System correctly stops outside obstacle zone
-        assert dist_to_target > 0.15, (
-            f"Expected geometric barrier: dist={dist_to_target:.3f}"
-        )
+        assert dist_to_target > 0.15, f"Expected geometric barrier: dist={dist_to_target:.3f}"
 
         # ds² is positive at the equilibrium
-        assert trace[-1]["ds2"] > 0.01, (
-            f"Expected ds² > 0 at topological obstruction"
-        )
+        assert trace[-1]["ds2"] > 0.01, f"Expected ds² > 0 at topological obstruction"
 
     def test_obstacle_forces_detour_or_equilibrium(self):
         """
@@ -772,9 +768,7 @@ class TestDiagnosticInstrumentation:
         )
         increases = sum(1 for s in trace if s["delta_ds2"] > 1e-8)
         fraction = increases / len(trace)
-        assert fraction < 0.15, (
-            f"Expected mostly monotone descent, got {fraction:.1%} increases"
-        )
+        assert fraction < 0.15, f"Expected mostly monotone descent, got {fraction:.1%} increases"
 
     def test_gradient_norm_decreases_to_near_zero(self):
         """Gradient norm → 0 as the system reaches the geometric minimum."""
@@ -788,9 +782,9 @@ class TestDiagnosticInstrumentation:
         )
         g_init = trace[0]["grad_norm"]
         g_final = trace[-1]["grad_norm"]
-        assert g_final < g_init * 0.01, (
-            f"Expected gradient reduction, got {g_init:.4f} → {g_final:.4f}"
-        )
+        assert (
+            g_final < g_init * 0.01
+        ), f"Expected gradient reduction, got {g_init:.4f} → {g_final:.4f}"
 
     def test_termwise_balance_shifts_during_convergence(self):
         """The dominant gradient component shifts as geometry changes along the path."""

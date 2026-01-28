@@ -50,7 +50,6 @@ from src.eigen_3dof_core import (
     run_3dof_simulation,
 )
 
-
 # ###################################################################
 #
 #  ds² AS TEMPORAL ORDERING (observer's view)
@@ -63,6 +62,7 @@ from src.eigen_3dof_core import (
 #  The system itself only has ∇ds² at each step.
 #
 # ###################################################################
+
 
 class TestDs2AsTimeArrow:
     """
@@ -91,12 +91,13 @@ class TestDs2AsTimeArrow:
 
         ds2_values = [s["ds2"] for s in trace]
         # Count violations of monotone decrease
-        violations = sum(1 for i in range(1, len(ds2_values))
-                         if ds2_values[i] > ds2_values[i - 1] + 1e-10)
-
-        assert violations == 0, (
-            f"Expected strictly monotone ds² (time arrow), got {violations} violations"
+        violations = sum(
+            1 for i in range(1, len(ds2_values)) if ds2_values[i] > ds2_values[i - 1] + 1e-10
         )
+
+        assert (
+            violations == 0
+        ), f"Expected strictly monotone ds² (time arrow), got {violations} violations"
 
     def test_ds2_value_uniquely_identifies_trajectory_position(self):
         """
@@ -119,9 +120,9 @@ class TestDs2AsTimeArrow:
         total = len(ds2_values)
 
         # At least 90% should be distinct (last few may plateau)
-        assert unique_count > 0.9 * total, (
-            f"Expected ds² to uniquely identify position: {unique_count}/{total} unique values"
-        )
+        assert (
+            unique_count > 0.9 * total
+        ), f"Expected ds² to uniquely identify position: {unique_count}/{total} unique values"
 
     def test_ds2_orders_two_trajectories_consistently(self):
         """
@@ -134,11 +135,17 @@ class TestDs2AsTimeArrow:
 
         trace_a = run_3dof_simulation(
             theta_init=(0.5, 0.3, -0.3),
-            target=target, eta=0.05, n_ticks=300, lam=0.01,
+            target=target,
+            eta=0.05,
+            n_ticks=300,
+            lam=0.01,
         )
         trace_b = run_3dof_simulation(
             theta_init=(-0.3, 0.8, 0.2),
-            target=target, eta=0.05, n_ticks=300, lam=0.01,
+            target=target,
+            eta=0.05,
+            n_ticks=300,
+            lam=0.01,
         )
 
         # Both should converge (ds² → small)
@@ -152,9 +159,9 @@ class TestDs2AsTimeArrow:
         shared_levels = set(ds2_a.keys()) & set(ds2_b.keys())
 
         # There should be ds² levels where both trajectories pass through
-        assert len(shared_levels) > 3, (
-            f"Expected shared ds² levels (geometric simultaneity), got {len(shared_levels)}"
-        )
+        assert (
+            len(shared_levels) > 3
+        ), f"Expected shared ds² levels (geometric simultaneity), got {len(shared_levels)}"
 
         # At shared ds² levels, both should have similar gradient norms
         # (same "urgency" as measured by the invariant)
@@ -178,6 +185,7 @@ class TestDs2AsTimeArrow:
 #  as the dominant component shifts).
 #
 # ###################################################################
+
 
 class TestDs2AsRegimeDiscriminator:
     """
@@ -219,9 +227,7 @@ class TestDs2AsRegimeDiscriminator:
 
         # Late: should be different regime
         late = trace[-1]
-        late_ds2, late_comp = compute_ds2_3d(
-            late["theta"], (1.0, 0.5, 1.5), obs, Go=15.0, lam=0.01
-        )
+        late_ds2, late_comp = compute_ds2_3d(late["theta"], (1.0, 0.5, 1.5), obs, Go=15.0, lam=0.01)
         late_target_frac = late_comp["target_term"] / max(late_ds2, 1e-10)
 
         # The regime should shift
@@ -259,9 +265,9 @@ class TestDs2AsRegimeDiscriminator:
             peak_idx = max(range(len(trace)), key=lambda i: trace[i]["g_obs"])
             if 0 < peak_idx < len(trace) - 1:
                 # ds² components at peak should show obstacle dominance
-                assert trace[peak_idx]["g_obs"] > trace[peak_idx]["g_reg"], (
-                    "At obstacle encounter, obs gradient should exceed reg gradient"
-                )
+                assert (
+                    trace[peak_idx]["g_obs"] > trace[peak_idx]["g_reg"]
+                ), "At obstacle encounter, obs gradient should exceed reg gradient"
 
     def test_ds2_discriminates_between_equilibria(self):
         """
@@ -316,6 +322,7 @@ class TestDs2AsRegimeDiscriminator:
 #
 # ###################################################################
 
+
 class TestGradientAsSoleInput:
     """
     The system's entire policy is Q_{t+1} = Q_t - η∇ds².
@@ -343,9 +350,9 @@ class TestGradientAsSoleInput:
         theta_new = theta - 0.05 * grad
         ds2_after, _ = compute_ds2_3d(theta_new, target, [], lam=0.01)
 
-        assert ds2_after < ds2_before, (
-            f"Expected ds² decrease in gradient direction: {ds2_before:.6f} → {ds2_after:.6f}"
-        )
+        assert (
+            ds2_after < ds2_before
+        ), f"Expected ds² decrease in gradient direction: {ds2_before:.6f} → {ds2_after:.6f}"
 
     def test_gradient_magnitude_indicates_progress_quality(self):
         """
@@ -373,9 +380,9 @@ class TestGradientAsSoleInput:
         avg_early = np.mean(early_rates)
         avg_late = np.mean(late_rates)
 
-        assert avg_early > avg_late * 5, (
-            f"Expected decreasing rate: early={avg_early:.6f}, late={avg_late:.6f}"
-        )
+        assert (
+            avg_early > avg_late * 5
+        ), f"Expected decreasing rate: early={avg_early:.6f}, late={avg_late:.6f}"
 
     def test_gradient_vanishing_is_the_stopping_criterion(self):
         """
@@ -403,17 +410,17 @@ class TestGradientAsSoleInput:
                 break
 
         assert converged_at is not None, "Expected ds² to signal convergence"
-        assert converged_at < len(trace) - 1, (
-            f"Expected convergence before final step, got t={converged_at}"
-        )
+        assert (
+            converged_at < len(trace) - 1
+        ), f"Expected convergence before final step, got t={converged_at}"
 
         # After convergence, ds² should stay constant
         post_convergence = [s for s in trace if s["t"] > converged_at]
         if post_convergence:
-            ds2_range = max(s["ds2"] for s in post_convergence) - min(s["ds2"] for s in post_convergence)
-            assert ds2_range < 1e-4, (
-                f"Expected ds² stable after convergence, range={ds2_range:.2e}"
+            ds2_range = max(s["ds2"] for s in post_convergence) - min(
+                s["ds2"] for s in post_convergence
             )
+            assert ds2_range < 1e-4, f"Expected ds² stable after convergence, range={ds2_range:.2e}"
 
 
 # ###################################################################
@@ -432,6 +439,7 @@ class TestGradientAsSoleInput:
 #  (where it is), and these have opposite signs.
 #
 # ###################################################################
+
 
 class TestIndefiniteSignature:
     """
@@ -464,7 +472,7 @@ class TestIndefiniteSignature:
         total_active_steps = 0
         for i in range(len(trace) - 1):
             dtheta = trace[i + 1]["theta"] - trace[i]["theta"]
-            dtheta_sq = float(np.sum(dtheta ** 2))
+            dtheta_sq = float(np.sum(dtheta**2))
             d_ds2 = trace[i]["delta_ds2"]
 
             if dtheta_sq > 1e-12 and abs(d_ds2) > 1e-12:
@@ -502,11 +510,11 @@ class TestIndefiniteSignature:
         intervals = []
         for i in range(len(trace) - 1):
             dtheta = trace[i + 1]["theta"] - trace[i]["theta"]
-            dtheta_sq = float(np.sum(dtheta ** 2))
+            dtheta_sq = float(np.sum(dtheta**2))
             d_ds2 = trace[i]["delta_ds2"]
 
             # Extended interval: spatial - temporal
-            dsigma_sq = dtheta_sq - d_ds2 ** 2
+            dsigma_sq = dtheta_sq - d_ds2**2
             intervals.append(dsigma_sq)
 
         # During active motion, the interval should be positive (spacelike)
@@ -514,9 +522,9 @@ class TestIndefiniteSignature:
         active_intervals = [v for v in intervals[:50] if abs(v) > 1e-15]
         if active_intervals:
             positive_fraction = sum(1 for v in active_intervals if v > 0) / len(active_intervals)
-            assert positive_fraction > 0.5, (
-                f"Expected spacelike intervals during active motion, got {positive_fraction:.1%}"
-            )
+            assert (
+                positive_fraction > 0.5
+            ), f"Expected spacelike intervals during active motion, got {positive_fraction:.1%}"
 
     def test_ds2_decrease_rate_bounded_by_spatial_displacement(self):
         """
@@ -575,6 +583,7 @@ class TestIndefiniteSignature:
 #  the differential that moves it between them.
 #
 # ###################################################################
+
 
 class TestFixedPointIndexing:
     """
@@ -700,6 +709,4 @@ class TestFixedPointIndexing:
         values = list(octant_ds2.values())
         ds2_range = max(values) - min(values)
 
-        assert ds2_range > 0.01, (
-            f"Expected ds² to discriminate octants, range={ds2_range:.6f}"
-        )
+        assert ds2_range > 0.01, f"Expected ds² to discriminate octants, range={ds2_range:.6f}"

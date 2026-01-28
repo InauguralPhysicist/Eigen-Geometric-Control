@@ -27,8 +27,12 @@ import numpy as np
 
 
 def forward_kinematics_3d(
-    theta1: float, theta2: float, theta3: float,
-    L1: float = 0.9, L2: float = 0.9, L3: float = 0.9,
+    theta1: float,
+    theta2: float,
+    theta3: float,
+    L1: float = 0.9,
+    L2: float = 0.9,
+    L3: float = 0.9,
 ) -> Tuple[float, float, float]:
     """
     Compute end-effector position in 3D from joint angles.
@@ -45,7 +49,7 @@ def forward_kinematics_3d(
     c23, s23 = np.cos(theta2 + theta3), np.sin(theta2 + theta3)
 
     # Projection onto xz-plane after shoulder and elbow
-    r = L2 * c2 + L3 * c23   # radial distance from z-axis (in shoulder frame)
+    r = L2 * c2 + L3 * c23  # radial distance from z-axis (in shoulder frame)
     z = L1 + L2 * s2 + L3 * s23  # height
 
     x = float(r * c1)
@@ -56,8 +60,12 @@ def forward_kinematics_3d(
 
 
 def jacobian_3d(
-    theta1: float, theta2: float, theta3: float,
-    L1: float = 0.9, L2: float = 0.9, L3: float = 0.9,
+    theta1: float,
+    theta2: float,
+    theta3: float,
+    L1: float = 0.9,
+    L2: float = 0.9,
+    L3: float = 0.9,
 ) -> np.ndarray:
     """
     Compute 3×3 Jacobian mapping joint velocities to task-space velocities.
@@ -87,11 +95,13 @@ def jacobian_3d(
     # ∂y/∂θ₁ =  r*c1,  ∂y/∂θ₂ = dr/dθ₂ * s1,  ∂y/∂θ₃ = dr/dθ₃ * s1
     # ∂z/∂θ₁ = 0,       ∂z/∂θ₂ = dz/dθ₂,        ∂z/∂θ₃ = dz/dθ₃
 
-    return np.array([
-        [-r * s1,      dr_dth2 * c1,  dr_dth3 * c1],
-        [ r * c1,      dr_dth2 * s1,  dr_dth3 * s1],
-        [ 0.0,         dz_dth2,       dz_dth3      ],
-    ])
+    return np.array(
+        [
+            [-r * s1, dr_dth2 * c1, dr_dth3 * c1],
+            [r * c1, dr_dth2 * s1, dr_dth3 * s1],
+            [0.0, dz_dth2, dz_dth3],
+        ]
+    )
 
 
 def compute_ds2_3d(
@@ -100,7 +110,9 @@ def compute_ds2_3d(
     obstacles: List[Tuple[np.ndarray, float]],
     Go: float = 4.0,
     lam: float = 0.02,
-    L1: float = 0.9, L2: float = 0.9, L3: float = 0.9,
+    L1: float = 0.9,
+    L2: float = 0.9,
+    L3: float = 0.9,
 ) -> Tuple[float, Dict[str, float]]:
     """
     Compute ds² for 3-DOF arm.
@@ -138,16 +150,16 @@ def compute_ds2_3d(
 
     # Obstacle term (sum over all obstacles)
     obs_term = 0.0
-    d_obs_min = float('inf')
+    d_obs_min = float("inf")
     for obs_center, obs_radius in obstacles:
         obs_center = np.asarray(obs_center, dtype=float)
         d = float(np.linalg.norm(pos - obs_center))
         d_obs_min = min(d_obs_min, d)
         penetration = max(0.0, obs_radius - d)
-        obs_term += Go * penetration ** 2
+        obs_term += Go * penetration**2
 
     # Regularization term
-    reg_term = float(lam * np.sum(theta ** 2))
+    reg_term = float(lam * np.sum(theta**2))
 
     ds2_total = target_term + obs_term + reg_term
 
@@ -155,7 +167,7 @@ def compute_ds2_3d(
         "target_term": target_term,
         "obs_term": obs_term,
         "reg_term": reg_term,
-        "d_obs_min": d_obs_min if obstacles else float('inf'),
+        "d_obs_min": d_obs_min if obstacles else float("inf"),
     }
 
 
@@ -165,7 +177,9 @@ def compute_gradient_3d(
     obstacles: List[Tuple[np.ndarray, float]],
     Go: float = 4.0,
     lam: float = 0.02,
-    L1: float = 0.9, L2: float = 0.9, L3: float = 0.9,
+    L1: float = 0.9,
+    L2: float = 0.9,
+    L3: float = 0.9,
 ) -> Tuple[np.ndarray, float]:
     """
     Compute ∇ds² for 3-DOF arm.
@@ -212,7 +226,9 @@ def run_3dof_simulation(
     eta=0.08,
     Go=4.0,
     lam=0.02,
-    L1=0.9, L2=0.9, L3=0.9,
+    L1=0.9,
+    L2=0.9,
+    L3=0.9,
 ):
     """
     Run gradient descent on ds² for the 3-DOF spatial arm.
@@ -243,9 +259,9 @@ def run_3dof_simulation(
             d = float(np.linalg.norm(pos - obs_center))
             penetration = obs_radius - d
             if penetration > 0 and d > 1e-12:
-                g_obs += float(np.linalg.norm(
-                    Go * 2.0 * penetration * (-1.0 / d) * (J.T @ (pos - obs_center))
-                ))
+                g_obs += float(
+                    np.linalg.norm(Go * 2.0 * penetration * (-1.0 / d) * (J.T @ (pos - obs_center)))
+                )
 
         g_reg = float(np.linalg.norm(2.0 * lam * theta))
 
@@ -254,22 +270,26 @@ def run_3dof_simulation(
 
         ds2_next, _ = compute_ds2_3d(theta_new, target, obstacles, Go, lam, L1, L2, L3)
 
-        trace.append({
-            "t": t,
-            "theta": theta.copy(),
-            "pos": pos.copy(),
-            "ds2": ds2,
-            "ds2_next": ds2_next,
-            "delta_ds2": ds2_next - ds2,
-            "grad_norm": gnorm,
-            "grad": grad.copy(),
-            "g_target": g_target,
-            "g_obs": g_obs,
-            "g_reg": g_reg,
-            "d_obs_min": comp["d_obs_min"],
-            "det_J": float(np.linalg.det(J)),
-            "cond_J": float(np.linalg.cond(J)) if abs(np.linalg.det(J)) > 1e-15 else float('inf'),
-        })
+        trace.append(
+            {
+                "t": t,
+                "theta": theta.copy(),
+                "pos": pos.copy(),
+                "ds2": ds2,
+                "ds2_next": ds2_next,
+                "delta_ds2": ds2_next - ds2,
+                "grad_norm": gnorm,
+                "grad": grad.copy(),
+                "g_target": g_target,
+                "g_obs": g_obs,
+                "g_reg": g_reg,
+                "d_obs_min": comp["d_obs_min"],
+                "det_J": float(np.linalg.det(J)),
+                "cond_J": (
+                    float(np.linalg.cond(J)) if abs(np.linalg.det(J)) > 1e-15 else float("inf")
+                ),
+            }
+        )
 
         theta = theta_new
 

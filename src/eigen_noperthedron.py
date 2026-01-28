@@ -818,8 +818,7 @@ def main():
     print("\n" + "=" * 70)
     print("INTERPRETATION")
     print("=" * 70)
-    print(
-        """
+    print("""
 The connection between Rupert's property and convergence:
 
 1. RUPERT-POSITIVE shapes (CAN pass through self):
@@ -840,21 +839,18 @@ This is a THOUGHT EXPERIMENT exploring deep connections between:
 - Geometric constraints (passage through self)
 - Metric signatures (ds² sign)
 - System convergence (eigenstate reachability)
-    """
-    )
+    """)
 
     print("\n" + "=" * 70)
     print("REFERENCE")
     print("=" * 70)
-    print(
-        """
+    print("""
 Steininger, Jakob and Yurkevich, Vsevolod (2025).
 "The Noperthedron." arXiv preprint.
 
 Note: This implementation is exploratory. The exact mapping between
 passage geometry and the ds² metric requires further theoretical work.
-    """
-    )
+    """)
     print("=" * 70)
 
 
